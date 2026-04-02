@@ -1,0 +1,26 @@
+# Build outputs
+bin/
+obj/
+artifacts/
+
+# Local package and SDK caches
+.dotnet_home/
+.nuget_packages/
+
+# IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Test and runtime leftovers
+TestResults/
+*.pdb
+
+# Installer/build copies
+installer/*.xll
+installer/*.exe
+
+# OS noise
+Thumbs.db
+Desktop.ini
