@@ -8,7 +8,9 @@ Implementované a otestované funkce:
 
 - `NORM.DIST.RANGE`
 - `GENERATE.NORM`
+- `GENERATE.INT`
 - `FILL`
+- `FILL.RANDOM`
 - `AVERAGE.W`
 - `HARMEAN.W`
 - `GEOMEAN.W`
@@ -29,6 +31,10 @@ Implementované a otestované funkce:
 - `WELCH.TEST.2S.G`
 - `CHISQ.GOF`
 - `ANOVA.G`
+- `ANOVA.RM`
+- `ANCOVA.G`
+- `CONTINGENCY.T`
+- `CONTINGENCY.G`
 
 ## Build
 
@@ -43,3 +49,8 @@ Jediný hlavní build pro Excel je vždy:
 Stejný soubor se po buildu kopíruje i do:
 
 `installer\XLStatUDF-packed.xll`
+
+Instalátory se po buildu generují sem:
+
+- `artifacts\installer\XLStatUDF_CS_Setup.exe`
+- `artifacts\installer\XLStatUDF_EN_Setup.exe`

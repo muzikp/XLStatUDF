@@ -3,6 +3,24 @@
   #define MyAppVersion "1.0.0"
 #endif
 
+#ifndef InstallerCulture
+  #define InstallerCulture "CS"
+#endif
+
+#if InstallerCulture == "EN"
+  #define InstallerLanguageName "english"
+  #define InstallerMessagesFile "compiler:Default.isl"
+  #define InstallerSuffix "EN"
+  #define InstallerOpenXlStartText "Open XLSTART folder"
+  #define InstallerUninstallShortcutText "Uninstall XLStatUDF"
+#else
+  #define InstallerLanguageName "czech"
+  #define InstallerMessagesFile "compiler:Languages\\Czech.isl"
+  #define InstallerSuffix "CS"
+  #define InstallerOpenXlStartText "Otevrit slozku XLSTART"
+  #define InstallerUninstallShortcutText "Odinstalovat XLStatUDF"
+#endif
+
 [Setup]
 AppId={{C2E3810A-3B2E-4E61-B0D1-4E0BB59D81C2}
 AppName={#MyAppName}
@@ -12,28 +30,26 @@ DefaultDirName={localappdata}\Programs\XLStatUDF
 DefaultGroupName=XLStatUDF
 UninstallDisplayIcon={app}\XLStatUDF-packed.xll
 OutputDir=..\artifacts\installer
-OutputBaseFilename=XLStatUDF_Setup
+OutputBaseFilename=XLStatUDF_{#InstallerSuffix}_Setup
 Compression=lzma2
 SolidCompression=yes
 PrivilegesRequired=lowest
 ArchitecturesInstallIn64BitMode=x64compatible
 WizardStyle=modern
 DisableProgramGroupPage=yes
+ShowLanguageDialog=no
 
 [Languages]
-Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
-Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "{#InstallerLanguageName}"; MessagesFile: "{#InstallerMessagesFile}"
 
 [Files]
 Source: "XLStatUDF-packed.xll"; DestDir: "{userappdata}\Microsoft\Excel\XLSTART"; DestName: "XLStatUDF-packed.xll"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\XLStatUDF\Odinstalovat XLStatUDF"; Filename: "{uninstallexe}"; Languages: czech
-Name: "{autoprograms}\XLStatUDF\Uninstall XLStatUDF"; Filename: "{uninstallexe}"; Languages: english
+Name: "{autoprograms}\XLStatUDF\{#InstallerUninstallShortcutText}"; Filename: "{uninstallexe}"
 
 [Run]
-Filename: "{userappdata}\Microsoft\Excel\XLSTART"; Flags: postinstall shellexec skipifsilent unchecked; Description: "Otevrit slozku XLSTART"; Languages: czech
-Filename: "{userappdata}\Microsoft\Excel\XLSTART"; Flags: postinstall shellexec skipifsilent unchecked; Description: "Open XLSTART folder"; Languages: english
+Filename: "{userappdata}\Microsoft\Excel\XLSTART"; Flags: postinstall shellexec skipifsilent unchecked; Description: "{#InstallerOpenXlStartText}"
 
 [UninstallDelete]
 Type: files; Name: "{userappdata}\Microsoft\Excel\XLSTART\XLStatUDF-packed.xll"

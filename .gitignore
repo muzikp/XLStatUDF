@@ -22,7 +22,11 @@ TestResults/
 installer/*.xll
 installer/*.exe
 !artifacts/installer/
-!artifacts/installer/XLStatUDF_Setup.exe
+!artifacts/installer/XLStatUDF_CS_Setup.exe
+!artifacts/installer/XLStatUDF_EN_Setup.exe
+
+# Local scratch data
+_tmp/
 
 # OS noise
 Thumbs.db

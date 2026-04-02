@@ -4,7 +4,9 @@
 
 - [NORM.DIST.RANGE](./distributions.md#normdistrange)
 - [GENERATE.NORM](./distributions.md#generatenorm)
+- [GENERATE.INT](./distributions.md#generateint)
 - [FILL](./distributions.md#fill)
+- [FILL.RANDOM](./distributions.md#fillrandom)
 
 ## Vážené Popisné Statistiky
 
@@ -36,6 +38,10 @@
 - [WELCH.TEST.2S.G](./two-sample-tests.md#welchtest2sg)
 - [CHISQ.GOF](./goodness-of-fit.md#chisqgof)
 - [ANOVA.G](./anova.md#anovag)
+- [ANOVA.RM](./anova.md#anovarm)
+- [ANCOVA.G](./ancova.md#ancovag)
+- [CONTINGENCY.T](./contingency.md#contingencyt)
+- [CONTINGENCY.G](./contingency.md#contingencyg)
 
 ## Korelace
 

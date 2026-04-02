@@ -23,6 +23,8 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
 $artifactRoot = Join-Path $root "artifacts"
 $mainArtifactDir = Join-Path $artifactRoot "main"
 $installerArtifactDir = Join-Path $artifactRoot "installer"
+$csSetupExe = Join-Path $installerArtifactDir "XLStatUDF_CS_Setup.exe"
+$enSetupExe = Join-Path $installerArtifactDir "XLStatUDF_EN_Setup.exe"
 
 if (Test-Path $mainArtifactDir) {
     Remove-Item -LiteralPath $mainArtifactDir -Recurse -Force
@@ -43,12 +45,21 @@ $installerTarget = Join-Path $root "installer\XLStatUDF-packed.xll"
 
 Copy-Item $packedXll $installerTarget -Force
 
-$setupExe = Join-Path $installerArtifactDir "XLStatUDF_Setup.exe"
-if (Test-Path $setupExe) {
-    Remove-Item -LiteralPath $setupExe -Force
+$canBuildInstaller = $true
+foreach ($setupExe in @($csSetupExe, $enSetupExe)) {
+    if (Test-Path $setupExe) {
+        try {
+            Remove-Item -LiteralPath $setupExe -Force
+        }
+        catch {
+            Write-Warning "Existujici instalacni EXE je zamceny jinym procesem a nebyl prepsan: $setupExe"
+            Write-Warning "Zavri prosim bezici instalator nebo Explorer preview a spust build znovu pro novou verzi EXE."
+            $canBuildInstaller = $false
+        }
+    }
 }
 
-if ($CreateInstaller) {
+if ($CreateInstaller -and $canBuildInstaller) {
     $isccCandidates = @(
         (Join-Path $env:LOCALAPPDATA "Programs\Inno Setup 6\ISCC.exe"),
         "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
@@ -67,8 +78,11 @@ if ($CreateInstaller) {
     }
 
     if ($iscc) {
-        & $iscc "/DMyAppVersion=1.0.0" (Join-Path $root "installer\XLStatUDF.iss")
-        Write-Host "Instalator EXE: $setupExe"
+        $installerScript = Join-Path $root "installer\XLStatUDF.iss"
+        & $iscc "/DMyAppVersion=1.0.0" "/DInstallerCulture=CS" $installerScript
+        & $iscc "/DMyAppVersion=1.0.0" "/DInstallerCulture=EN" $installerScript
+        Write-Host "Instalator CS: $csSetupExe"
+        Write-Host "Instalator EN: $enSetupExe"
     }
     else {
         Write-Warning "Inno Setup compiler (ISCC.exe) nebyl nalezen. Instalacni EXE nebyl vygenerovan."
@@ -79,3 +93,7 @@ if ($CreateInstaller) {
 Write-Host "Build hotovy."
 Write-Host "Hlavni add-in: $packedXll"
 Write-Host "Kopie pro installer: $installerTarget"
+if ($CreateInstaller -and $canBuildInstaller) {
+    Write-Host "CS installer: $csSetupExe"
+    Write-Host "EN installer: $enSetupExe"
+}
