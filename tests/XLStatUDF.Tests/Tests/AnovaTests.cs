@@ -14,8 +14,9 @@ namespace XLStatUDF.Tests.Tests
             var result = Anova.Run(
                 new object[] { "A", "A", "A", "B", "B", "B", "C", "C", "C" },
                 new object[] { 10.0, 11.0, 12.0, 15.0, 16.0, 17.0, 21.0, 22.0, 23.0 },
-                2.0,
-                0.05);
+                null,
+                0.05,
+                2.0);
 
             Assert.Equal("POPISNÉ STATISTIKY", result[0, 0]);
             Assert.Equal("sₓ", result[1, 4]);
@@ -43,9 +44,9 @@ namespace XLStatUDF.Tests.Tests
             var result = Anova.Run(
                 new object[] { "Skupina", "A", "A", "A", "B", "B", "B", "C", "C", "C" },
                 new object[] { "Hodnota", 10.0, 11.0, 12.0, 15.0, 16.0, 17.0, 21.0, 22.0, 23.0 },
-                2.0,
+                1.0,
                 0.05,
-                1.0);
+                2.0);
 
             Assert.Equal("POPISNÉ STATISTIKY", result[0, 0]);
         }

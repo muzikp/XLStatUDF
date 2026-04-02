@@ -4,6 +4,7 @@
 
 - [NORM.DIST.RANGE](./distributions.md#normdistrange)
 - [GENERATE.NORM](./distributions.md#generatenorm)
+- [FILL](./distributions.md#fill)
 
 ## Vážené Popisné Statistiky
 

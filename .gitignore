@@ -1,7 +1,8 @@
 # Build outputs
 bin/
 obj/
-artifacts/
+artifacts/*
+artifacts/main/
 
 # Local package and SDK caches
 .dotnet_home/
@@ -20,6 +21,8 @@ TestResults/
 # Installer/build copies
 installer/*.xll
 installer/*.exe
+!artifacts/installer/
+!artifacts/installer/XLStatUDF_Setup.exe
 
 # OS noise
 Thumbs.db

@@ -7,16 +7,16 @@ Jednofaktorová analýza rozptylu nad groupovanými daty.
 ### Syntaxe
 
 ```excel
-=ANOVA.G(categories; values; [post_hoc]; [alpha]; [ma_zahlavi])
+=ANOVA.G(categories; values; [ma_zahlavi]; [alpha]; [post_hoc])
 ```
 
 ### Argumenty
 
 - `categories`: štítky skupin
 - `values`: číselná pozorování
-- `post_hoc`: volitelný kód post-hoc procedury; výchozí hodnota je `0`
-- `alpha`: hladina významnosti
 - `ma_zahlavi`: `0=autodetect`, `1=první řádek je záhlaví`, `2=bez záhlaví`
+- `alpha`: hladina významnosti
+- `post_hoc`: volitelný kód post-hoc procedury; výchozí hodnota je `0`
 
 ### Kódy `post_hoc`
 
@@ -42,6 +42,6 @@ Spill výstup obsahuje:
 
 ```excel
 =ANOVA.G(A2:A40;B2:B40)
-=ANOVA.G(A2:A40;B2:B40;2;0,05;1)
-=ANOVA.G(A2:A40;B2:B40;4;0,05;0)
+=ANOVA.G(A2:A40;B2:B40;1;0,05;2)
+=ANOVA.G(A2:A40;B2:B40;0;0,05;4)
 ```

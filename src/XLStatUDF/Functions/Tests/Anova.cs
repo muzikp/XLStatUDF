@@ -13,9 +13,9 @@ namespace XLStatUDF.Functions.Tests
         public static object[,] Run(
             [ExcelArgument(Name = "kategorie", Description = "Štítky skupin")] object categories,
             [ExcelArgument(Name = "hodnoty", Description = "Číselná pozorování")] object values,
-            [ExcelArgument(Name = "post_hoc", Description = "Volitelne: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null,
+            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "post_hoc", Description = "Volitelne: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null)
             => RunInternal(categories, values, postHoc, alpha, hasHeader);
 
         private static object[,] RunInternal(

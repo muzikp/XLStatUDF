@@ -7,16 +7,16 @@ Welchův dvouvýběrový t-test pro dvě nezávislé skupiny s nerovností rozpt
 ### Syntaxe
 
 ```excel
-=WELCH.TEST.2S.G(categories; values; [direction]; [alpha]; [ma_zahlavi])
+=WELCH.TEST.2S.G(categories; values; [ma_zahlavi]; [alpha]; [direction])
 ```
 
 ### Argumenty
 
 - `categories`: štítky definující právě dvě skupiny, typicky první sloupec
 - `values`: číselná pozorování, typicky druhý sousední sloupec s měřenými hodnotami
-- `direction`: volitelný kód směru testu; výchozí hodnota je `0`
-- `alpha`: hladina významnosti
 - `ma_zahlavi`: volitelný kód režimu záhlaví; výchozí hodnota je `0`
+- `alpha`: hladina významnosti
+- `direction`: volitelný kód směru testu; výchozí hodnota je `0`
 
 ### Kódy `direction`
 
@@ -50,5 +50,5 @@ Spill výstup obsahuje:
 ### Příklad
 
 ```excel
-=WELCH.TEST.2S.G(A2:A40;B2:B40;0;0,05;1)
+=WELCH.TEST.2S.G(A2:A40;B2:B40;1;0,05;0)
 ```

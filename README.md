@@ -8,6 +8,7 @@ Implementované a otestované funkce:
 
 - `NORM.DIST.RANGE`
 - `GENERATE.NORM`
+- `FILL`
 - `AVERAGE.W`
 - `HARMEAN.W`
 - `GEOMEAN.W`

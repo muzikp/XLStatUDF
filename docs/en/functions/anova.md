@@ -7,16 +7,16 @@ One-way ANOVA for grouped data.
 ### Syntax
 
 ```excel
-=ANOVA.G(categories; values; [post_hoc]; [alpha]; [ma_zahlavi])
+=ANOVA.G(categories; values; [ma_zahlavi]; [alpha]; [post_hoc])
 ```
 
 ### Arguments
 
 - `categories`: group labels
 - `values`: numeric observations
-- `post_hoc`: optional post-hoc procedure code; default is `0`
-- `alpha`: significance level
 - `ma_zahlavi`: `0=autodetect`, `1=header present`, `2=no header`
+- `alpha`: significance level
+- `post_hoc`: optional post-hoc procedure code; default is `0`
 
 ### `post_hoc` Codes
 
@@ -44,5 +44,5 @@ Sample standard deviation is labeled as `sₓ`.
 
 ```excel
 =ANOVA.G(A2:A40;B2:B40)
-=ANOVA.G(A2:A40;B2:B40;2;0,05;1)
+=ANOVA.G(A2:A40;B2:B40;1;0,05;2)
 ```

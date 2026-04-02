@@ -14,8 +14,9 @@ namespace XLStatUDF.Tests.Tests
             var result = WelchTest2S.Run(
                 new object[] { "A", "A", "A", "A", "B", "B", "B", "B" },
                 new object[] { 10.0, 12.0, 11.0, 13.0, 16.0, 18.0, 17.0, 19.0 },
-                0.0,
-                0.05);
+                null,
+                0.05,
+                0.0);
 
             Assert.Equal("Skupina", result[0, 0]);
             Assert.Equal("sₓ", result[0, 4]);
@@ -47,9 +48,9 @@ namespace XLStatUDF.Tests.Tests
             var result = WelchTest2S.Run(
                 new object[] { "Skupina", "A", "A", "A", "A", "B", "B", "B", "B" },
                 new object[] { "Hodnota", 10.0, 12.0, 11.0, 13.0, 16.0, 18.0, 17.0, 19.0 },
-                0.0,
+                1.0,
                 0.05,
-                1.0);
+                0.0);
 
             Assert.Equal("A", result[1, 0]);
             Assert.Equal("Výsledky testu", result[4, 0]);

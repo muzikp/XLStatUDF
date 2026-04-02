@@ -56,3 +56,36 @@ Jednosloupcový spill rozsah s `count` hodnotami.
 ```excel
 =GENERATE.NORM(100;15;20)
 ```
+
+## `FILL`
+
+Vytvoří jednosloupcový spill opakováním jedné hodnoty nebo opakovaným vyhodnocením vzorce.
+
+### Syntaxe
+
+```excel
+=FILL(co; pocet)
+```
+
+### Argumenty
+
+- `co`: skalární hodnota, která se má opakovat, nebo textový vzorec začínající `=`
+- `pocet`: počet vrácených řádků; celé číslo `>= 1`
+
+### Výstup
+
+Jednosloupcový spill rozsah s `pocet` hodnotami.
+
+### Poznámky
+
+- pokud zadáš běžnou hodnotu, funkce ji pouze zkopíruje do všech řádků
+- pokud zadáš textový vzorec začínající `=`, funkce ho vyhodnotí zvlášť pro každý řádek
+- to je praktické například pro náhodné generátory; přímý argument `RANDBETWEEN(...)` by se jinak do UDF předal už jen jako jedna spočtená hodnota
+
+### Příklady
+
+```excel
+=FILL("A";5)
+=FILL(123;4)
+=FILL("=RANDBETWEEN(1;10)";20)
+```
