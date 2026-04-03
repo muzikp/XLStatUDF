@@ -1,8 +1,15 @@
 # Vážený Rozptyl A Směrodatná Odchylka
 
+Společné chování pro všechny čtyři funkce:
+
+- `values` a `weights` musí mít stejnou délku
+- váhy musí být nezáporné
+- prázdné buňky ve vahách se berou jako `0`
+- pokud je součet vah nulový, funkce vrátí numerickou chybu
+
 ## `VAR.P.W`
 
-Vážený populační rozptyl.
+Počítá vážený populační rozptyl.
 
 ### Syntaxe
 
@@ -14,9 +21,13 @@ Vážený populační rozptyl.
 
 Skalární vážený populační rozptyl.
 
+### Poznámky
+
+- používá jmenovatel `Σw`
+
 ## `VAR.S.W`
 
-Vážený výběrový rozptyl.
+Počítá vážený výběrový rozptyl.
 
 ### Syntaxe
 
@@ -28,9 +39,14 @@ Vážený výběrový rozptyl.
 
 Skalární vážený výběrový rozptyl.
 
+### Poznámky
+
+- používá jmenovatel `Σw - 1`
+- pokud `Σw <= 1`, funkce vrátí chybu `#POČET!`
+
 ## `STDEV.P.W`
 
-Vážená populační směrodatná odchylka.
+Počítá váženou populační směrodatnou odchylku.
 
 ### Syntaxe
 
@@ -42,9 +58,13 @@ Vážená populační směrodatná odchylka.
 
 Skalární vážená populační směrodatná odchylka `σ`.
 
+### Poznámky
+
+- je definována jako druhá odmocnina z `VAR.P.W`
+
 ## `STDEV.S.W`
 
-Vážená výběrová směrodatná odchylka.
+Počítá váženou výběrovou směrodatnou odchylku.
 
 ### Syntaxe
 
@@ -56,7 +76,6 @@ Vážená výběrová směrodatná odchylka.
 
 Skalární vážená výběrová směrodatná odchylka `sₓ`.
 
-### Společné Argumenty
+### Poznámky
 
-- `values`: číselná pozorování
-- `weights`: nezáporné váhy se stejnou délkou jako `values`
+- je definována jako druhá odmocnina z `VAR.S.W`

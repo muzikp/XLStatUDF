@@ -8,13 +8,13 @@ namespace XLStatUDF.Functions.Correlation
 
     public static class SpearmanCorrel
     {
-        [ExcelFunction(Name = "CORREL.SPEARMAN", Description = "[Korelace] Spearmanův korelační koeficient", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "CORREL.SPEARMAN", Description = "Spearmanův korelační koeficient", Category = FunctionCategories.Tests)]
         public static object[,] Run(
             [ExcelArgument(Name = "rozsah_x", Description = "První proměnná")] object xValues,
             [ExcelArgument(Name = "rozsah_y", Description = "Druhá proměnná")] object yValues,
             [ExcelArgument(Name = "smer", Description = "Směr testu: 0=two, 1=left, 2=right")] object? direction = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
             if (!TestHelper.TryParseDirection(direction, out var parsedDirection))
             {

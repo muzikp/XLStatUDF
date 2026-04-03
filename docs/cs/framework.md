@@ -9,7 +9,7 @@ XLStatUDF je Excel add-in se statistickými uživatelskými funkcemi napsanými 
 - cílový runtime: `.NET 8`
 - integrace s Excelem: `Excel-DNA`
 - numerická knihovna: `MathNet.Numerics`
-- výstup pro Excel: zabalený `.xll` doplněk pro 64bit Excel
+- výstup pro Excel: zabalený `.xll` doplněk pro 64bitový Excel
 
 ## Hlavní Build
 
@@ -19,12 +19,12 @@ Pro běžné použití v Excelu je určený jediný soubor:
 
 ## Poznámky K Použití
 
-- funkce jsou v kategorii `XLStatUDF`
+- funkce jsou rozdělené do kategorií `Obecné`, `Popisné` a `Testy`
 - nápověda argumentů při psaní je zajištěna přes `ExcelDna.IntelliSense`
 - většina funkcí ignoruje prázdné buňky v numerických vstupech
-- relevantní funkce podporují poslední volitelný argument `ma_zahlavi`
+- relevantní funkce podporují poslední volitelný argument `ma_záhlaví`
 
-## Režim `ma_zahlavi`
+## Režim `ma_záhlaví`
 
 | Kód | Význam |
 | --- | --- |

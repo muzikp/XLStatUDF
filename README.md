@@ -1,6 +1,6 @@
 # XLStatUDF
 
-Excel-DNA add-in se sadou statistických UDF funkcí pro Excel.
+Excel-DNA doplněk se sadou statistických uživatelských funkcí pro Microsoft Excel.
 
 ## Aktuální stav
 
@@ -20,6 +20,7 @@ Implementované a otestované funkce:
 - `STDEV.S.W`
 - `VARCOEF`
 - `VARCOEF.S`
+- `VARCOEF.W`
 - `VARCOEF.S.W`
 - `PERCENTILE.INC.IFS`
 - `PERCENTILE.EXC.IFS`
@@ -28,13 +29,17 @@ Implementované a otestované funkce:
 - `T.TEST.1S`
 - `PROP.TEST.1S`
 - `CORREL.SPEARMAN`
+- `CORREL.MATRIX`
 - `WELCH.TEST.2S.G`
+- `MANN.WHITNEY.G`
+- `WILCOXON.PAIRED`
 - `CHISQ.GOF`
+- `CONTINGENCY.T`
+- `CONTINGENCY.G`
 - `ANOVA.G`
 - `ANOVA.RM`
 - `ANCOVA.G`
-- `CONTINGENCY.T`
-- `CONTINGENCY.G`
+- `PIVOT.*`
 
 ## Build
 
@@ -42,15 +47,18 @@ Implementované a otestované funkce:
 .\build.ps1
 ```
 
-Jediný hlavní build pro Excel je vždy:
+Hlavní build pro testování v Excelu:
 
 `artifacts\main\publish\XLStatUDF-AddIn64-packed.xll`
 
-Stejný soubor se po buildu kopíruje i do:
-
-`installer\XLStatUDF-packed.xll`
-
-Instalátory se po buildu generují sem:
+Po buildu se generují také oba instalační soubory:
 
 - `artifacts\installer\XLStatUDF_CS_Setup.exe`
 - `artifacts\installer\XLStatUDF_EN_Setup.exe`
+
+## Dokumentace
+
+Dokumentace je rozdělená podle jazyka:
+
+- česká: [`docs/cs/README.md`](/c:/Users/pavel/Documents/github/XLStatUDF/docs/cs/README.md)
+- anglická: [`docs/en/README.md`](/c:/Users/pavel/Documents/github/XLStatUDF/docs/en/README.md)

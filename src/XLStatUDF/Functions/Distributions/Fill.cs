@@ -12,24 +12,24 @@ namespace XLStatUDF.Functions.Distributions
 
         [ExcelFunction(
             Name = "FILL",
-            Description = "[Rozdělení] Zkopíruje jednu nebo více hodnot nebo vzorců do spill sloupce",
-            Category = "XLStatUDF",
+            Description = "Zkopíruje jednu nebo více hodnot nebo vzorců do spill sloupce",
+            Category = FunctionCategories.General,
             IsVolatile = true)]
         public static object FillDown(
             [ExcelArgument(Name = "co", Description = "Hodnota nebo textovy vzorec zacinatejici =")] object what,
-            [ExcelArgument(Name = "pocet", Description = "Pocet opakovani; cele cislo >= 1")] object count,
-            [ExcelArgument(Name = "dalsi_pary", Description = "Volitelne dalsi dvojice co+pocet")] params object[] morePairs)
+            [ExcelArgument(Name = "počet", Description = "Počet opakování; celé číslo >= 1")] object count,
+            [ExcelArgument(Name = "dalsi_pary", Description = "Volitelně dalsi dvojice co+počet")] params object[] morePairs)
             => BuildFillResult(what, count, morePairs, shuffle: false);
 
         [ExcelFunction(
             Name = "FILL.RANDOM",
-            Description = "[Rozdělení] Zkopíruje jednu nebo vice hodnot nebo vzorcu do spill sloupce a nahodne je promicha",
-            Category = "XLStatUDF",
+            Description = "Zkopíruje jednu nebo více hodnot nebo vzorců do spill sloupce a náhodně je promíchá",
+            Category = FunctionCategories.General,
             IsVolatile = true)]
         public static object FillDownRandom(
             [ExcelArgument(Name = "co", Description = "Hodnota nebo textovy vzorec zacinatejici =")] object what,
-            [ExcelArgument(Name = "pocet", Description = "Pocet opakovani; cele cislo >= 1")] object count,
-            [ExcelArgument(Name = "dalsi_pary", Description = "Volitelne dalsi dvojice co+pocet")] params object[] morePairs)
+            [ExcelArgument(Name = "počet", Description = "Počet opakování; celé číslo >= 1")] object count,
+            [ExcelArgument(Name = "dalsi_pary", Description = "Volitelně dalsi dvojice co+počet")] params object[] morePairs)
             => BuildFillResult(what, count, morePairs, shuffle: true);
 
         private static object BuildFillResult(

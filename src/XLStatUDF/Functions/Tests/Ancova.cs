@@ -12,14 +12,14 @@ namespace XLStatUDF.Functions.Tests
 
     public static class Ancova
     {
-        [ExcelFunction(Name = "ANCOVA.G", Description = "[Testy] ANCOVA nad groupovanými daty", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "ANCOVA.G", Description = "ANCOVA nad groupovanými daty", Category = FunctionCategories.Tests)]
         public static object[,] Run(
             [ExcelArgument(Name = "faktor", Description = "Kategorie faktoru")] object groups,
             [ExcelArgument(Name = "zavisla_promenna", Description = "Závislá proměnná")] object values,
             [ExcelArgument(Name = "kovariaty", Description = "Jedna nebo více kovariát ve sloupcích")] object covariates,
-            [ExcelArgument(Name = "post_hoc", Description = "Volitelne: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null,
+            [ExcelArgument(Name = "post_hoc", Description = "Volitelně: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
             if (!TestHelper.IsValidAlpha(alpha))
             {

@@ -1,5 +1,5 @@
 /// <summary>
-/// Implementuje analyzu kontingencnich tabulek jak z hotove tabulky, tak z groupovanych dat.
+/// Implementuje analýzu kontingenčních tabulek jak z hotové tabulky, tak z groupovaných dat.
 /// </summary>
 namespace XLStatUDF.Functions.Tests
 {
@@ -10,10 +10,10 @@ namespace XLStatUDF.Functions.Tests
 
     public static class Contingency
     {
-        [ExcelFunction(Name = "CONTINGENCY.T", Description = "[Testy] Analýza kontingenční tabulky zadané přímo jako matice", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "CONTINGENCY.T", Description = "Analýza kontingenční tabulky zadané přímo jako matice", Category = FunctionCategories.Tests)]
         public static object[,] RunTable(
             [ExcelArgument(Name = "tabulka", Description = "Kontingenční tabulka; volitelně i s horním řádkem a levým sloupcem popisků")] object table,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=horni radek i levy sloupec jsou popisky, 2=bez popisku")] object? hasHeader = null,
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=horni radek i levy sloupec jsou popisky, 2=bez popisku")] object? hasHeader = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05)
         {
             if (!TestHelper.IsValidAlpha(alpha))
@@ -34,13 +34,13 @@ namespace XLStatUDF.Functions.Tests
             return BuildReport(observed, rowLabels, columnLabels, alpha);
         }
 
-        [ExcelFunction(Name = "CONTINGENCY.G", Description = "[Testy] Analýza kontingenční tabulky z groupovaných sloupců", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "CONTINGENCY.G", Description = "Analýza kontingenční tabulky z groupovaných sloupců", Category = FunctionCategories.Tests)]
         public static object[,] RunGrouped(
             [ExcelArgument(Name = "sloupce", Description = "Kategorie sloupců")] object columnCategories,
-            [ExcelArgument(Name = "radky", Description = "Kategorie řádků")] object rowCategories,
-            [ExcelArgument(Name = "pocet", Description = "Volitelne: cetnosti dvojic; kdyz chybi, kazdy zaznam ma vahu 1")] object? counts = null,
+            [ExcelArgument(Name = "řádky", Description = "Kategorie řádků")] object rowCategories,
+            [ExcelArgument(Name = "počet", Description = "Volitelně: cetnosti dvojic; kdyz chybi, kazdy zaznam ma vahu 1")] object? counts = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
             if (!TestHelper.IsValidAlpha(alpha))
             {

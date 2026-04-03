@@ -10,13 +10,13 @@ namespace XLStatUDF.Functions.Tests
 
     public static class ChisqGof
     {
-        [ExcelFunction(Name = "CHISQ.GOF", Description = "[Testy] Chí-kvadrát test dobré shody", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "CHISQ.GOF", Description = "Chí-kvadrát test dobré shody", Category = FunctionCategories.Tests)]
         public static object[,] Run(
             [ExcelArgument(Name = "pozorované", Description = "Pozorované četnosti kategorií")] object observed,
             [ExcelArgument(Name = "očekávané", Description = "Očekávané četnosti nebo pravděpodobnosti")] object expected,
             [ExcelArgument(Name = "kategorie", Description = "Volitelné názvy kategorií")] object? categories = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
             if (!TestHelper.IsValidAlpha(alpha))
             {

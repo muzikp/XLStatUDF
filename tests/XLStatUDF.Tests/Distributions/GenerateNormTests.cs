@@ -9,25 +9,26 @@ namespace XLStatUDF.Tests.Distributions
     public sealed class GenerateNormTests
     {
         [Fact]
-        public void ReturnsSingleColumnSpillWithRequestedCount()
+        public void ReturnsSingleScalarValue()
         {
-            var result = GenerateNorm.GenerateNormalSample(10.0, 2.0, 5.0);
-
-            var matrix = Assert.IsType<object[,]>(result);
-            Assert.Equal(5, matrix.GetLength(0));
-            Assert.Equal(1, matrix.GetLength(1));
-
-            for (var i = 0; i < 5; i++)
-            {
-                Assert.IsType<double>(matrix[i, 0]);
-            }
+            var result = GenerateNorm.GenerateNormalSample(10.0, 2.0);
+            Assert.IsType<double>(result);
         }
 
         [Fact]
-        public void RejectsInvalidCount()
+        public void RejectsNonPositiveStandardDeviation()
         {
-            var result = GenerateNorm.GenerateNormalSample(10.0, 2.0, 0.0);
+            var result = GenerateNorm.GenerateNormalSample(10.0, 0.0);
             Assert.Equal(ExcelDna.Integration.ExcelError.ExcelErrorNum, result);
+        }
+
+        [Theory]
+        [InlineData(-0.1)]
+        [InlineData(1.1)]
+        public void RejectsInvalidOutlierRate(double outlierRate)
+        {
+            var result = GenerateNorm.GenerateNormalSample(10.0, 2.0, outlierRate);
+            Assert.Equal(ExcelDna.Integration.ExcelError.ExcelErrorValue, result);
         }
     }
 }

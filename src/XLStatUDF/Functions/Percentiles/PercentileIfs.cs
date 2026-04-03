@@ -8,7 +8,7 @@ namespace XLStatUDF.Functions.Percentiles
 
     public static class PercentileIfs
     {
-        [ExcelFunction(Name = "PERCENTILE.INC.IFS", Description = "[Percentily] Percentil s filtrováním (INC)", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "PERCENTILE.INC.IFS", Description = "Percentil s filtrováním (INC)", Category = FunctionCategories.Descriptive)]
         public static object PercentileIncIfs(
             [ExcelArgument(Name = "hodnoty", Description = "Zdrojová data")] object values,
             [ExcelArgument(Name = "kvantil", Description = "Požadovaný kvantil z intervalu <0;1>")] double quantile,
@@ -28,7 +28,7 @@ namespace XLStatUDF.Functions.Percentiles
             return ComputeInclusivePercentile(filteredValues, quantile);
         }
 
-        [ExcelFunction(Name = "PERCENTILE.EXC.IFS", Description = "[Percentily] Percentil s filtrováním (EXC)", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "PERCENTILE.EXC.IFS", Description = "Percentil s filtrováním (EXC)", Category = FunctionCategories.Descriptive)]
         public static object PercentileExcIfs(
             [ExcelArgument(Name = "hodnoty", Description = "Zdrojová data")] object values,
             [ExcelArgument(Name = "kvantil", Description = "Požadovaný kvantil z intervalu (0;1)")] double quantile,

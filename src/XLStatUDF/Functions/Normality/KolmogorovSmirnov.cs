@@ -9,11 +9,11 @@ namespace XLStatUDF.Functions.Normality
 
     public static class KolmogorovSmirnov
     {
-        [ExcelFunction(Name = "KOLMOGOROV.SMIRNOV", Description = "[Normalita] Kolmogorov-Smirnovův test dobré shody", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "KOLMOGOROV.SMIRNOV", Description = "Kolmogorov-Smirnovův test dobré shody", Category = FunctionCategories.Tests)]
         public static object[,] Run(
             [ExcelArgument(Name = "rozsah_hodnot", Description = "Číselná data; prázdné buňky jsou ignorovány")] object values,
-            [ExcelArgument(Name = "typ_rozdeleni", Description = "Volitelne: 0=normal (normalni), 1=lognormal, 2=exponential, 3=uniform, 4=weibull")] object? distribution = null,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "typ_rozdělení", Description = "Volitelně: 0=normal (normální), 1=lognormal, 2=exponential, 3=uniform, 4=weibull")] object? distribution = null,
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
             if (!ArgumentHelper.TryParseHeaderMode(hasHeader, out var parsedHeaderMode))
             {

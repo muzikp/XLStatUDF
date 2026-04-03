@@ -1,5 +1,5 @@
 /// <summary>
-/// Generuje spill sloupec náhodných celých čísel ze zadaného uzavřeného intervalu.
+/// Generuje jedno náhodné celé číslo s volitelnou perturbací.
 /// </summary>
 namespace XLStatUDF.Functions.Distributions
 {
@@ -13,26 +13,17 @@ namespace XLStatUDF.Functions.Distributions
 
         [ExcelFunction(
             Name = "GENERATE.INT",
-            Description = "[Rozdělení] Vygeneruje náhodná celá čísla do spill sloupce",
-            Category = "XLStatUDF",
+            Description = "Vygeneruje jedno náhodné celé číslo s volitelným šumem",
+            Category = FunctionCategories.General,
             IsVolatile = true)]
         public static object GenerateIntegerSample(
-            [ExcelArgument(Name = "pocet", Description = "Volitelne: pocet generovanych hodnot; cele cislo >= 1; vychozi 1")] object? count = null,
-            [ExcelArgument(Name = "minimum", Description = "Volitelne: dolni mez intervalu; vychozi prakticky strop int.MinValue")] object? minimum = null,
-            [ExcelArgument(Name = "maximum", Description = "Volitelne: horni mez intervalu; vychozi prakticky strop int.MaxValue")] object? maximum = null)
+            [ExcelArgument(Name = "minimum", Description = "Volitelně: dolní mez intervalu; výchozí int.MinValue")] object? minimum = null,
+            [ExcelArgument(Name = "maximum", Description = "Volitelně: horní mez intervalu; výchozí int.MaxValue")] object? maximum = null,
+            [ExcelArgument(Name = "outlier_rate", Description = "Volitelně: pravděpodobnost dodatečné náhodné perturbace v intervalu <0;1>; výchozí 0")] object? outlierRate = null)
         {
-            if (!TryGetOptionalInteger(count, 1, out var sampleCount))
-            {
-                return ExcelErrors.Value;
-            }
-
-            if (sampleCount < 1)
-            {
-                return ExcelErrors.Num;
-            }
-
             if (!TryGetOptionalInteger(minimum, DefaultMinimum, out var minValue)
-                || !TryGetOptionalInteger(maximum, DefaultMaximum, out var maxValue))
+                || !TryGetOptionalInteger(maximum, DefaultMaximum, out var maxValue)
+                || !TryGetOptionalProbability(outlierRate, 0.0, out var rate))
             {
                 return ExcelErrors.Value;
             }
@@ -42,13 +33,15 @@ namespace XLStatUDF.Functions.Distributions
                 return ExcelErrors.Num;
             }
 
-            var result = new object[sampleCount, 1];
-            for (var i = 0; i < sampleCount; i++)
+            var value = Random.Shared.NextInt64(minValue, (long)maxValue + 1);
+            if (rate > 0.0 && Random.Shared.NextDouble() < rate)
             {
-                result[i, 0] = Random.Shared.NextInt64(minValue, (long)maxValue + 1);
+                var width = Math.Max(1L, (long)maxValue - minValue);
+                var offset = Random.Shared.NextInt64(-width, width + 1);
+                value = Math.Clamp(value + offset, int.MinValue, int.MaxValue);
             }
 
-            return result;
+            return value;
         }
 
         private static bool TryGetOptionalInteger(object? input, int defaultValue, out int result)
@@ -75,6 +68,22 @@ namespace XLStatUDF.Functions.Distributions
 
             result = (int)Math.Round(parsed);
             return true;
+        }
+
+        private static bool TryGetOptionalProbability(object? input, double defaultValue, out double result)
+        {
+            if (input is null or ExcelMissing or ExcelEmpty)
+            {
+                result = defaultValue;
+                return true;
+            }
+
+            if (!DataHelper.TryGetDouble(input, out result))
+            {
+                return false;
+            }
+
+            return result >= 0.0 && result <= 1.0;
         }
     }
 }

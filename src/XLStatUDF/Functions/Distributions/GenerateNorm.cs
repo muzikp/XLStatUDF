@@ -1,5 +1,5 @@
 /// <summary>
-/// Generuje spill sloupec náhodných hodnot z normálního rozdělení se zadaným průměrem a směrodatnou odchylkou.
+/// Generuje jednu náhodnou hodnotu z normálního rozdělení s volitelnou perturbací.
 /// </summary>
 namespace XLStatUDF.Functions.Distributions
 {
@@ -11,44 +11,49 @@ namespace XLStatUDF.Functions.Distributions
     {
         [ExcelFunction(
             Name = "GENERATE.NORM",
-            Description = "[Rozdělení] Vygeneruje náhodná čísla z normálního rozdělení do spill sloupce",
-            Category = "XLStatUDF",
+            Description = "Vygeneruje jednu náhodnou hodnotu z normálního rozdělení s volitelným šumem",
+            Category = FunctionCategories.General,
             IsVolatile = true)]
         public static object GenerateNormalSample(
-            [ExcelArgument(Name = "x", Description = "Požadovaný průměr normálního rozdělení")] object mean,
-            [ExcelArgument(Name = "stdev", Description = "Směrodatná odchylka; musí být kladná")] object standardDeviation,
-            [ExcelArgument(Name = "count", Description = "Počet generovaných hodnot; celé číslo >= 1")] object count)
+            [ExcelArgument(Name = "stredni_hodnota", Description = "Střední hodnota normálního rozdělení")] object mean,
+            [ExcelArgument(Name = "směrodatná_odchylka", Description = "Kladná směrodatná odchylka")] object standardDeviation,
+            [ExcelArgument(Name = "outlier_rate", Description = "Volitelně: pravděpodobnost dodatečné náhodné perturbace v intervalu <0;1>; výchozí 0")] object? outlierRate = null)
         {
             if (!DataHelper.TryGetDouble(mean, out var mu)
                 || !DataHelper.TryGetDouble(standardDeviation, out var sigma)
-                || !DataHelper.TryGetDouble(count, out var sampleCountDouble))
+                || !TryGetOptionalProbability(outlierRate, 0.0, out var rate))
             {
                 return ExcelErrors.Value;
             }
 
-            if (sigma <= 0)
+            if (sigma <= 0.0)
             {
                 return ExcelErrors.Num;
             }
 
-            if (Math.Abs(sampleCountDouble - Math.Round(sampleCountDouble)) > 1e-9)
+            var value = Normal.Sample(Random.Shared, mu, sigma);
+            if (rate > 0.0 && Random.Shared.NextDouble() < rate)
             {
-                return ExcelErrors.Num;
+                value += Normal.Sample(Random.Shared, 0.0, sigma * 3.0);
             }
 
-            var sampleCount = (int)Math.Round(sampleCountDouble);
-            if (sampleCount < 1)
+            return value;
+        }
+
+        private static bool TryGetOptionalProbability(object? input, double defaultValue, out double result)
+        {
+            if (input is null or ExcelMissing or ExcelEmpty)
             {
-                return ExcelErrors.Num;
+                result = defaultValue;
+                return true;
             }
 
-            var result = new object[sampleCount, 1];
-            for (var i = 0; i < sampleCount; i++)
+            if (!DataHelper.TryGetDouble(input, out result))
             {
-                result[i, 0] = Normal.Sample(Random.Shared, mu, sigma);
+                return false;
             }
 
-            return result;
+            return result >= 0.0 && result <= 1.0;
         }
     }
 }

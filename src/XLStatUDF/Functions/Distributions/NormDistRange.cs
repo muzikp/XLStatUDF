@@ -11,11 +11,11 @@ namespace XLStatUDF.Functions.Distributions
     {
         [ExcelFunction(
             Name = "NORM.DIST.RANGE",
-            Description = "[Rozdělení] Pravděpodobnost intervalu normálního rozdělení",
-            Category = "XLStatUDF")]
+            Description = "Pravděpodobnost intervalu normálního rozdělení",
+            Category = FunctionCategories.Tests)]
         public static object NormalDistributionRange(
             [ExcelArgument(Name = "střední_hodnota", Description = "Střední hodnota normálního rozdělení")] object mean,
-            [ExcelArgument(Name = "smerodatna_odchylka", Description = "Směrodatná odchylka; musí být kladná")] object standardDeviation,
+            [ExcelArgument(Name = "směrodatná_odchylka", Description = "Směrodatná odchylka; musí být kladná")] object standardDeviation,
             [ExcelArgument(Name = "dolní_hranice", Description = "Dolní mez intervalu; prázdná buňka znamená minus nekonečno")] object lowerBound,
             [ExcelArgument(Name = "horní_hranice", Description = "Horní mez intervalu; prázdná buňka znamená plus nekonečno")] object upperBound)
         {

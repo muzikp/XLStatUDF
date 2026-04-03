@@ -19,7 +19,7 @@ The only build file intended for regular Excel testing is:
 
 ## Header Mode
 
-Relevant functions support an optional final argument `ma_zahlavi`:
+Relevant functions support an optional final argument `ma_záhlaví`:
 
 | Code | Meaning |
 | --- | --- |

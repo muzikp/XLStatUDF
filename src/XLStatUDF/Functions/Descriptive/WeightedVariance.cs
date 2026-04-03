@@ -8,19 +8,19 @@ namespace XLStatUDF.Functions.Descriptive
 
     public static class WeightedVariance
     {
-        [ExcelFunction(Name = "VAR.P.W", Description = "[Vážené] Vážený populační rozptyl", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "VAR.P.W", Description = "Vážený populační rozptyl", Category = FunctionCategories.Descriptive)]
         public static object VarPW(
             [ExcelArgument(Name = "hodnoty", Description = "Pozorování")] object values,
             [ExcelArgument(Name = "váhy", Description = "Nezáporné váhy")] object weights)
             => TryComputeWeightedVariance(values, weights, sample: false, out var result) ? result : result;
 
-        [ExcelFunction(Name = "VAR.S.W", Description = "[Vážené] Vážený výběrový rozptyl", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "VAR.S.W", Description = "Vážený výběrový rozptyl", Category = FunctionCategories.Descriptive)]
         public static object VarSW(
             [ExcelArgument(Name = "hodnoty", Description = "Pozorování")] object values,
             [ExcelArgument(Name = "váhy", Description = "Nezáporné váhy")] object weights)
             => TryComputeWeightedVariance(values, weights, sample: true, out var result) ? result : result;
 
-        [ExcelFunction(Name = "STDEV.P.W", Description = "[Vážené] Vážená populační směrodatná odchylka", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "STDEV.P.W", Description = "Vážená populační směrodatná odchylka", Category = FunctionCategories.Descriptive)]
         public static object StdevPW(
             [ExcelArgument(Name = "hodnoty", Description = "Pozorování")] object values,
             [ExcelArgument(Name = "váhy", Description = "Nezáporné váhy")] object weights)
@@ -33,7 +33,7 @@ namespace XLStatUDF.Functions.Descriptive
             return Math.Sqrt((double)variance);
         }
 
-        [ExcelFunction(Name = "STDEV.S.W", Description = "[Vážené] Vážená výběrová směrodatná odchylka", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "STDEV.S.W", Description = "Vážená výběrová směrodatná odchylka", Category = FunctionCategories.Descriptive)]
         public static object StdevSW(
             [ExcelArgument(Name = "hodnoty", Description = "Pozorování")] object values,
             [ExcelArgument(Name = "váhy", Description = "Nezáporné váhy")] object weights)

@@ -8,13 +8,13 @@ namespace XLStatUDF.Functions.Tests
 
     public static class PropTest1S
     {
-        [ExcelFunction(Name = "PROP.TEST.1S", Description = "[Testy] Jednovýběrový test podílu", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "PROP.TEST.1S", Description = "Jednovýběrový test podílu", Category = FunctionCategories.Tests)]
         public static object[,] Run(
             [ExcelArgument(Name = "hodnoty", Description = "Binární data 0/1 nebo TRUE/FALSE")] object values,
             [ExcelArgument(Name = "pi_0", Description = "Hypotetický populační podíl")] double pi0,
             [ExcelArgument(Name = "smer", Description = "Směr testu: 0=two, 1=left, 2=right")] object? direction = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
             if (!TestHelper.TryParseDirection(direction, out var parsedDirection))
             {

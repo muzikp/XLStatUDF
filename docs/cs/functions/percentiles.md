@@ -2,7 +2,7 @@
 
 ## `PERCENTILE.INC.IFS`
 
-Inkluzivní percentil s volitelným filtrováním ve stylu `SUMIFS`.
+Počítá inkluzivní percentil s filtrováním ve stylu `SUMIFS`.
 
 ### Syntaxe
 
@@ -17,6 +17,12 @@ Inkluzivní percentil s volitelným filtrováním ve stylu `SUMIFS`.
 - `criteria_range_n`: rozsah, podle kterého se filtruje
 - `criteria_n`: přesná shoda, relační výraz nebo wildcard výraz
 
+### Poznámky
+
+- počet argumentů filtru musí být sudý po dvojicích `rozsah + kritérium`
+- pokud po filtrování nezůstane žádná hodnota, funkce vrátí `#N/A`
+- percentil se počítá inkluzivní metodou stejně jako `PERCENTILE.INC`
+
 ### Výstup
 
 Skalární percentil.
@@ -29,7 +35,7 @@ Skalární percentil.
 
 ## `PERCENTILE.EXC.IFS`
 
-Exkluzivní percentil s volitelným filtrováním ve stylu `SUMIFS`.
+Počítá exkluzivní percentil s filtrováním ve stylu `SUMIFS`.
 
 ### Syntaxe
 
@@ -40,6 +46,12 @@ Exkluzivní percentil s volitelným filtrováním ve stylu `SUMIFS`.
 ### Argumenty
 
 Stejné jako u `PERCENTILE.INC.IFS`, ale `quantile` musí být přísně mezi `0` a `1`.
+
+### Poznámky
+
+- počet argumentů filtru musí být sudý po dvojicích `rozsah + kritérium`
+- pokud po filtrování nezůstane žádná hodnota, funkce vrátí `#N/A`
+- pokud je pro zadaný kvantil exkluzivní percentil mimo definiční obor vzorce, funkce vrátí numerickou chybu
 
 ### Výstup
 

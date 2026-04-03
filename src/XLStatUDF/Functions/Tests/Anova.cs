@@ -9,13 +9,13 @@ namespace XLStatUDF.Functions.Tests
 
     public static class Anova
     {
-        [ExcelFunction(Name = "ANOVA.G", Description = "[Testy] Jednofaktorová analýza rozptylu nad groupovanými daty", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "ANOVA.G", Description = "Jednofaktorová analýza rozptylu nad groupovanými daty", Category = FunctionCategories.Tests)]
         public static object[,] Run(
             [ExcelArgument(Name = "kategorie", Description = "Štítky skupin")] object categories,
             [ExcelArgument(Name = "hodnoty", Description = "Číselná pozorování")] object values,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null,
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null,
             [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "post_hoc", Description = "Volitelne: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null)
+            [ExcelArgument(Name = "post_hoc", Description = "Volitelně: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null)
             => RunInternal(categories, values, postHoc, alpha, hasHeader);
 
         private static object[,] RunInternal(

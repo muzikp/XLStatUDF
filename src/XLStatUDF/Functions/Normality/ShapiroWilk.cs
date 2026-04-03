@@ -9,10 +9,10 @@ namespace XLStatUDF.Functions.Normality
 
     public static class ShapiroWilk
     {
-        [ExcelFunction(Name = "SHAPIRO.WILK", Description = "[Normalita] Shapiro-Wilkův test", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "SHAPIRO.WILK", Description = "Shapiro-Wilkův test", Category = FunctionCategories.Tests)]
         public static object[,] Run(
             [ExcelArgument(Name = "rozsah_hodnot", Description = "Číselná data; prázdné buňky jsou ignorovány")] object values,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null)
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
             if (!ArgumentHelper.TryParseHeaderMode(hasHeader, out var parsedHeaderMode))
             {

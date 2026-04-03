@@ -2,7 +2,7 @@
 
 ## `AVERAGE.W`
 
-Vážený aritmetický průměr.
+Počítá vážený aritmetický průměr.
 
 ### Syntaxe
 
@@ -15,9 +15,15 @@ Vážený aritmetický průměr.
 - `values`: číselná pozorování
 - `weights`: nezáporné váhy; prázdné buňky vah se berou jako `0`
 
+### Poznámky
+
+- rozsahy `values` a `weights` musí mít stejnou délku
+- prázdné buňky ve `values` se přeskočí; odpovídající váha se tím také vynechá
+- pokud jsou všechny váhy nulové nebo některá váha záporná, funkce vrátí numerickou chybu
+
 ### Výstup
 
-Skalární vážený průměr.
+Skalární vážený aritmetický průměr.
 
 ### Příklad
 
@@ -27,7 +33,7 @@ Skalární vážený průměr.
 
 ## `HARMEAN.W`
 
-Vážený harmonický průměr.
+Počítá vážený harmonický průměr.
 
 ### Syntaxe
 
@@ -38,7 +44,13 @@ Vážený harmonický průměr.
 ### Argumenty
 
 - `values`: kladná číselná pozorování
-- `weights`: nezáporné váhy
+- `weights`: nezáporné váhy; prázdné buňky vah se berou jako `0`
+
+### Poznámky
+
+- rozsahy `values` a `weights` musí mít stejnou délku
+- hodnoty s nulovou vahou do výsledku nevstupují
+- pokud má některá hodnota s kladnou vahou hodnotu `<= 0`, funkce vrátí numerickou chybu
 
 ### Výstup
 
@@ -46,7 +58,7 @@ Skalární vážený harmonický průměr.
 
 ## `GEOMEAN.W`
 
-Vážený geometrický průměr.
+Počítá vážený geometrický průměr.
 
 ### Syntaxe
 
@@ -57,7 +69,13 @@ Vážený geometrický průměr.
 ### Argumenty
 
 - `values`: kladná číselná pozorování
-- `weights`: nezáporné váhy
+- `weights`: nezáporné váhy; prázdné buňky vah se berou jako `0`
+
+### Poznámky
+
+- rozsahy `values` a `weights` musí mít stejnou délku
+- hodnoty s nulovou vahou do výsledku nevstupují
+- pokud má některá hodnota s kladnou vahou hodnotu `<= 0`, funkce vrátí numerickou chybu
 
 ### Výstup
 

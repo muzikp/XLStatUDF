@@ -9,12 +9,12 @@ namespace XLStatUDF.Functions.Tests
 
     public static class AnovaRepeatedMeasures
     {
-        [ExcelFunction(Name = "ANOVA.RM", Description = "[Testy] Jednofaktorova ANOVA s opakovanym merenim nad sloupci", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "ANOVA.RM", Description = "Jednofaktorová ANOVA s opakovaným měřením nad sloupci", Category = FunctionCategories.Tests)]
         public static object[,] Run(
-            [ExcelArgument(Name = "hodnoty", Description = "Matice hodnot: radky=subjekty, sloupce=podminky")] object values,
-            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelne: 0=autodetect, 1=ma zahlavi, 2=nema zahlavi")] object? hasHeader = null,
-            [ExcelArgument(Name = "alpha", Description = "Hladina vyznamnosti")] double alpha = 0.05,
-            [ExcelArgument(Name = "post_hoc", Description = "Volitelne: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null)
+            [ExcelArgument(Name = "hodnoty", Description = "Matice hodnot: řádky=subjekty, sloupce=podmínky")] object values,
+            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null,
+            [ExcelArgument(Name = "alpha", Description = "Hladina významnosti")] double alpha = 0.05,
+            [ExcelArgument(Name = "post_hoc", Description = "Volitelně: 0=none, 1=tukey, 2=bonferroni, 3=scheffe, 4=games-howell")] object? postHoc = null)
         {
             if (!TestHelper.IsValidAlpha(alpha))
             {
@@ -115,7 +115,7 @@ namespace XLStatUDF.Functions.Tests
                     _ => $"POST-HOC: {parsedPostHoc.ToUpperInvariant()}"
                 };
                 SpillBuilder.AddHeader(rows, title, 5);
-                rows.Add(["Podminka A", "Podminka B", "Δ prumeru (A-B)", "p", "Sig."]);
+                rows.Add(["Podminka A", "Podminka B", "Δ průměru (A-B)", "p", "Sig."]);
 
                 foreach (var comparison in BuildPostHocComparisons(conditionNames, matrix, parsedPostHoc, alpha))
                 {

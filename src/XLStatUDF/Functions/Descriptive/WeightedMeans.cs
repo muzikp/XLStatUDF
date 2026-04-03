@@ -8,7 +8,7 @@ namespace XLStatUDF.Functions.Descriptive
 
     public static class WeightedMeans
     {
-        [ExcelFunction(Name = "AVERAGE.W", Description = "[Vážené] Vážený aritmetický průměr", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "AVERAGE.W", Description = "Vážený aritmetický průměr", Category = FunctionCategories.Descriptive)]
         public static object AverageW(
             [ExcelArgument(Name = "hodnoty", Description = "Pozorování")] object values,
             [ExcelArgument(Name = "váhy", Description = "Váhy; prázdné buňky jsou brány jako 0")] object weights)
@@ -28,7 +28,7 @@ namespace XLStatUDF.Functions.Descriptive
             return WeightedSum(parsedValues, parsedWeights) / sumWeights;
         }
 
-        [ExcelFunction(Name = "HARMEAN.W", Description = "[Vážené] Vážený harmonický průměr", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "HARMEAN.W", Description = "Vážený harmonický průměr", Category = FunctionCategories.Descriptive)]
         public static object HarMeanW(
             [ExcelArgument(Name = "hodnoty", Description = "Kladná pozorování")] object values,
             [ExcelArgument(Name = "váhy", Description = "Váhy; prázdné buňky jsou brány jako 0")] object weights)
@@ -54,7 +54,7 @@ namespace XLStatUDF.Functions.Descriptive
             return sumWeights / denominator;
         }
 
-        [ExcelFunction(Name = "GEOMEAN.W", Description = "[Vážené] Vážený geometrický průměr", Category = "XLStatUDF")]
+        [ExcelFunction(Name = "GEOMEAN.W", Description = "Vážený geometrický průměr", Category = FunctionCategories.Descriptive)]
         public static object GeoMeanW(
             [ExcelArgument(Name = "hodnoty", Description = "Kladná pozorování")] object values,
             [ExcelArgument(Name = "váhy", Description = "Váhy; prázdné buňky jsou brány jako 0")] object weights)
