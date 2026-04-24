@@ -30,7 +30,7 @@ Provádí jednofaktorovou analýzu rozptylu nad groupovanými daty.
 
 ### Poznámky
 
-- funkce vyžaduje alespoň dvě skupiny
+- funkce vyžaduje alespoň tři skupiny
 - v každé skupině musí být alespoň dvě hodnoty
 - součástí výstupu je i Leveneho test homogenity rozptylů
 - některé post-hoc volby jsou v aktuální implementaci řešeny přes Bonferroni fallback; výstup to výslovně uvádí

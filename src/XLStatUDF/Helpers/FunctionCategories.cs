@@ -1,6 +1,3 @@
-/// <summary>
-/// Sdílí názvy kategorií UDF funkcí v Excelu.
-/// </summary>
 namespace XLStatUDF.Helpers
 {
     public static class FunctionCategories

@@ -59,15 +59,15 @@ Builds a correlation matrix for data with two or more columns.
 ### Syntax
 
 ```excel
-=CORREL.MATRIX([p_minimum]; data; [method]; [output]; [has_header])
+=CORREL.MATRIX(data; [method]; [output]; [p_minimum]; [has_header])
 ```
 
 ### Arguments
 
-- `p_minimum`: optional filter; only links with `p < p_minimum` are returned
 - `data`: input matrix; columns are variables
 - `method`: optional computation method code; default is `0`
 - `output`: optional output type code; default is `0`
+- `p_minimum`: optional filter; only links with `p < p_minimum` are returned
 - `has_header`: optional header mode code; default is `0`
 
 ### `method` Codes
@@ -100,11 +100,14 @@ Builds a correlation matrix for data with two or more columns.
 - the function requires at least two columns and at least three complete rows
 - incomplete rows are skipped as complete-case rows
 - if any column is constant, the function returns a numeric error
-- if `p_minimum` is supplied, non-matching links are left blank in the output
+- if `p_minimum` is supplied, non-matching links are left blank in the output, including diagonal cells
+- the add-in still accepts the legacy argument order `([p_minimum]; data; [method]; [output]; [has_header])` for backward compatibility
 
 ### Output
 
-The spill output returns a square matrix with variable names. For outputs `2` and `3`, each variable is represented by a block of rows:
+For outputs `0`, `1`, and `4`, the spill output returns a square matrix with variable names.
+
+For outputs `2` and `3`, the spill output returns a stacked layout with two leading label columns and one row block per variable:
 
 - coefficient
 - `p`
@@ -115,7 +118,7 @@ For output `4`, each cell contains text in a form such as `0.30156***`.
 ### Examples
 
 ```excel
-=CORREL.MATRIX(;B1:E30)
-=CORREL.MATRIX(;B1:E30;1;0;1)
-=CORREL.MATRIX(0,05;B1:E30;0;4;1)
+=CORREL.MATRIX(B1:E30)
+=CORREL.MATRIX(B1:E30;1;0;;1)
+=CORREL.MATRIX(B1:E30;0;4;0,05;1)
 ```

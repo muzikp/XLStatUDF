@@ -12,7 +12,6 @@ namespace XLStatUDF.Tests.Correlation
         public void ReturnsPearsonCoefficientMatrixByDefault()
         {
             var result = CorrelMatrix.Run(
-                null,
                 new object[,]
                 {
                     { "A", "B", "C" },
@@ -21,6 +20,7 @@ namespace XLStatUDF.Tests.Correlation
                     { 3.0, 6.0, 9.0 },
                     { 4.0, 8.0, 12.0 }
                 },
+                null,
                 null,
                 null,
                 1.0);
@@ -36,7 +36,6 @@ namespace XLStatUDF.Tests.Correlation
         public void ReturnsPValuesWhenRequested()
         {
             var result = CorrelMatrix.Run(
-                null,
                 new object[,]
                 {
                     { 1.0, 1.0 },
@@ -46,6 +45,7 @@ namespace XLStatUDF.Tests.Correlation
                 },
                 0.0,
                 1.0,
+                null,
                 2.0);
 
             Assert.Equal("Proměnná 1", result[0, 1]);
@@ -56,7 +56,6 @@ namespace XLStatUDF.Tests.Correlation
         public void ReturnsStackedSpearmanOutputWithSignificance()
         {
             var result = CorrelMatrix.Run(
-                null,
                 new object[,]
                 {
                     { "X", "Y" },
@@ -67,19 +66,50 @@ namespace XLStatUDF.Tests.Correlation
                 },
                 1.0,
                 3.0,
+                null,
                 1.0);
 
             Assert.Equal("X", result[1, 0]);
-            Assert.Equal("p (X)", result[2, 0]);
-            Assert.Equal("sig. (X)", result[3, 0]);
-            Assert.Equal("***", result[3, 2]);
+            Assert.Equal(string.Empty, result[2, 0]);
+            Assert.Equal(string.Empty, result[3, 0]);
+            Assert.Equal("r", result[1, 1]);
+            Assert.Equal("p", result[2, 1]);
+            Assert.Equal("sig.", result[3, 1]);
+            Assert.Equal("***", result[3, 3]);
+        }
+
+        [Fact]
+        public void ReturnsStackedOutputWithMetricColumn()
+        {
+            var result = CorrelMatrix.Run(
+                new object[,]
+                {
+                    { "X", "Y" },
+                    { 1.0, 10.0 },
+                    { 2.0, 20.0 },
+                    { 3.0, 30.0 },
+                    { 4.0, 40.0 }
+                },
+                0.0,
+                2.0,
+                null,
+                1.0);
+
+            Assert.Equal(string.Empty, result[0, 0]);
+            Assert.Equal(string.Empty, result[0, 1]);
+            Assert.Equal("X", result[0, 2]);
+            Assert.Equal("Y", result[0, 3]);
+            Assert.Equal("X", result[1, 0]);
+            Assert.Equal("r", result[1, 1]);
+            Assert.Equal("p", result[2, 1]);
+            Assert.Equal(1.0, (double)result[1, 3], 10);
+            Assert.Equal(0.0, (double)result[2, 3], 10);
         }
 
         [Fact]
         public void ReturnsCoefficientStringsWithSignificanceWhenRequested()
         {
             var result = CorrelMatrix.Run(
-                null,
                 new object[,]
                 {
                     { "X", "Y" },
@@ -90,6 +120,7 @@ namespace XLStatUDF.Tests.Correlation
                 },
                 0.0,
                 4.0,
+                null,
                 1.0);
 
             Assert.Equal("1***", result[1, 2]);
@@ -100,7 +131,6 @@ namespace XLStatUDF.Tests.Correlation
         public void FiltersOnlySignificantLinksWhenPMinimumIsSpecified()
         {
             var result = CorrelMatrix.Run(
-                0.05,
                 new object[,]
                 {
                     { "A", "B", "C" },
@@ -112,11 +142,32 @@ namespace XLStatUDF.Tests.Correlation
                 },
                 0.0,
                 4.0,
+                0.05,
                 1.0);
 
             Assert.Equal(string.Empty, result[1, 1]);
             Assert.Equal("1***", result[1, 2]);
             Assert.Equal(string.Empty, result[1, 3]);
+        }
+
+        [Fact]
+        public void SupportsLegacyArgumentOrderForBackwardCompatibility()
+        {
+            var result = CorrelMatrix.Run(
+                0.05,
+                new object[,]
+                {
+                    { "A", "B" },
+                    { 1.0, 1.0 },
+                    { 2.0, 2.0 },
+                    { 3.0, 3.0 },
+                    { 4.0, 4.0 }
+                },
+                0.0,
+                4.0,
+                1.0);
+
+            Assert.Equal("1***", result[1, 2]);
         }
     }
 }

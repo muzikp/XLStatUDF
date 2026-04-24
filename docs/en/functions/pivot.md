@@ -58,8 +58,11 @@ The `PIVOT.*` family builds a statistical pivot from row and column categories, 
 
 - `columns` may be blank; in that case a one-dimensional pivot is created with a single `Total` column block
 - row and column categories are sorted alphabetically in the output
+- the output always includes a `TOTAL` summary row and a `TOTAL` summary column
+- the bottom-right cell contains the overall aggregate for the selected metric across all data
 - the output no longer includes a dedicated metric-label row
 - rows for which every resulting value is blank are omitted from the output
+- columns for which every resulting value is blank are omitted from the output, except for the `TOTAL` summary column
 - `conf.t` and `conf.norm` return the half-width of the interval, not both bounds separately
 - with `direction = 0`, the critical value `1 - alpha/2` is used
 - with `direction = -1` or `1`, the critical value `1 - alpha` is used
@@ -71,6 +74,8 @@ Multi-row spill output in a pivot-like layout:
 - row category columns on the left
 - column category levels at the top
 - the last header row above numeric columns now only contains row-variable names
+- the last column is always the `TOTAL` summary column
+- the last row is always the `TOTAL` summary row
 
 ### Examples
 

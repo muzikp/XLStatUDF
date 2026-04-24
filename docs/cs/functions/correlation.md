@@ -59,15 +59,15 @@ Sestavuje korelační matici pro data se dvěma a více sloupci.
 ### Syntaxe
 
 ```excel
-=CORREL.MATRIX([p_minimum]; data; [metoda]; [vystup]; [ma_záhlaví])
+=CORREL.MATRIX(data; [metoda]; [vystup]; [p_minimum]; [ma_záhlaví])
 ```
 
 ### Argumenty
 
-- `p_minimum`: volitelný filtr; vrátí jen vazby s `p < p_minimum`
 - `data`: vstupní matice; sloupce jsou proměnné
 - `metoda`: volitelný kód výpočetní metody; výchozí hodnota je `0`
 - `vystup`: volitelný kód typu výstupu; výchozí hodnota je `0`
+- `p_minimum`: volitelný filtr; vrátí jen vazby s `p < p_minimum`
 - `ma_záhlaví`: volitelný kód režimu záhlaví; výchozí hodnota je `0`
 
 ### Kódy `metoda`
@@ -100,11 +100,14 @@ Sestavuje korelační matici pro data se dvěma a více sloupci.
 - funkce vyžaduje alespoň dva sloupce a alespoň tři kompletní řádky
 - nekompletní řádky se vynechávají jako complete-case
 - pokud je některý sloupec konstantní, funkce vrátí numerickou chybu
-- pokud je zadáno `p_minimum`, nevyhovující vazby se ve výstupu nechají prázdné
+- pokud je zadáno `p_minimum`, nevyhovující vazby se ve výstupu nechají prázdné včetně diagonály
+- doplněk kvůli zpětné kompatibilitě stále přijímá i původní pořadí argumentů `([p_minimum]; data; [metoda]; [vystup]; [ma_záhlaví])`
 
 ### Výstup
 
-Spill výstup vrací čtvercovou matici s názvy proměnných. U výstupů `2` a `3` je každá proměnná reprezentována blokem řádků:
+U výstupů `0`, `1` a `4` vrací spill výstup čtvercovou matici s názvy proměnných.
+
+U výstupů `2` a `3` vrací spill výstup skládané rozvržení se dvěma úvodními popisnými sloupci a jedním blokem řádků pro každou proměnnou:
 
 - koeficient
 - `p`
@@ -115,7 +118,7 @@ U výstupu `4` je v každé buňce text ve formátu například `0,30156***`.
 ### Příklady
 
 ```excel
-=CORREL.MATRIX(;B1:E30)
-=CORREL.MATRIX(;B1:E30;1;0;1)
-=CORREL.MATRIX(0,05;B1:E30;0;4;1)
+=CORREL.MATRIX(B1:E30)
+=CORREL.MATRIX(B1:E30;1;0;;1)
+=CORREL.MATRIX(B1:E30;0;4;0,05;1)
 ```

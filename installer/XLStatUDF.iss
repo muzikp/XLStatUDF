@@ -7,6 +7,10 @@
   #define InstallerCulture "CS"
 #endif
 
+#ifndef AddInSource
+  #define AddInSource "XLStatUDF-packed.xll"
+#endif
+
 #if InstallerCulture == "EN"
   #define InstallerLanguageName "english"
   #define InstallerMessagesFile "compiler:Default.isl"
@@ -43,7 +47,7 @@ ShowLanguageDialog=no
 Name: "{#InstallerLanguageName}"; MessagesFile: "{#InstallerMessagesFile}"
 
 [Files]
-Source: "XLStatUDF-packed.xll"; DestDir: "{userappdata}\Microsoft\Excel\XLSTART"; DestName: "XLStatUDF-packed.xll"; Flags: ignoreversion
+Source: "{#AddInSource}"; DestDir: "{userappdata}\Microsoft\Excel\XLSTART"; DestName: "XLStatUDF-packed.xll"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\XLStatUDF\{#InstallerUninstallShortcutText}"; Filename: "{uninstallexe}"

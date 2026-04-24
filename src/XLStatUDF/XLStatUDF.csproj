@@ -9,7 +9,11 @@
     <RootNamespace>XLStatUDF</RootNamespace>
     <AssemblyName>XLStatUDF</AssemblyName>
     <Platforms>x64</Platforms>
+    <AddInLanguage Condition="'$(AddInLanguage)' == ''">CS</AddInLanguage>
+    <DefineConstants>$(DefineConstants);XLSTATUDF_LANG_$(AddInLanguage)</DefineConstants>
+    <IntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\$(AddInLanguage)\</IntermediateOutputPath>
     <ExcelAddInExplicitExports>false</ExcelAddInExplicitExports>
+    <ExcelAddInExplicitRegistration>true</ExcelAddInExplicitRegistration>
     <ExcelDnaCreate32BitAddIn>false</ExcelDnaCreate32BitAddIn>
     <ExcelDnaCreate64BitAddIn>true</ExcelDnaCreate64BitAddIn>
   </PropertyGroup>

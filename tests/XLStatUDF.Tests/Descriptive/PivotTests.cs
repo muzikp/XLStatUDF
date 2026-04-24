@@ -11,6 +11,8 @@ namespace XLStatUDF.Tests.Descriptive
 
     public sealed class PivotTests
     {
+        private static string TotalLabel => AddInLanguage.IsCzech ? "Celkem" : "Total";
+
         public PivotTests()
         {
             var culture = CultureInfo.GetCultureInfo("en-US");
@@ -28,10 +30,16 @@ namespace XLStatUDF.Tests.Descriptive
 
             Assert.Equal("F", result[0, 1]);
             Assert.Equal("M", result[0, 2]);
+            Assert.Equal(TotalLabel, result[0, 3]);
             Assert.Equal("Group", result[0, 0]);
             Assert.Equal("A", result[1, 0]);
             Assert.Equal(20.0, (double)result[1, 1], 10);
             Assert.Equal(10.0, (double)result[1, 2], 10);
+            Assert.Equal(15.0, (double)result[1, 3], 10);
+            Assert.Equal(TotalLabel, result[3, 0]);
+            Assert.Equal(30.0, (double)result[3, 1], 10);
+            Assert.Equal(20.0, (double)result[3, 2], 10);
+            Assert.Equal(25.0, (double)result[3, 3], 10);
         }
 
         [Fact]
@@ -46,6 +54,7 @@ namespace XLStatUDF.Tests.Descriptive
 
             Assert.Equal("Group", result[0, 0]);
             Assert.True((double)result[1, 1] > 0.0);
+            Assert.Equal(TotalLabel, result[2, 0]);
         }
 
         [Fact]
@@ -62,7 +71,9 @@ namespace XLStatUDF.Tests.Descriptive
                 values);
 
             Assert.Equal(1.0, (double)mad[1, 1], 10);
+            Assert.Equal(1.0, (double)mad[2, 1], 10);
             Assert.Equal(25.5, (double)iqr[1, 1], 10);
+            Assert.Equal(25.5, (double)iqr[2, 1], 10);
         }
 
         [Fact]
@@ -88,10 +99,12 @@ namespace XLStatUDF.Tests.Descriptive
 
             Assert.Equal("M", result[0, 1]);
             Assert.Equal("Z", result[0, 2]);
+            Assert.Equal(TotalLabel, result[0, 3]);
             Assert.Equal("A", result[1, 0]);
             Assert.Equal("B", result[2, 0]);
             Assert.Equal(10.0, (double)result[1, 1], 10);
             Assert.Equal(20.0, (double)result[2, 2], 10);
+            Assert.Equal(TotalLabel, result[3, 0]);
         }
 
         [Fact]
@@ -102,8 +115,55 @@ namespace XLStatUDF.Tests.Descriptive
                 ExcelEmpty.Value,
                 new object[,] { { "Sales" }, { 10.0 }, { ExcelEmpty.Value } });
 
-            Assert.Equal(2, result.GetLength(0));
+            Assert.Equal(3, result.GetLength(0));
             Assert.Equal("A", result[1, 0]);
+            Assert.Equal(TotalLabel, result[2, 0]);
+        }
+
+        [Fact]
+        public void OmitsColumnsWithOnlyBlankAggregates()
+        {
+            var result = Pivot.PivotSum(
+                new object[,] { { "Publisher" }, { "Activision" }, { "Electronic Arts" }, { "Ubisoft" } },
+                new object[,] { { "Genre" }, { ExcelEmpty.Value }, { "Action" }, { "RPG" } },
+                new object[,] { { "Sales" }, { ExcelEmpty.Value }, { 10.0 }, { 20.0 } });
+
+            Assert.Equal(4, result.GetLength(1));
+            Assert.Equal("Action", result[0, 1]);
+            Assert.Equal("RPG", result[0, 2]);
+            Assert.Equal(TotalLabel, result[0, 3]);
+        }
+
+        [Fact]
+        public void ConfidencePivotLeavesSparseCellsBlankInsteadOfFailing()
+        {
+            var result = Pivot.PivotConfidenceT(
+                new object[,] { { "Publisher" }, { "A" }, { "A" }, { "B" } },
+                new object[,] { { "Genre" }, { "Action" }, { "Action" }, { "RPG" } },
+                new object[,] { { "Sales" }, { 10.0 }, { 20.0 }, { 30.0 } },
+                0.05,
+                0);
+
+            Assert.Equal("Action", result[0, 1]);
+            Assert.Equal(3, result.GetLength(1));
+            Assert.Equal("A", result[1, 0]);
+            Assert.True((double)result[1, 1] > 0.0);
+            Assert.Equal(TotalLabel, result[0, 2]);
+        }
+
+        [Fact]
+        public void AddsTotalRowAndTotalColumn()
+        {
+            var result = Pivot.PivotSum(
+                new object[,] { { "Publisher" }, { "Activision" }, { "Activision" }, { "Ubisoft" } },
+                new object[,] { { "Genre" }, { "Action" }, { "RPG" }, { "Action" } },
+                new object[,] { { "Sales" }, { 1.0 }, { 2.0 }, { 3.0 } });
+
+            Assert.Equal(TotalLabel, result[0, 3]);
+            Assert.Equal(TotalLabel, result[3, 0]);
+            Assert.Equal(3.0, (double)result[1, 3], 10);
+            Assert.Equal(4.0, (double)result[3, 1], 10);
+            Assert.Equal(6.0, (double)result[3, 3], 10);
         }
     }
 }

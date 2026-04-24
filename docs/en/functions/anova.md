@@ -30,7 +30,7 @@ Performs one-way analysis of variance on grouped data.
 
 ### Notes
 
-- the function requires at least two groups
+- the function requires at least three groups
 - each group must contain at least two values
 - the output includes Levene's test of variance homogeneity
 - some post-hoc options are currently implemented via Bonferroni fallback and are explicitly labeled as such in the output

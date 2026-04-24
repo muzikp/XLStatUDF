@@ -7,17 +7,20 @@ namespace XLStatUDF.Functions.Correlation
     using ExcelDna.Integration;
     using MathNet.Numerics.Distributions;
     using XLStatUDF.Helpers;
+    using XLStatUDF.Helpers.Formatting;
 
     public static class CorrelMatrix
     {
         [ExcelFunction(Name = "CORREL.MATRIX", Description = "Korelační matice pro více sloupců", Category = FunctionCategories.Tests)]
         public static object[,] Run(
-            [ExcelArgument(Name = "p_minimum", Description = "Volitelně: zobrazí jen vazby s p < zadaná hodnota")] object? pMinimum,
             [ExcelArgument(Name = "data", Description = "Vstupní data; alespoň dva sloupce")] object data,
             [ExcelArgument(Name = "metoda", Description = "Volitelně: 0=Pearson, 1=Spearman")] object? method = null,
             [ExcelArgument(Name = "vystup", Description = "Volitelně: 0=koeficienty, 1=p-hodnoty, 2=koeficient+p, 3=koeficient+p+sig, 4=koeficient+sig v jedné buňce")] object? output = null,
-            [ExcelArgument(Name = "ma_záhlaví", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
+            [ExcelArgument(Name = "p_minimum", Description = "Volitelně: zobrazí jen vazby s p < zadaná hodnota")] object? pMinimum = null,
+            [ExcelArgument(Name = "ma_zahlavi", Description = "Volitelně: 0=autodetect, 1=má záhlaví, 2=nemá záhlaví")] object? hasHeader = null)
         {
+            NormalizeLegacyArgumentOrder(ref data, ref method, ref output, ref pMinimum);
+
             if (!ArgumentHelper.TryParseHeaderMode(hasHeader, out var headerMode))
             {
                 return SpillError(ExcelErrors.Value);
@@ -88,7 +91,7 @@ namespace XLStatUDF.Functions.Correlation
 
             var visible = BuildVisibilityMask(pValues, parsedPMinimum);
 
-            return parsedOutput switch
+            var result = parsedOutput switch
             {
                 CorrelationMatrixOutput.Coefficients => BuildSingleMatrix(columnNames, coefficients, visible),
                 CorrelationMatrixOutput.PValues => BuildSingleMatrix(columnNames, pValues, visible),
@@ -97,6 +100,9 @@ namespace XLStatUDF.Functions.Correlation
                 CorrelationMatrixOutput.CoefficientsWithSignificance => BuildCoefficientStringMatrix(columnNames, coefficients, significance, visible),
                 _ => SpillError(ExcelErrors.Value)
             };
+
+            OutputFormatter.ScheduleCorrelMatrix((CorrelMatrixOutputLayout)parsedOutput);
+            return result;
         }
 
         private static object[,] BuildSingleMatrix(string[] columnNames, double[,] values, bool[,] visible)
@@ -122,31 +128,35 @@ namespace XLStatUDF.Functions.Correlation
         {
             var size = columnNames.Length;
             var blockHeight = significance is null ? 2 : 3;
-            var result = new object[(size * blockHeight) + 1, size + 1];
+            var result = new object[(size * blockHeight) + 1, size + 2];
             result[0, 0] = string.Empty;
+            result[0, 1] = string.Empty;
 
             for (var i = 0; i < size; i++)
             {
-                result[0, i + 1] = columnNames[i];
+                result[0, i + 2] = columnNames[i];
             }
 
             for (var row = 0; row < size; row++)
             {
                 var baseRow = 1 + (row * blockHeight);
                 result[baseRow, 0] = columnNames[row];
-                result[baseRow + 1, 0] = $"p ({columnNames[row]})";
+                result[baseRow + 1, 0] = string.Empty;
+                result[baseRow, 1] = "r";
+                result[baseRow + 1, 1] = "p";
                 if (significance is not null)
                 {
-                    result[baseRow + 2, 0] = $"sig. ({columnNames[row]})";
+                    result[baseRow + 2, 0] = string.Empty;
+                    result[baseRow + 2, 1] = "sig.";
                 }
 
                 for (var col = 0; col < size; col++)
                 {
-                    result[baseRow, col + 1] = visible[row, col] ? coefficients[row, col] : string.Empty;
-                    result[baseRow + 1, col + 1] = visible[row, col] ? pValues[row, col] : string.Empty;
+                    result[baseRow, col + 2] = visible[row, col] ? coefficients[row, col] : string.Empty;
+                    result[baseRow + 1, col + 2] = visible[row, col] ? pValues[row, col] : string.Empty;
                     if (significance is not null)
                     {
-                        result[baseRow + 2, col + 1] = visible[row, col] ? significance[row, col] : string.Empty;
+                        result[baseRow + 2, col + 2] = visible[row, col] ? significance[row, col] : string.Empty;
                     }
                 }
             }
@@ -398,6 +408,24 @@ namespace XLStatUDF.Functions.Correlation
                     pMinimum = parsed;
                     return true;
             }
+        }
+
+        private static void NormalizeLegacyArgumentOrder(
+            ref object data,
+            ref object? method,
+            ref object? output,
+            ref object? pMinimum)
+        {
+            if (data is object[,] || method is not object[,])
+            {
+                return;
+            }
+
+            var legacyPMinimum = data;
+            data = method;
+            method = output;
+            output = pMinimum;
+            pMinimum = legacyPMinimum;
         }
 
         private static string ToSig(double pValue)

@@ -121,21 +121,28 @@ namespace XLStatUDF.Functions.Descriptive
             var headerRows = data.ColumnFieldNames.Length;
             var rowFieldCount = data.RowFieldNames.Length;
             var valueStartColumn = rowFieldCount;
+            var visibleColumns = data.ColumnKeys
+                .Where(columnKey => data.RowKeys.Any(rowKey =>
+                {
+                    var aggregateKey = BuildAggregateKey(rowKey.Key, columnKey.Key);
+                    return data.Aggregates.TryGetValue(aggregateKey, out var aggregate) && !DataHelper.IsBlank(aggregate);
+                }))
+                .ToList();
             var visibleRows = data.RowKeys
-                .Where(rowKey => data.ColumnKeys.Any(columnKey =>
+                .Where(rowKey => visibleColumns.Any(columnKey =>
                 {
                     var aggregateKey = BuildAggregateKey(rowKey.Key, columnKey.Key);
                     return data.Aggregates.TryGetValue(aggregateKey, out var aggregate) && !DataHelper.IsBlank(aggregate);
                 }))
                 .ToList();
 
-            var result = new object[headerRows + visibleRows.Count, rowFieldCount + data.ColumnKeys.Count];
+            var result = new object[headerRows + visibleRows.Count, rowFieldCount + visibleColumns.Count];
 
             for (var headerIndex = 0; headerIndex < data.ColumnFieldNames.Length; headerIndex++)
             {
-                for (var columnIndex = 0; columnIndex < data.ColumnKeys.Count; columnIndex++)
+                for (var columnIndex = 0; columnIndex < visibleColumns.Count; columnIndex++)
                 {
-                    result[headerIndex, valueStartColumn + columnIndex] = data.ColumnKeys[columnIndex].Labels[headerIndex];
+                    result[headerIndex, valueStartColumn + columnIndex] = visibleColumns[columnIndex].Labels[headerIndex];
                 }
             }
 
@@ -153,9 +160,9 @@ namespace XLStatUDF.Functions.Descriptive
                     result[targetRow, labelIndex] = rowKey.Labels[labelIndex];
                 }
 
-                for (var columnIndex = 0; columnIndex < data.ColumnKeys.Count; columnIndex++)
+                for (var columnIndex = 0; columnIndex < visibleColumns.Count; columnIndex++)
                 {
-                    var aggregateKey = BuildAggregateKey(rowKey.Key, data.ColumnKeys[columnIndex].Key);
+                    var aggregateKey = BuildAggregateKey(rowKey.Key, visibleColumns[columnIndex].Key);
                     result[targetRow, valueStartColumn + columnIndex] = data.Aggregates.TryGetValue(aggregateKey, out var aggregate)
                         ? aggregate
                         : string.Empty;
@@ -200,12 +207,13 @@ namespace XLStatUDF.Functions.Descriptive
             var columnSeen = new HashSet<string>();
             var buckets = new Dictionary<string, Bucket>();
             var aggregates = new Dictionary<string, object>();
+            var totalRow = CreateTotalRowKey(rowFieldNames.Length);
+            var totalColumn = CreateTotalColumnKey(columnFieldNames.Length);
 
             if (columnMatrix.GetLength(1) == 0)
             {
-                var total = new KeyLabel(string.Empty, new[] { GetLocalizedTotalLabel() });
-                columnKeys.Add(total);
-                columnSeen.Add(total.Key);
+                columnKeys.Add(totalColumn);
+                columnSeen.Add(totalColumn.Key);
             }
 
             for (var row = 1; row < rowCount; row++)
@@ -218,17 +226,10 @@ namespace XLStatUDF.Functions.Descriptive
                 }
 
                 var columnLabels = columnMatrix.GetLength(1) == 0 ? new[] { GetLocalizedTotalLabel() } : GetLabels(columnMatrix, row);
-                var columnKey = columnMatrix.GetLength(1) == 0 ? string.Empty : SerializeKey(columnLabels);
+                var columnKey = columnMatrix.GetLength(1) == 0 ? totalColumn.Key : SerializeKey(columnLabels);
                 if (columnSeen.Add(columnKey))
                 {
-                    columnKeys.Add(new KeyLabel(columnKey, columnLabels));
-                }
-
-                var aggregateKey = BuildAggregateKey(rowKey, columnKey);
-                if (!buckets.TryGetValue(aggregateKey, out var bucket))
-                {
-                    bucket = new Bucket();
-                    buckets.Add(aggregateKey, bucket);
+                    columnKeys.Add(columnMatrix.GetLength(1) == 0 ? totalColumn : new KeyLabel(columnKey, columnLabels));
                 }
 
                 var cell = spec.RawValues[row, 0];
@@ -237,9 +238,21 @@ namespace XLStatUDF.Functions.Descriptive
                     continue;
                 }
 
+                var targetBuckets = new[]
+                {
+                    GetOrCreateBucket(buckets, rowKey, columnKey),
+                    GetOrCreateBucket(buckets, rowKey, totalColumn.Key),
+                    GetOrCreateBucket(buckets, totalRow.Key, columnKey),
+                    GetOrCreateBucket(buckets, totalRow.Key, totalColumn.Key)
+                };
+
                 if (spec.Calculation == PivotCalculation.Count)
                 {
-                    bucket.Count++;
+                    foreach (var targetBucket in targetBuckets)
+                    {
+                        targetBucket.Count++;
+                    }
+
                     continue;
                 }
 
@@ -249,7 +262,20 @@ namespace XLStatUDF.Functions.Descriptive
                     return false;
                 }
 
-                bucket.NumericValues.Add(numericValue);
+                foreach (var targetBucket in targetBuckets)
+                {
+                    targetBucket.NumericValues.Add(numericValue);
+                }
+            }
+
+            if (rowSeen.Count > 0)
+            {
+                rowKeys.Add(totalRow);
+            }
+
+            if (columnMatrix.GetLength(1) > 0)
+            {
+                columnKeys.Add(totalColumn);
             }
 
             SortKeyLabels(rowKeys);
@@ -268,8 +294,8 @@ namespace XLStatUDF.Functions.Descriptive
                     var aggregate = ComputeAggregate(spec, bucket);
                     if (aggregate is ErrorValue errorValue)
                     {
-                        error = errorValue.Value;
-                        return false;
+                        aggregates[aggregateKey] = string.Empty;
+                        continue;
                     }
 
                     aggregates[aggregateKey] = aggregate!;
@@ -563,6 +589,21 @@ namespace XLStatUDF.Functions.Descriptive
                 return 1;
             }
 
+            if (left.IsTotal && right.IsTotal)
+            {
+                return 0;
+            }
+
+            if (left.IsTotal)
+            {
+                return 1;
+            }
+
+            if (right.IsTotal)
+            {
+                return -1;
+            }
+
             var compareInfo = CultureInfo.CurrentCulture.CompareInfo;
             var sharedLength = Math.Min(left.Labels.Length, right.Labels.Length);
             for (var i = 0; i < sharedLength; i++)
@@ -580,12 +621,38 @@ namespace XLStatUDF.Functions.Descriptive
         private static string BuildAggregateKey(string rowKey, string columnKey)
             => $"{rowKey}\u001E{columnKey}";
 
+        private static Bucket GetOrCreateBucket(IDictionary<string, Bucket> buckets, string rowKey, string columnKey)
+        {
+            var aggregateKey = BuildAggregateKey(rowKey, columnKey);
+            if (!buckets.TryGetValue(aggregateKey, out var bucket))
+            {
+                bucket = new Bucket();
+                buckets.Add(aggregateKey, bucket);
+            }
+
+            return bucket;
+        }
+
         private static string SerializeKey(IReadOnlyList<string> labels)
             => string.Join("\u001F", labels);
 
+        private static KeyLabel CreateTotalRowKey(int fieldCount)
+        {
+            var labels = Enumerable.Repeat(string.Empty, fieldCount).ToArray();
+            labels[0] = GetLocalizedTotalLabel();
+            return new KeyLabel("\u0001TOTAL_ROW", labels, isTotal: true);
+        }
+
+        private static KeyLabel CreateTotalColumnKey(int fieldCount)
+        {
+            var labels = Enumerable.Repeat(string.Empty, fieldCount).ToArray();
+            labels[fieldCount - 1] = GetLocalizedTotalLabel();
+            return new KeyLabel("\u0001TOTAL_COLUMN", labels, isTotal: true);
+        }
+
         private static string GetLocalizedCalculationLabel(PivotCalculation calculation)
         {
-            if (IsCzechCulture())
+            if (AddInLanguage.IsCzech)
             {
                 return calculation switch
                 {
@@ -637,24 +704,23 @@ namespace XLStatUDF.Functions.Descriptive
         {
             if (Math.Abs(direction) < 1e-12)
             {
-                return IsCzechCulture() ? "oboustranný" : "two-sided";
+                return AddInLanguage.IsCzech ? "oboustranný" : "two-sided";
             }
 
             if (direction < 0)
             {
-                return IsCzechCulture() ? "levostranný" : "left-sided";
+                return AddInLanguage.IsCzech ? "levostranný" : "left-sided";
             }
 
-            return IsCzechCulture() ? "pravostranný" : "right-sided";
+            return AddInLanguage.IsCzech ? "pravostranný" : "right-sided";
         }
 
-        private static string GetLocalizedRowPrefix() => IsCzechCulture() ? "Radek" : "Row";
-        private static string GetLocalizedColumnPrefix() => IsCzechCulture() ? "Sloupec" : "Column";
-        private static string GetLocalizedBlankLabel() => IsCzechCulture() ? "(prázdné)" : "(blank)";
-        private static string GetLocalizedValueLabel(int ordinal) => IsCzechCulture() ? $"Hodnota {ordinal}" : $"Value {ordinal}";
-        private static string GetLocalizedAlphaLabel() => IsCzechCulture() ? "alfa" : "alpha";
-        private static string GetLocalizedTotalLabel() => IsCzechCulture() ? "Celkem" : "Total";
-        private static bool IsCzechCulture() => string.Equals(CultureInfo.CurrentCulture.TwoLetterISOLanguageName, "cs", StringComparison.OrdinalIgnoreCase);
+        private static string GetLocalizedRowPrefix() => AddInLanguage.IsCzech ? "Řádek" : "Row";
+        private static string GetLocalizedColumnPrefix() => AddInLanguage.IsCzech ? "Sloupec" : "Column";
+        private static string GetLocalizedBlankLabel() => AddInLanguage.IsCzech ? "(prázdné)" : "(blank)";
+        private static string GetLocalizedValueLabel(int ordinal) => AddInLanguage.IsCzech ? $"Hodnota {ordinal}" : $"Value {ordinal}";
+        private static string GetLocalizedAlphaLabel() => AddInLanguage.IsCzech ? "alfa" : "alpha";
+        private static string GetLocalizedTotalLabel() => AddInLanguage.IsCzech ? "Celkem" : "Total";
         private static object[,] SpillError(object error) => new object[,] { { error, string.Empty } };
 
         private sealed class MetricSpec
@@ -695,14 +761,16 @@ namespace XLStatUDF.Functions.Descriptive
 
         private sealed class KeyLabel
         {
-            public KeyLabel(string key, string[] labels)
+            public KeyLabel(string key, string[] labels, bool isTotal = false)
             {
                 Key = key;
                 Labels = labels;
+                IsTotal = isTotal;
             }
 
             public string Key { get; }
             public string[] Labels { get; }
+            public bool IsTotal { get; }
         }
 
         private sealed class Bucket

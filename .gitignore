@@ -26,7 +26,9 @@ installer/*.xll
 
 # Local scratch data
 _tmp/
+.env
 
 # OS noise
 Thumbs.db
 Desktop.ini
+reference/
