@@ -148,12 +148,17 @@
           "sourceName": "hodnota",
           "description": "číslo nebo text obsahující číslo, včetně mezer, měny a desetinné čárky nebo tečky",
           "enumValues": []
+        },
+        {
+          "sourceName": "else",
+          "description": "hodnota vrácená při neúspěšném převodu; výchozí hodnota je 0, případně lze zadat vlastní text nebo číslo",
+          "enumValues": []
         }
       ],
       "output": [
         {
           "name": "value",
-          "description": "vyčištěná číselná hodnota"
+          "description": "vyčištěná číselná hodnota, 0 při neúspěšném převodu nebo zadaná náhradní hodnota"
         }
       ]
     },
@@ -162,200 +167,748 @@
       "summary": "Počítá vážený aritmetický průměr.",
       "parameters": [
         {
-          "sourceName": "values",
+          "sourceName": "hodnoty",
           "description": "číselná pozorování",
           "enumValues": []
         },
         {
-          "sourceName": "weights",
-          "description": "nezáporné váhy; prázdné buňky vah se berou jako 0",
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
           "enumValues": []
         }
       ],
-      "output": []
+      "output": [
+        {
+          "name": "průměr",
+          "description": "vážený aritmetický průměr"
+        }
+      ]
     },
     "HARMEAN.W": {
       "category": "Popisné",
       "summary": "Počítá vážený harmonický průměr.",
       "parameters": [
         {
-          "sourceName": "values",
+          "sourceName": "hodnoty",
           "description": "kladná číselná pozorování",
           "enumValues": []
         },
         {
-          "sourceName": "weights",
-          "description": "nezáporné váhy; prázdné buňky vah se berou jako 0",
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
           "enumValues": []
         }
       ],
-      "output": []
+      "output": [
+        {
+          "name": "průměr",
+          "description": "vážený harmonický průměr"
+        }
+      ]
     },
     "GEOMEAN.W": {
       "category": "Popisné",
       "summary": "Počítá vážený geometrický průměr.",
       "parameters": [
         {
-          "sourceName": "values",
+          "sourceName": "hodnoty",
           "description": "kladná číselná pozorování",
           "enumValues": []
         },
         {
-          "sourceName": "weights",
-          "description": "nezáporné váhy; prázdné buňky vah se berou jako 0",
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
           "enumValues": []
         }
       ],
-      "output": []
+      "output": [
+        {
+          "name": "průměr",
+          "description": "vážený geometrický průměr"
+        }
+      ]
     },
     "VAR.P.W": {
       "category": "Popisné",
       "summary": "Počítá vážený populační rozptyl.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "rozptyl",
+          "description": "vážený populační rozptyl"
+        }
+      ]
     },
     "VAR.S.W": {
       "category": "Popisné",
       "summary": "Počítá vážený výběrový rozptyl.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "rozptyl",
+          "description": "vážený výběrový rozptyl"
+        }
+      ]
     },
     "STDEV.P.W": {
       "category": "Popisné",
       "summary": "Počítá váženou populační směrodatnou odchylku.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "sd",
+          "description": "vážená populační směrodatná odchylka"
+        }
+      ]
     },
     "STDEV.S.W": {
       "category": "Popisné",
       "summary": "Počítá váženou výběrovou směrodatnou odchylku.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "sd",
+          "description": "vážená výběrová směrodatná odchylka"
+        }
+      ]
     },
     "VARCOEF": {
       "category": "Popisné",
       "summary": "Počítá populační variační koeficient.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "CV",
+          "description": "populační variační koeficient"
+        }
+      ]
     },
     "VARCOEF.S": {
       "category": "Popisné",
       "summary": "Počítá výběrový variační koeficient.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "CV",
+          "description": "výběrový variační koeficient"
+        }
+      ]
     },
     "VARCOEF.W": {
       "category": "Popisné",
       "summary": "Počítá vážený populační variační koeficient.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "CV",
+          "description": "vážený populační variační koeficient"
+        }
+      ]
     },
     "VARCOEF.S.W": {
       "category": "Popisné",
       "summary": "Počítá vážený výběrový variační koeficient.",
-      "parameters": [],
-      "output": []
-    },
-    "PERCENTILE.INC.IFS": {
-      "category": "Popisné",
-      "summary": "Počítá inkluzivní percentil po aplikaci filtrů.",
       "parameters": [
         {
-          "sourceName": "values",
-          "description": "číselná data",
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
           "enumValues": []
         },
         {
-          "sourceName": "quantile",
-          "description": "hodnota od 0 do 1",
-          "enumValues": []
-        },
-        {
-          "sourceName": "criteria_range_n",
-          "description": "rozsah, podle kterého se filtruje",
-          "enumValues": []
-        },
-        {
-          "sourceName": "criteria_n",
-          "description": "přesná shoda, relační výraz nebo wildcard výraz",
+          "sourceName": "váhy",
+          "description": "nezáporné váhy; prázdné buňky se berou jako 0",
           "enumValues": []
         }
       ],
-      "output": []
-    },
-    "PERCENTILE.EXC.IFS": {
-      "category": "Popisné",
-      "summary": "Počítá exkluzivní percentil po aplikaci filtrů.",
-      "parameters": [],
-      "output": []
+      "output": [
+        {
+          "name": "CV",
+          "description": "vážený výběrový variační koeficient"
+        }
+      ]
     },
     "PIVOT.COUNT": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá neprázdné hodnoty."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá neprázdné hodnoty.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.SUM": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá součty."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá součty.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.AVERAGE": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá aritmetické průměry."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá aritmetické průměry.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.MIN": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá minima."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá minima.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.MAX": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá maxima."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá maxima.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.MEDIAN": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá mediány."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá mediány.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.PERCENTILE": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá percentily."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá percentily.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        },
+        {
+          "sourceName": "kvantil",
+          "description": "požadovaný kvantil v intervalu 0 až 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.STDEV.S": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá výběrové směrodatné odchylky."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá výběrové směrodatné odchylky.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.STDEV.P": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá populační směrodatné odchylky."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá populační směrodatné odchylky.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.VAR.S": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá výběrové rozptyly."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá výběrové rozptyly.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.VAR.P": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá populační rozptyly."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá populační rozptyly.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.VARCOEF.S": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá výběrové variační koeficienty."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá výběrové variační koeficienty.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.VARCOEF.P": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá populační variační koeficienty."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá populační variační koeficienty.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.CONF.T": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá poloviční šířky t-intervalů spolehlivosti."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá poloviční šířky t-intervalů spolehlivosti.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        },
+        {
+          "sourceName": "α",
+          "description": "hladina významnosti v intervalu 0 až 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "směr",
+          "description": "směr intervalu spolehlivosti",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný interval",
+              "default": true
+            },
+            {
+              "value": "-1",
+              "meaning": "levostranný interval",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "pravostranný interval",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.CONF.NORM": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá poloviční šířky intervalů spolehlivosti přes normální aproximaci."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá poloviční šířky intervalů spolehlivosti přes normální aproximaci.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        },
+        {
+          "sourceName": "α",
+          "description": "hladina významnosti v intervalu 0 až 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "směr",
+          "description": "směr intervalu spolehlivosti",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný interval",
+              "default": true
+            },
+            {
+              "value": "-1",
+              "meaning": "levostranný interval",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "pravostranný interval",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.MAD": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá medián absolutních odchylek."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá medián absolutních odchylek.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "PIVOT.IQR": {
-      "category": "Popisné",
-      "summary": "Sestavuje pivot a počítá mezikvartilová rozpětí."
+      "category": "Kontingenční tabulka",
+      "summary": "Sestavuje kontingenční tabulku a počítá mezikvartilová rozpětí.",
+      "parameters": [
+        {
+          "sourceName": "řádky",
+          "description": "řada řádkových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární řádky vytvoří souhrn přes všechny řádky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "sloupce",
+          "description": "řada sloupcových kategorií včetně záhlaví v prvním řádku; prázdné nebo skalární sloupce vytvoří souhrn přes všechny sloupce",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "řada hodnot včetně záhlaví v prvním řádku",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "kontingenční tabulka se souhrnným řádkem a sloupcem TOTAL"
+        }
+      ]
     },
     "NORM.DIST.RANGE": {
       "category": "Testy",
@@ -1759,12 +2312,17 @@
           "sourceName": "value",
           "description": "number or text containing a number, including spaces, currency symbols, and comma or dot decimals",
           "enumValues": []
+        },
+        {
+          "sourceName": "else",
+          "description": "value returned when parsing fails; the default is 0, or a custom text or number can be supplied",
+          "enumValues": []
         }
       ],
       "output": [
         {
           "name": "value",
-          "description": "clean numeric value"
+          "description": "clean numeric value, 0 when parsing fails, or the supplied fallback value"
         }
       ]
     },
@@ -1779,11 +2337,16 @@
         },
         {
           "sourceName": "weights",
-          "description": "non-negative weights; blank weight cells are treated as 0",
+          "description": "non-negative weights; blank cells are treated as 0",
           "enumValues": []
         }
       ],
-      "output": []
+      "output": [
+        {
+          "name": "mean",
+          "description": "weighted arithmetic mean"
+        }
+      ]
     },
     "HARMEAN.W": {
       "category": "Descriptive",
@@ -1796,11 +2359,16 @@
         },
         {
           "sourceName": "weights",
-          "description": "non-negative weights; blank weight cells are treated as 0",
+          "description": "non-negative weights; blank cells are treated as 0",
           "enumValues": []
         }
       ],
-      "output": []
+      "output": [
+        {
+          "name": "mean",
+          "description": "weighted harmonic mean"
+        }
+      ]
     },
     "GEOMEAN.W": {
       "category": "Descriptive",
@@ -1813,160 +2381,698 @@
         },
         {
           "sourceName": "weights",
-          "description": "non-negative weights; blank weight cells are treated as 0",
+          "description": "non-negative weights; blank cells are treated as 0",
           "enumValues": []
         }
       ],
-      "output": []
+      "output": [
+        {
+          "name": "mean",
+          "description": "weighted geometric mean"
+        }
+      ]
     },
     "VAR.P.W": {
       "category": "Descriptive",
       "summary": "Computes the weighted population variance.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "variance",
+          "description": "weighted population variance"
+        }
+      ]
     },
     "VAR.S.W": {
       "category": "Descriptive",
       "summary": "Computes the weighted sample variance.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "variance",
+          "description": "weighted sample variance"
+        }
+      ]
     },
     "STDEV.P.W": {
       "category": "Descriptive",
       "summary": "Computes the weighted population standard deviation.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "sd",
+          "description": "weighted population standard deviation"
+        }
+      ]
     },
     "STDEV.S.W": {
       "category": "Descriptive",
       "summary": "Computes the weighted sample standard deviation.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "sd",
+          "description": "weighted sample standard deviation"
+        }
+      ]
     },
     "VARCOEF": {
       "category": "Descriptive",
       "summary": "Computes the population coefficient of variation.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "CV",
+          "description": "population coefficient of variation"
+        }
+      ]
     },
     "VARCOEF.S": {
       "category": "Descriptive",
       "summary": "Computes the sample coefficient of variation.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "CV",
+          "description": "sample coefficient of variation"
+        }
+      ]
     },
     "VARCOEF.W": {
       "category": "Descriptive",
       "summary": "Computes the weighted population coefficient of variation.",
-      "parameters": [],
-      "output": []
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "CV",
+          "description": "weighted population coefficient of variation"
+        }
+      ]
     },
     "VARCOEF.S.W": {
       "category": "Descriptive",
       "summary": "Computes the weighted sample coefficient of variation.",
-      "parameters": [],
-      "output": []
-    },
-    "PERCENTILE.INC.IFS": {
-      "category": "Descriptive",
-      "summary": "Computes the inclusive percentile after applying filters.",
       "parameters": [
         {
           "sourceName": "values",
-          "description": "numeric data",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "CV",
+          "description": "weighted sample coefficient of variation"
+        }
+      ]
+    },
+    "PIVOT.COUNT": {
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and counts non-empty values.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
+    },
+    "PIVOT.SUM": {
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes sums.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
+    },
+    "PIVOT.AVERAGE": {
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes arithmetic means.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
+    },
+    "PIVOT.MIN": {
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes minima.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
+    },
+    "PIVOT.MAX": {
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes maxima.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
+    },
+    "PIVOT.MEDIAN": {
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes medians.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
+    },
+    "PIVOT.PERCENTILE": {
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes percentiles.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
           "enumValues": []
         },
         {
           "sourceName": "quantile",
-          "description": "a value from 0 to 1",
-          "enumValues": []
-        },
-        {
-          "sourceName": "criteria_range_n",
-          "description": "range used for filtering",
-          "enumValues": []
-        },
-        {
-          "sourceName": "criteria_n",
-          "description": "exact match, relational expression, or wildcard expression",
+          "description": "requested quantile from 0 to 1",
           "enumValues": []
         }
       ],
-      "output": []
-    },
-    "PERCENTILE.EXC.IFS": {
-      "category": "Descriptive",
-      "summary": "Computes the exclusive percentile after applying filters.",
-      "parameters": [],
-      "output": []
-    },
-    "PIVOT.COUNT": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and counts non-empty values."
-    },
-    "PIVOT.SUM": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes sums."
-    },
-    "PIVOT.AVERAGE": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes arithmetic means."
-    },
-    "PIVOT.MIN": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes minimums."
-    },
-    "PIVOT.MAX": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes maximums."
-    },
-    "PIVOT.MEDIAN": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes medians."
-    },
-    "PIVOT.PERCENTILE": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes percentiles."
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.STDEV.S": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes sample standard deviations."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes sample standard deviations.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.STDEV.P": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes population standard deviations."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes population standard deviations.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.VAR.S": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes sample variances."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes sample variances.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.VAR.P": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes population variances."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes population variances.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.VARCOEF.S": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes sample coefficients of variation."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes sample coefficients of variation.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.VARCOEF.P": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes population coefficients of variation."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes population coefficients of variation.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.CONF.T": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes t-based confidence interval half-widths."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes t-based confidence interval half-widths.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level from 0 to 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "confidence interval direction",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided interval",
+              "default": true
+            },
+            {
+              "value": "-1",
+              "meaning": "left-sided interval",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "right-sided interval",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.CONF.NORM": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes normal-approximation confidence interval half-widths."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes normal-approximation confidence interval half-widths.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level from 0 to 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "confidence interval direction",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided interval",
+              "default": true
+            },
+            {
+              "value": "-1",
+              "meaning": "left-sided interval",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "right-sided interval",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.MAD": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes median absolute deviations."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes median absolute deviations.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "PIVOT.IQR": {
-      "category": "Descriptive",
-      "summary": "Builds a pivot and computes interquartile ranges."
+      "category": "Pivot table",
+      "summary": "Builds a pivot table and computes interquartile ranges.",
+      "parameters": [
+        {
+          "sourceName": "rows",
+          "description": "row category range, including a header in the first row; blank or scalar rows create a summary across all rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "columns",
+          "description": "column category range, including a header in the first row; blank or scalar columns create a summary across all columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "value range, including a header in the first row",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pivot",
+          "description": "pivot table with a TOTAL row and column"
+        }
+      ]
     },
     "NORM.DIST.RANGE": {
       "category": "Tests",
@@ -3222,3 +4328,4 @@
     }
   }
 }
+

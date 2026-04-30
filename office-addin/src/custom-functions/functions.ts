@@ -763,13 +763,17 @@ function normalizeNumericText(value: Primitive): string {
   return `${sign}${integerPart || "0"}.${decimalPart}`;
 }
 
-function parseNumber(value: Primitive): number {
-  const normalized = normalizeNumericText(value);
-  const parsed = Number(normalized);
-  if (!Number.isFinite(parsed)) {
-    throw invalidNumber("Expected numeric text");
+function parseNumber(value: Primitive, fallback: Primitive = 0): Primitive {
+  try {
+    const normalized = normalizeNumericText(value);
+    const parsed = Number(normalized);
+    if (!Number.isFinite(parsed)) {
+      return fallback;
+    }
+    return parsed;
+  } catch {
+    return fallback;
   }
-  return parsed;
 }
 
 function generateNorm(meanValue: number, standardDeviation: number, outlierRate?: Primitive): number {
@@ -919,24 +923,301 @@ function varcoefW(valuesInput: ExcelInput, weightsInput: ExcelInput, sample = fa
   return Math.sqrt(weightedVariance(values, weights, sample)) / avg;
 }
 
-function percentileIncIfs(valuesInput: ExcelInput, quantile: number, ...criteriaArgs: Primitive[]): number {
-  if (quantile < 0 || quantile > 1) {
-    throw invalidNumber("Quantile must be in [0,1]");
+function asRows(input: ExcelInput): Primitive[][] {
+  if (Array.isArray(input)) {
+    if (input.length === 0) {
+      return [];
+    }
+    if (Array.isArray(input[0])) {
+      return input as Primitive[][];
+    }
+    return (input as Primitive[]).map((value) => [value]);
   }
-  const filtered = applyFilters(valuesInput, criteriaArgs).sort((a, b) => a - b);
-  return percentileInc(filtered, quantile);
+  return [[input]];
 }
 
-function percentileExcIfs(valuesInput: ExcelInput, quantile: number, ...criteriaArgs: Primitive[]): number {
-  if (quantile <= 0 || quantile >= 1) {
-    throw invalidNumber("Quantile must be in (0,1)");
+function readPivotDimension(input: ExcelInput, dataLength: number, fallbackHeader: string, totalLabel: string): {
+  headers: string[];
+  rows: string[][];
+} {
+  if (!Array.isArray(input) || isBlank(input as Primitive) || input === false) {
+    return {
+      headers: [fallbackHeader],
+      rows: new Array(dataLength).fill(null).map(() => [totalLabel])
+    };
   }
-  const filtered = applyFilters(valuesInput, criteriaArgs).sort((a, b) => a - b);
-  const rank = quantile * (filtered.length + 1);
-  if (rank < 1 || rank > filtered.length) {
-    throw invalidNumber("Exclusive percentile rank is out of range");
+
+  const matrix = asRows(input);
+  const hasData = matrix.length > 1 && matrix.slice(1).some((row) => row.some((value) => !isBlank(value)));
+  if (!hasData) {
+    return {
+      headers: [fallbackHeader],
+      rows: new Array(dataLength).fill(null).map(() => [totalLabel])
+    };
   }
-  return percentileExc(filtered, quantile);
+
+  if (matrix.length - 1 !== dataLength) {
+    throw invalidValue("Pivot dimension and values must have the same number of data rows");
+  }
+
+  return {
+    headers: matrix[0].map((value, index) => isBlank(value) ? `${fallbackHeader}_${index + 1}` : String(value)),
+    rows: matrix.slice(1).map((row) => row.map((value) => String(value ?? "")))
+  };
+}
+
+function cellKey(values: Primitive[]): string {
+  return JSON.stringify(values.map((value) => String(value ?? "")));
+}
+
+function parsePivotDirection(input?: Primitive): Direction {
+  if (isBlank(input)) {
+    return "two";
+  }
+  const code = tryGetNumber(input);
+  if (code === 0) {
+    return "two";
+  }
+  if (code === -1) {
+    return "left";
+  }
+  if (code === 1) {
+    return "right";
+  }
+  throw invalidValue("Invalid direction");
+}
+
+function readPivotData(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): {
+  rowHeaders: string[];
+  columnHeaders: string[];
+  records: { row: string[]; column: string[]; value: Primitive }[];
+} {
+  const valueMatrix = asRows(valuesInput);
+  if (valueMatrix.length < 2) {
+    throw invalidValue("Pivot values must include a header and at least one data row");
+  }
+
+  const dataLength = valueMatrix.length - 1;
+  const rowDimension = readPivotDimension(rowsInput, dataLength, "row", "TOTAL");
+  const columnDimension = readPivotDimension(columnsInput, dataLength, "column", "TOTAL");
+
+  const records = [];
+  for (let index = 0; index < dataLength; index += 1) {
+    const row = rowDimension.rows[index];
+    const column = columnDimension.rows[index];
+    records.push({ row, column, value: valueMatrix[index + 1]?.[0] });
+  }
+
+  return { rowHeaders: rowDimension.headers, columnHeaders: columnDimension.headers, records };
+}
+
+function pivotNumericValues(values: Primitive[]): number[] {
+  const result: number[] = [];
+  for (const value of values) {
+    if (isBlank(value)) {
+      continue;
+    }
+    const parsed = tryGetNumber(value);
+    if (parsed === null) {
+      throw invalidValue("Expected numeric pivot values");
+    }
+    result.push(parsed);
+  }
+  return result;
+}
+
+function aggregatePivotValues(values: Primitive[], metric: string, quantile?: number, alpha?: number, direction?: Direction): Primitive {
+  if (metric === "count") {
+    return values.filter((value) => !isBlank(value)).length;
+  }
+
+  const numeric = pivotNumericValues(values).sort((a, b) => a - b);
+  if (numeric.length === 0) {
+    return "";
+  }
+
+  switch (metric) {
+    case "sum": return numeric.reduce((sum, value) => sum + value, 0);
+    case "average": return mean(numeric);
+    case "min": return numeric[0];
+    case "max": return numeric[numeric.length - 1];
+    case "median": return median(numeric);
+    case "percentile":
+      if (quantile === undefined || quantile <= 0 || quantile >= 1) {
+        throw invalidNumber("Quantile must be in (0,1)");
+      }
+      return percentileInc(numeric, quantile);
+    case "stdev.s": return numeric.length < 2 ? "" : sampleStandardDeviation(numeric);
+    case "stdev.p": return Math.sqrt(populationVariance(numeric));
+    case "var.s": return numeric.length < 2 ? "" : sampleVariance(numeric);
+    case "var.p": return populationVariance(numeric);
+    case "varcoef.s": {
+      if (numeric.length < 2) {
+        return "";
+      }
+      const avg = mean(numeric);
+      if (avg === 0) {
+        throw divisionByZero();
+      }
+      return sampleStandardDeviation(numeric) / avg;
+    }
+    case "varcoef.p": {
+      const avg = mean(numeric);
+      if (avg === 0) {
+        throw divisionByZero();
+      }
+      return Math.sqrt(populationVariance(numeric)) / avg;
+    }
+    case "conf.t": {
+      if (numeric.length < 2 || alpha === undefined || direction === undefined) {
+        return "";
+      }
+      validateAlpha(alpha);
+      return criticalT(alpha, numeric.length - 1, direction) * sampleStandardDeviation(numeric) / Math.sqrt(numeric.length);
+    }
+    case "conf.norm": {
+      if (numeric.length < 2 || alpha === undefined || direction === undefined) {
+        return "";
+      }
+      validateAlpha(alpha);
+      return criticalZ(alpha, direction) * sampleStandardDeviation(numeric) / Math.sqrt(numeric.length);
+    }
+    case "mad": {
+      const med = median(numeric);
+      return median(numeric.map((value) => Math.abs(value - med)));
+    }
+    case "iqr": return percentileInc(numeric, 0.75) - percentileInc(numeric, 0.25);
+    default: throw invalidValue("Unsupported pivot metric");
+  }
+}
+
+function pivotTable(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput, metric: string, options: { quantile?: number; alpha?: number; direction?: Direction } = {}): ExcelOutput {
+  const { rowHeaders, columnHeaders, records } = readPivotData(rowsInput, columnsInput, valuesInput);
+  const rowKeys = new Map<string, string[]>();
+  const columnKeys = new Map<string, string[]>();
+  const groups = new Map<string, Primitive[]>();
+
+  const totalColumn = columnHeaders.length === 0 ? ["TOTAL"] : ["TOTAL"];
+  columnKeys.set(cellKey(totalColumn), totalColumn);
+
+  for (const record of records) {
+    const rowKey = cellKey(record.row);
+    const column = columnHeaders.length === 0 ? totalColumn : record.column;
+    const columnKey = cellKey(column);
+    rowKeys.set(rowKey, record.row);
+    columnKeys.set(columnKey, column);
+    for (const key of [`${rowKey}\u0000${columnKey}`, `${rowKey}\u0000${cellKey(totalColumn)}`, `${cellKey(["TOTAL"])}\u0000${columnKey}`, `${cellKey(["TOTAL"])}\u0000${cellKey(totalColumn)}`]) {
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(record.value);
+    }
+  }
+
+  rowKeys.set(cellKey(["TOTAL"]), ["TOTAL", ...new Array(Math.max(0, rowHeaders.length - 1)).fill("")]);
+  const sortedRows = Array.from(rowKeys.values()).sort((left, right) => {
+    if (left[0] === "TOTAL") return 1;
+    if (right[0] === "TOTAL") return -1;
+    return left.join("\u0000").localeCompare(right.join("\u0000"));
+  });
+  const sortedColumns = Array.from(columnKeys.values()).sort((left, right) => {
+    if (left[0] === "TOTAL") return 1;
+    if (right[0] === "TOTAL") return -1;
+    return left.join("\u0000").localeCompare(right.join("\u0000"));
+  });
+
+  const headerRows: Primitive[][] = [];
+  if (columnHeaders.length > 1) {
+    for (let level = 0; level < columnHeaders.length - 1; level += 1) {
+      headerRows.push([
+        ...new Array(rowHeaders.length).fill(""),
+        ...sortedColumns.map((column) => column[0] === "TOTAL" ? "" : column[level]),
+      ]);
+    }
+  }
+  headerRows.push([...rowHeaders, ...sortedColumns.map((column) => column[0] === "TOTAL" ? "TOTAL" : column[column.length - 1])]);
+
+  const bodyRows = sortedRows.map((row) => {
+    const rowKey = cellKey(row[0] === "TOTAL" ? ["TOTAL"] : row);
+    return [
+      ...row,
+      ...sortedColumns.map((column) => {
+        const columnKey = cellKey(column);
+        const values = groups.get(`${rowKey}\u0000${columnKey}`) ?? [];
+        return aggregatePivotValues(values, metric, options.quantile, options.alpha, options.direction);
+      }),
+    ];
+  });
+
+  return rectangularRows([...headerRows, ...bodyRows]);
+}
+
+function pivotCount(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "count");
+}
+
+function pivotSum(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "sum");
+}
+
+function pivotAverage(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "average");
+}
+
+function pivotMin(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "min");
+}
+
+function pivotMax(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "max");
+}
+
+function pivotMedian(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "median");
+}
+
+function pivotPercentile(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput, quantile: number): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "percentile", { quantile });
+}
+
+function pivotStdevS(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "stdev.s");
+}
+
+function pivotStdevP(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "stdev.p");
+}
+
+function pivotVarS(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "var.s");
+}
+
+function pivotVarP(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "var.p");
+}
+
+function pivotVarcoefS(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "varcoef.s");
+}
+
+function pivotVarcoefP(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "varcoef.p");
+}
+
+function pivotConfT(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput, alpha: number, direction?: Primitive): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "conf.t", { alpha, direction: parsePivotDirection(direction) });
+}
+
+function pivotConfNorm(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput, alpha: number, direction?: Primitive): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "conf.norm", { alpha, direction: parsePivotDirection(direction) });
+}
+
+function pivotMad(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "mad");
+}
+
+function pivotIqr(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: ExcelInput): ExcelOutput {
+  return pivotTable(rowsInput, columnsInput, valuesInput, "iqr");
 }
 
 function shapiroStatistic(sortedSample: number[]): number {
@@ -1547,8 +1828,6 @@ CustomFunctions.associate("VARCOEF", varcoef);
 CustomFunctions.associate("VARCOEF_S", varcoefS);
 CustomFunctions.associate("VARCOEF_W", (values: ExcelInput, weights: ExcelInput) => varcoefW(values, weights, false));
 CustomFunctions.associate("VARCOEF_S_W", (values: ExcelInput, weights: ExcelInput) => varcoefW(values, weights, true));
-CustomFunctions.associate("PERCENTILE_INC_IFS", percentileIncIfs);
-CustomFunctions.associate("PERCENTILE_EXC_IFS", percentileExcIfs);
 CustomFunctions.associate("SHAPIRO_WILK", shapiroWilk);
 CustomFunctions.associate("KOLMOGOROV_SMIRNOV", kolmogorovSmirnov);
 CustomFunctions.associate("T_TEST_1S", tTest1S);
@@ -1564,20 +1843,20 @@ CustomFunctions.associate("ANCOVA_G", () => pendingFeature("ANCOVA.G"));
 CustomFunctions.associate("CONTINGENCY_T", () => pendingFeature("CONTINGENCY.T"));
 CustomFunctions.associate("CONTINGENCY_G", () => pendingFeature("CONTINGENCY.G"));
 CustomFunctions.associate("CORREL_MATRIX", () => pendingFeature("CORREL.MATRIX"));
-CustomFunctions.associate("PIVOT_COUNT", () => pendingFeature("PIVOT.COUNT"));
-CustomFunctions.associate("PIVOT_SUM", () => pendingFeature("PIVOT.SUM"));
-CustomFunctions.associate("PIVOT_AVERAGE", () => pendingFeature("PIVOT.AVERAGE"));
-CustomFunctions.associate("PIVOT_MIN", () => pendingFeature("PIVOT.MIN"));
-CustomFunctions.associate("PIVOT_MAX", () => pendingFeature("PIVOT.MAX"));
-CustomFunctions.associate("PIVOT_MEDIAN", () => pendingFeature("PIVOT.MEDIAN"));
-CustomFunctions.associate("PIVOT_PERCENTILE", () => pendingFeature("PIVOT.PERCENTILE"));
-CustomFunctions.associate("PIVOT_STDEV_S", () => pendingFeature("PIVOT.STDEV.S"));
-CustomFunctions.associate("PIVOT_STDEV_P", () => pendingFeature("PIVOT.STDEV.P"));
-CustomFunctions.associate("PIVOT_VAR_S", () => pendingFeature("PIVOT.VAR.S"));
-CustomFunctions.associate("PIVOT_VAR_P", () => pendingFeature("PIVOT.VAR.P"));
-CustomFunctions.associate("PIVOT_VARCOEF_S", () => pendingFeature("PIVOT.VARCOEF.S"));
-CustomFunctions.associate("PIVOT_VARCOEF_P", () => pendingFeature("PIVOT.VARCOEF.P"));
-CustomFunctions.associate("PIVOT_CONF_T", () => pendingFeature("PIVOT.CONF.T"));
-CustomFunctions.associate("PIVOT_CONF_NORM", () => pendingFeature("PIVOT.CONF.NORM"));
-CustomFunctions.associate("PIVOT_MAD", () => pendingFeature("PIVOT.MAD"));
-CustomFunctions.associate("PIVOT_IQR", () => pendingFeature("PIVOT.IQR"));
+CustomFunctions.associate("PIVOT_COUNT", pivotCount);
+CustomFunctions.associate("PIVOT_SUM", pivotSum);
+CustomFunctions.associate("PIVOT_AVERAGE", pivotAverage);
+CustomFunctions.associate("PIVOT_MIN", pivotMin);
+CustomFunctions.associate("PIVOT_MAX", pivotMax);
+CustomFunctions.associate("PIVOT_MEDIAN", pivotMedian);
+CustomFunctions.associate("PIVOT_PERCENTILE", pivotPercentile);
+CustomFunctions.associate("PIVOT_STDEV_S", pivotStdevS);
+CustomFunctions.associate("PIVOT_STDEV_P", pivotStdevP);
+CustomFunctions.associate("PIVOT_VAR_S", pivotVarS);
+CustomFunctions.associate("PIVOT_VAR_P", pivotVarP);
+CustomFunctions.associate("PIVOT_VARCOEF_S", pivotVarcoefS);
+CustomFunctions.associate("PIVOT_VARCOEF_P", pivotVarcoefP);
+CustomFunctions.associate("PIVOT_CONF_T", pivotConfT);
+CustomFunctions.associate("PIVOT_CONF_NORM", pivotConfNorm);
+CustomFunctions.associate("PIVOT_MAD", pivotMad);
+CustomFunctions.associate("PIVOT_IQR", pivotIqr);

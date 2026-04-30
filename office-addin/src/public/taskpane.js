@@ -138,8 +138,8 @@ function outputDocs(fn) {
 
 function categoryRank(category) {
   const order = {
-    en: ["General", "Descriptive", "Tests", "Pivot", "Diagnostics", "Other"],
-    cs: ["Obecné", "Popisné", "Testy", "PIVOT", "Diagnostika", "Other"]
+    en: ["General", "Descriptive", "Tests", "Pivot table", "Diagnostics", "Other"],
+    cs: ["Obecné", "Popisné", "Testy", "Kontingenční tabulka", "Diagnostika", "Other"]
   };
 
   const index = order[language].indexOf(category);
@@ -336,10 +336,224 @@ const tutorialDefinitions = {
   "PARSE.NUMBER": {
     customRun: runParseNumberTutorial
   },
+  "AVERAGE.W": {
+    customRun: () => runDescriptiveTutorial("AVERAGE.W")
+  },
+  "HARMEAN.W": {
+    customRun: () => runDescriptiveTutorial("HARMEAN.W")
+  },
+  "GEOMEAN.W": {
+    customRun: () => runDescriptiveTutorial("GEOMEAN.W")
+  },
+  "VAR.P.W": {
+    customRun: () => runDescriptiveTutorial("VAR.P.W")
+  },
+  "VAR.S.W": {
+    customRun: () => runDescriptiveTutorial("VAR.S.W")
+  },
+  "STDEV.P.W": {
+    customRun: () => runDescriptiveTutorial("STDEV.P.W")
+  },
+  "STDEV.S.W": {
+    customRun: () => runDescriptiveTutorial("STDEV.S.W")
+  },
+  "VARCOEF": {
+    customRun: () => runDescriptiveTutorial("VARCOEF")
+  },
+  "VARCOEF.S": {
+    customRun: () => runDescriptiveTutorial("VARCOEF.S")
+  },
+  "VARCOEF.W": {
+    customRun: () => runDescriptiveTutorial("VARCOEF.W")
+  },
+  "VARCOEF.S.W": {
+    customRun: () => runDescriptiveTutorial("VARCOEF.S.W")
+  },
+  "PIVOT.COUNT": {
+    customRun: () => runPivotTutorial("PIVOT.COUNT")
+  },
+  "PIVOT.SUM": {
+    customRun: () => runPivotTutorial("PIVOT.SUM")
+  },
+  "PIVOT.AVERAGE": {
+    customRun: () => runPivotTutorial("PIVOT.AVERAGE")
+  },
+  "PIVOT.MIN": {
+    customRun: () => runPivotTutorial("PIVOT.MIN")
+  },
+  "PIVOT.MAX": {
+    customRun: () => runPivotTutorial("PIVOT.MAX")
+  },
+  "PIVOT.MEDIAN": {
+    customRun: () => runPivotTutorial("PIVOT.MEDIAN")
+  },
+  "PIVOT.PERCENTILE": {
+    customRun: () => runPivotTutorial("PIVOT.PERCENTILE")
+  },
+  "PIVOT.STDEV.S": {
+    customRun: () => runPivotTutorial("PIVOT.STDEV.S")
+  },
+  "PIVOT.STDEV.P": {
+    customRun: () => runPivotTutorial("PIVOT.STDEV.P")
+  },
+  "PIVOT.VAR.S": {
+    customRun: () => runPivotTutorial("PIVOT.VAR.S")
+  },
+  "PIVOT.VAR.P": {
+    customRun: () => runPivotTutorial("PIVOT.VAR.P")
+  },
+  "PIVOT.VARCOEF.S": {
+    customRun: () => runPivotTutorial("PIVOT.VARCOEF.S")
+  },
+  "PIVOT.VARCOEF.P": {
+    customRun: () => runPivotTutorial("PIVOT.VARCOEF.P")
+  },
+  "PIVOT.CONF.T": {
+    customRun: () => runPivotTutorial("PIVOT.CONF.T")
+  },
+  "PIVOT.CONF.NORM": {
+    customRun: () => runPivotTutorial("PIVOT.CONF.NORM")
+  },
+  "PIVOT.MAD": {
+    customRun: () => runPivotTutorial("PIVOT.MAD")
+  },
+  "PIVOT.IQR": {
+    customRun: () => runPivotTutorial("PIVOT.IQR")
+  },
   "WELCH.TEST.2S.G": {
     customRun: runWelchTutorialWithDiagnostics
   }
 };
+
+const descriptiveValueRows = [
+  [12],
+  [15],
+  [18],
+  [21],
+  [23],
+  [26],
+  [29],
+  [31],
+  [34],
+  [37]
+];
+
+const descriptiveWeightedRows = [
+  [12, 1],
+  [15, 2],
+  [18, 1],
+  [21, 3],
+  [23, 2],
+  [26, 2],
+  [29, 1],
+  [31, 3],
+  [34, 2],
+  [37, 1]
+];
+
+const descriptiveTutorialDefinitions = {
+  "AVERAGE.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=AVERAGE.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "HARMEAN.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=HARMEAN.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "GEOMEAN.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=GEOMEAN.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "VAR.P.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=VAR.P.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "VAR.S.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=VAR.S.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "STDEV.P.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=STDEV.P.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "STDEV.S.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=STDEV.S.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "VARCOEF": {
+    headers: ["value", "", "result"],
+    rows: descriptiveValueRows,
+    formulaCell: "C2",
+    formula: "=VARCOEF(A2:A11)",
+    previewRange: "C2:C2"
+  },
+  "VARCOEF.S": {
+    headers: ["value", "", "result"],
+    rows: descriptiveValueRows,
+    formulaCell: "C2",
+    formula: "=VARCOEF.S(A2:A11)",
+    previewRange: "C2:C2"
+  },
+  "VARCOEF.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=VARCOEF.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+  "VARCOEF.S.W": {
+    headers: ["value", "weight", "", "result"],
+    rows: descriptiveWeightedRows,
+    formulaCell: "D2",
+    formula: "=VARCOEF.S.W(A2:A11,B2:B11)",
+    previewRange: "D2:D2"
+  },
+};
+
+const pivotTutorialRows = [
+  ["region", "channel", "value"],
+  ["north", "online", 12],
+  ["north", "online", 15],
+  ["north", "store", 18],
+  ["north", "store", 21],
+  ["south", "online", 23],
+  ["south", "online", 26],
+  ["south", "store", 29],
+  ["south", "store", 31],
+  ["west", "online", 34],
+  ["west", "store", 37]
+];
+
+function pivotTutorialFormula(functionName) {
+  if (functionName === "PIVOT.PERCENTILE") {
+    return "=PIVOT.PERCENTILE(A1:A11,B1:B11,C1:C11,0.75)";
+  }
+  if (functionName === "PIVOT.CONF.T" || functionName === "PIVOT.CONF.NORM") {
+    return `=${functionName}(A1:A11,B1:B11,C1:C11,0.05,0)`;
+  }
+  return `=${functionName}(A1:A11,B1:B11,C1:C11)`;
+}
 
 async function runTutorial(functionName) {
   const definition = tutorialDefinitions[functionName];
@@ -422,7 +636,8 @@ async function runParseNumberTutorial() {
     "(987,65)",
     "2 500",
     "3.14",
-    "4,5"
+    "4,5",
+    "n/a"
   ];
   const formulas = rawValues.map((_, index) => [`=PARSE.NUMBER(A${index + 2})`]);
   let sheetName = "";
@@ -462,6 +677,129 @@ async function runParseNumberTutorial() {
         await context.sync();
         return {
           attempt,
+          text: preview.text
+        };
+      });
+
+      const busy = state.text.flat().some(textLooksBusy);
+      if (attempt === 1 || attempt % 5 === 0 || !busy) {
+        debugLog("Tutorial calculation poll", { functionName, ...state });
+      }
+      if (!busy) {
+        break;
+      }
+      await sleep(500);
+    }
+
+    setStatus(t("tutorialReady"));
+    debugLog("Tutorial completed", { functionName, sheetName });
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : String(error));
+    debugLog("Tutorial failed", { functionName, message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+async function runDescriptiveTutorial(functionName) {
+  const definition = descriptiveTutorialDefinitions[functionName];
+  let sheetName = "";
+
+  debugLog("Tutorial clicked", { functionName, hasExcel: Boolean(window.Excel), hasOffice: Boolean(window.Office) });
+  if (!window.Excel) {
+    setStatus(t("tutorialUnavailable"));
+    debugLog("Tutorial unavailable: Excel API missing", { functionName });
+    return;
+  }
+
+  try {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.add();
+      sheet.activate();
+      sheet.load("name");
+
+      sheet.getRangeByIndexes(0, 0, 1, definition.headers.length).values = [definition.headers];
+      sheet.getRangeByIndexes(0, 0, 1, definition.headers.length).format.font.bold = true;
+      sheet.getRangeByIndexes(1, 0, definition.rows.length, definition.rows[0].length).values = definition.rows;
+      sheet.getRange(definition.formulaCell).formulas = [[definition.formula]];
+      sheet.getRange("A:D").format.autofitColumns();
+      await context.sync();
+
+      sheetName = sheet.name;
+      debugLog("Tutorial formulas written", { functionName, sheetName, formula: definition.formula });
+      context.workbook.application.calculate(Excel.CalculationType.full);
+      await context.sync();
+      debugLog("Tutorial recalculation requested", { functionName, type: "full" });
+    });
+
+    for (let attempt = 1; attempt <= 30; attempt += 1) {
+      const state = await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getItem(sheetName);
+        const preview = sheet.getRange(definition.previewRange);
+        preview.load("text");
+        await context.sync();
+        return {
+          attempt,
+          formula: definition.formula,
+          text: preview.text
+        };
+      });
+
+      const busy = state.text.flat().some(textLooksBusy);
+      if (attempt === 1 || attempt % 5 === 0 || !busy) {
+        debugLog("Tutorial calculation poll", { functionName, ...state });
+      }
+      if (!busy) {
+        break;
+      }
+      await sleep(500);
+    }
+
+    setStatus(t("tutorialReady"));
+    debugLog("Tutorial completed", { functionName, sheetName });
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : String(error));
+    debugLog("Tutorial failed", { functionName, message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+async function runPivotTutorial(functionName) {
+  const formula = pivotTutorialFormula(functionName);
+  let sheetName = "";
+
+  debugLog("Tutorial clicked", { functionName, hasExcel: Boolean(window.Excel), hasOffice: Boolean(window.Office) });
+  if (!window.Excel) {
+    setStatus(t("tutorialUnavailable"));
+    debugLog("Tutorial unavailable: Excel API missing", { functionName });
+    return;
+  }
+
+  try {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.add();
+      sheet.activate();
+      sheet.load("name");
+
+      sheet.getRangeByIndexes(0, 0, pivotTutorialRows.length, pivotTutorialRows[0].length).values = pivotTutorialRows;
+      sheet.getRange("A1:C1").format.font.bold = true;
+      sheet.getRange("E2").formulas = [[formula]];
+      sheet.getRange("A:H").format.autofitColumns();
+      await context.sync();
+
+      sheetName = sheet.name;
+      debugLog("Tutorial formulas written", { functionName, sheetName, formula });
+      context.workbook.application.calculate(Excel.CalculationType.full);
+      await context.sync();
+      debugLog("Tutorial recalculation requested", { functionName, type: "full" });
+    });
+
+    for (let attempt = 1; attempt <= 30; attempt += 1) {
+      const state = await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getItem(sheetName);
+        const preview = sheet.getRange("E2:L9");
+        preview.load("text");
+        await context.sync();
+        return {
+          attempt,
+          formula,
           text: preview.text
         };
       });

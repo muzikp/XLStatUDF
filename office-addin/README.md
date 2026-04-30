@@ -32,7 +32,6 @@ Implemented in the new runtime:
 - random generators and normal interval probability
 - single-column random array generators: `GENERATE.NORM.ARRAY`, `GENERATE.INT.ARRAY`
 - weighted descriptive statistics
-- filtered percentiles
 - Shapiro-Wilk and Kolmogorov-Smirnov normality checks
 - one-sample, paired, and two-sample tests
 - Spearman correlation
