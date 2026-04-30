@@ -673,17 +673,103 @@ function parseOptionalInteger(input: Primitive, defaultValue: number): number {
   return Math.round(parsed);
 }
 
-function fill(what: Primitive, count: Primitive): ExcelOutput {
+function fill(what: string, count: Primitive): string[][] {
   const repeat = parseOptionalInteger(count, 0);
   if (repeat < 1) {
     throw invalidNumber("Count must be >= 1");
   }
-  const values: Primitive[] = [];
+  const value = what ?? "";
+  const values: string[] = [];
   for (let index = 0; index < repeat; index += 1) {
-    values.push(what);
+    values.push(value);
   }
 
   return values.map((value) => [value]);
+}
+
+function runtimeDecimalSeparator(): "." | "," {
+  try {
+    const decimalPart = new Intl.NumberFormat(undefined).formatToParts(1.1).find((part) => part.type === "decimal");
+    return decimalPart?.value === "," ? "," : ".";
+  } catch {
+    return ".";
+  }
+}
+
+function normalizeNumericText(value: Primitive): string {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      throw invalidNumber("Expected finite number");
+    }
+    return String(value);
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "1" : "0";
+  }
+
+  if (isBlank(value)) {
+    throw invalidValue("Expected numeric text");
+  }
+
+  let text = String(value).trim().replace(/\u2212/g, "-").replace(/[\s\u00a0\u202f]/g, "");
+  const negativeParentheses = /^\(.*\)$/.test(text);
+  if (negativeParentheses) {
+    text = text.slice(1, -1);
+  }
+
+  text = text.replace(/[^0-9+\-.,]/g, "");
+  const sign = negativeParentheses || text.startsWith("-") ? "-" : text.startsWith("+") ? "+" : "";
+  text = text.replace(/[+\-]/g, "");
+
+  if (!/[0-9]/.test(text)) {
+    throw invalidValue("Expected numeric text");
+  }
+
+  const separators = [...text].map((char, index) => ({ char, index })).filter((item) => item.char === "." || item.char === ",");
+  if (separators.length === 0) {
+    return `${sign}${text}`;
+  }
+
+  const localeDecimal = runtimeDecimalSeparator();
+  const hasComma = text.includes(",");
+  const hasDot = text.includes(".");
+  let decimalIndex = -1;
+
+  if (hasComma && hasDot) {
+    decimalIndex = separators[separators.length - 1].index;
+  } else {
+    const separator = hasComma ? "," : ".";
+    const positions = separators.map((item) => item.index);
+    const lastPosition = positions[positions.length - 1];
+    const parts = text.split(separator);
+    const groupedThousands = parts.length > 1 && parts.slice(1).every((part) => part.length === 3);
+
+    if (positions.length > 1) {
+      decimalIndex = groupedThousands ? -1 : lastPosition;
+    } else if (separator === localeDecimal) {
+      decimalIndex = lastPosition;
+    } else {
+      decimalIndex = parts[1]?.length === 3 && parts[0].length >= 1 && parts[0].length <= 3 ? -1 : lastPosition;
+    }
+  }
+
+  if (decimalIndex === -1) {
+    return `${sign}${text.replace(/[.,]/g, "")}`;
+  }
+
+  const integerPart = text.slice(0, decimalIndex).replace(/[.,]/g, "");
+  const decimalPart = text.slice(decimalIndex + 1).replace(/[.,]/g, "");
+  return `${sign}${integerPart || "0"}.${decimalPart}`;
+}
+
+function parseNumber(value: Primitive): number {
+  const normalized = normalizeNumericText(value);
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed)) {
+    throw invalidNumber("Expected numeric text");
+  }
+  return parsed;
 }
 
 function generateNorm(meanValue: number, standardDeviation: number, outlierRate?: Primitive): number {
@@ -1448,6 +1534,7 @@ CustomFunctions.associate("GENERATE_NORM_ARRAY", generateNormArray);
 CustomFunctions.associate("GENERATE_INT", generateInt);
 CustomFunctions.associate("GENERATE_INT_ARRAY", generateIntArray);
 CustomFunctions.associate("FILL", fill);
+CustomFunctions.associate("PARSE_NUMBER", parseNumber);
 CustomFunctions.associate("NORM_DIST_RANGE", normDistRange);
 CustomFunctions.associate("AVERAGE_W", averageW);
 CustomFunctions.associate("HARMEAN_W", harmMeanW);

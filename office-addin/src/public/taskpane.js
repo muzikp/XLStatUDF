@@ -333,6 +333,9 @@ const tutorialDefinitions = {
     formula: '=FILL("control",100)',
     range: "A2:A101"
   },
+  "PARSE.NUMBER": {
+    customRun: runParseNumberTutorial
+  },
   "WELCH.TEST.2S.G": {
     customRun: runWelchTutorialWithDiagnostics
   }
@@ -385,6 +388,80 @@ async function runTutorial(functionName) {
         return {
           attempt,
           formula: definition.formula,
+          text: preview.text
+        };
+      });
+
+      const busy = state.text.flat().some(textLooksBusy);
+      if (attempt === 1 || attempt % 5 === 0 || !busy) {
+        debugLog("Tutorial calculation poll", { functionName, ...state });
+      }
+      if (!busy) {
+        break;
+      }
+      await sleep(500);
+    }
+
+    setStatus(t("tutorialReady"));
+    debugLog("Tutorial completed", { functionName, sheetName });
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : String(error));
+    debugLog("Tutorial failed", { functionName, message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+async function runParseNumberTutorial() {
+  const functionName = "PARSE.NUMBER";
+  const rawValues = [
+    "1 234,56",
+    "1,234.56",
+    "CZK 1 234,56",
+    "1.234,56 Kč",
+    " - 42 ",
+    "−12,5",
+    "(987,65)",
+    "2 500",
+    "3.14",
+    "4,5"
+  ];
+  const formulas = rawValues.map((_, index) => [`=PARSE.NUMBER(A${index + 2})`]);
+  let sheetName = "";
+
+  debugLog("Tutorial clicked", { functionName, hasExcel: Boolean(window.Excel), hasOffice: Boolean(window.Office) });
+  if (!window.Excel) {
+    setStatus(t("tutorialUnavailable"));
+    debugLog("Tutorial unavailable: Excel API missing", { functionName });
+    return;
+  }
+
+  try {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.add();
+      sheet.activate();
+      sheet.load("name");
+
+      sheet.getRange("A1:B1").values = [["raw", "value"]];
+      sheet.getRange("A1:B1").format.font.bold = true;
+      sheet.getRange(`A2:A${rawValues.length + 1}`).values = rawValues.map((value) => [value]);
+      sheet.getRange(`B2:B${rawValues.length + 1}`).formulas = formulas;
+      sheet.getRange("A:B").format.autofitColumns();
+      await context.sync();
+
+      sheetName = sheet.name;
+      debugLog("Tutorial formulas written", { functionName, sheetName });
+      context.workbook.application.calculate(Excel.CalculationType.full);
+      await context.sync();
+      debugLog("Tutorial recalculation requested", { functionName, type: "full" });
+    });
+
+    for (let attempt = 1; attempt <= 30; attempt += 1) {
+      const state = await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getItem(sheetName);
+        const preview = sheet.getRange(`B2:B${rawValues.length + 1}`);
+        preview.load("text");
+        await context.sync();
+        return {
+          attempt,
           text: preview.text
         };
       });

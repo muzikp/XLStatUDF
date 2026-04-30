@@ -64,8 +64,9 @@ This file is a working memory for future AI sessions in this repository. Keep it
 - Welch spill output now uses Unicode labels for readability, including `α` and critical labels such as `tᶜʳⁱᵗ(1−α/2)`.
 - Tutorial buttons are wired in `office-addin/src/public/taskpane.js` via `tutorialDefinitions`.
 - `VERSION` and `PING` remain runtime diagnostics but are hidden from sidepanel documentation.
-- General-function tutorials exist for `GENERATE.NORM`, `GENERATE.NORM.ARRAY`, `GENERATE.INT`, `GENERATE.INT.ARRAY`, and `FILL`.
+- General-function tutorials exist for `GENERATE.NORM`, `GENERATE.NORM.ARRAY`, `GENERATE.INT`, `GENERATE.INT.ARRAY`, `FILL`, and `PARSE.NUMBER`.
 - `FILL` is currently documented and registered as a stable two-argument function (`what`, `count`). `FILL.RANDOM` was removed after a repeating value/count-pair metadata attempt caused `#HODNOTA!` in Excel and the two-argument random form was not useful.
+- `PARSE.NUMBER` is scalar and intended for row-by-row cleanup beside raw source cells; it strips spaces/currency/noise and accepts comma or dot decimal separators with locale-aware ambiguity handling.
 
 ## Build Notes
 

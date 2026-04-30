@@ -124,7 +124,7 @@
       "parameters": [
         {
           "sourceName": "co",
-          "description": "hodnota, která se má opakovat",
+          "description": "textová hodnota, která se má opakovat",
           "enumValues": []
         },
         {
@@ -137,6 +137,23 @@
         {
           "name": "value",
           "description": "jednosloupcová řada opakovaných hodnot"
+        }
+      ]
+    },
+    "PARSE.NUMBER": {
+      "category": "Obecné",
+      "summary": "Převádí číselný text na skutečné číslo.",
+      "parameters": [
+        {
+          "sourceName": "hodnota",
+          "description": "číslo nebo text obsahující číslo, včetně mezer, měny a desetinné čárky nebo tečky",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "value",
+          "description": "vyčištěná číselná hodnota"
         }
       ]
     },
@@ -1718,7 +1735,7 @@
       "parameters": [
         {
           "sourceName": "what",
-          "description": "value to repeat",
+          "description": "text value to repeat",
           "enumValues": []
         },
         {
@@ -1731,6 +1748,23 @@
         {
           "name": "value",
           "description": "single-column series of repeated values"
+        }
+      ]
+    },
+    "PARSE.NUMBER": {
+      "category": "General",
+      "summary": "Converts numeric text into a real number.",
+      "parameters": [
+        {
+          "sourceName": "value",
+          "description": "number or text containing a number, including spaces, currency symbols, and comma or dot decimals",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "value",
+          "description": "clean numeric value"
         }
       ]
     },

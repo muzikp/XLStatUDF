@@ -39,6 +39,7 @@ Implemented in the new runtime:
 - chi-square goodness-of-fit
 - one-way ANOVA
 - basic two-argument `FILL` value repetition
+- locale-aware numeric text parsing with `PARSE.NUMBER`
 
 Still pending for full parity with the archived Excel-DNA version:
 

@@ -66,10 +66,19 @@
       "name": "FILL",
       "description": "Repeats one scalar value into a single-column spill output.",
       "parameters": [
-        { "name": "what", "type": "any" },
+        { "name": "what", "type": "string" },
         { "name": "count", "type": "number" }
       ],
-      "result": { "type": "any", "dimensionality": "matrix" }
+      "result": { "type": "string", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PARSE_NUMBER",
+      "name": "PARSE.NUMBER",
+      "description": "Converts numeric text with locale-aware decimal and thousands separators into a number.",
+      "parameters": [
+        { "name": "value", "type": "any" }
+      ],
+      "result": { "type": "number" }
     },
     {
       "id": "NORM_DIST_RANGE",
