@@ -36,14 +36,11 @@ Implemented in the new runtime:
 - one-sample, paired, and two-sample tests
 - Spearman correlation
 - chi-square goodness-of-fit
-- one-way ANOVA
+- one-way, repeated-measures, and covariance ANOVA
+- contingency-table analyses
+- correlation matrix builder
+- pivot family
 - basic two-argument `FILL` value repetition
 - locale-aware numeric text parsing with `PARSE.NUMBER`
 
-Still pending for full parity with the archived Excel-DNA version:
-
-- repeated-measures ANOVA
-- ANCOVA
-- contingency analyses
-- correlation matrix builder
-- pivot family
+The active Office.js runtime is now the primary implementation target. The archived Excel-DNA version remains only as a reference while the migration is being finalized.

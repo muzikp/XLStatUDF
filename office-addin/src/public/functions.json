@@ -722,11 +722,12 @@
     {
       "id": "ANOVA_RM",
       "name": "ANOVA.RM",
-      "description": "Pending repeated-measures ANOVA migration.",
+      "description": "Performs one-way repeated-measures ANOVA across columns.",
       "parameters": [
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "hasHeader",
@@ -752,19 +753,22 @@
     {
       "id": "ANCOVA_G",
       "name": "ANCOVA.G",
-      "description": "Pending ANCOVA migration.",
+      "description": "Performs ANCOVA with one factor and one or more covariates.",
       "parameters": [
         {
           "name": "groups",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "covariates",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "postHoc",
@@ -790,11 +794,12 @@
     {
       "id": "CONTINGENCY_T",
       "name": "CONTINGENCY.T",
-      "description": "Pending contingency-table migration.",
+      "description": "Analyzes a contingency table entered directly as a frequency matrix.",
       "parameters": [
         {
           "name": "table",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "hasHeader",
@@ -815,19 +820,22 @@
     {
       "id": "CONTINGENCY_G",
       "name": "CONTINGENCY.G",
-      "description": "Pending grouped contingency migration.",
+      "description": "Analyzes a contingency table built from grouped columns.",
       "parameters": [
         {
           "name": "columnCategories",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "rowCategories",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "counts",
           "type": "any",
+          "dimensionality": "matrix",
           "optional": true
         },
         {
@@ -849,11 +857,12 @@
     {
       "id": "CORREL_MATRIX",
       "name": "CORREL.MATRIX",
-      "description": "Pending correlation-matrix migration.",
+      "description": "Builds a correlation matrix including p-values and significance markers.",
       "parameters": [
         {
           "name": "data",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "method",

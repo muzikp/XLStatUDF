@@ -420,6 +420,21 @@ const tutorialDefinitions = {
   "PIVOT.IQR": {
     customRun: () => runPivotTutorial("PIVOT.IQR")
   },
+  "ANOVA.RM": {
+    customRun: () => runMatrixTutorial("ANOVA.RM")
+  },
+  "ANCOVA.G": {
+    customRun: () => runMatrixTutorial("ANCOVA.G")
+  },
+  "CONTINGENCY.T": {
+    customRun: () => runMatrixTutorial("CONTINGENCY.T")
+  },
+  "CONTINGENCY.G": {
+    customRun: () => runMatrixTutorial("CONTINGENCY.G")
+  },
+  "CORREL.MATRIX": {
+    customRun: () => runMatrixTutorial("CORREL.MATRIX")
+  },
   "WELCH.TEST.2S.G": {
     customRun: runWelchTutorialWithDiagnostics
   }
@@ -555,6 +570,68 @@ function pivotTutorialFormula(functionName) {
   return `=${functionName}(A1:A11,B1:B11,C1:C11)`;
 }
 
+const matrixTutorialDefinitions = {
+  "ANOVA.RM": {
+    values: [
+      ["baseline", "week 4", "week 8"],
+      [10, 12, 14],
+      [9, 11, 13],
+      [11, 13, 15],
+      [12, 14, 16]
+    ],
+    formula: "=ANOVA.RM(A1:C5,1,0.05,2)",
+    previewRange: "E2:N24"
+  },
+  "ANCOVA.G": {
+    values: [
+      ["group", "score", "age"],
+      ["A", 10, 1],
+      ["A", 12, 2],
+      ["A", 13, 3],
+      ["B", 16, 1],
+      ["B", 18, 2],
+      ["B", 19, 3],
+      ["C", 20, 1],
+      ["C", 22, 2],
+      ["C", 24, 3]
+    ],
+    formula: "=ANCOVA.G(A1:A10,B1:B10,C1:C10,2,0.05,1)",
+    previewRange: "F2:O30"
+  },
+  "CONTINGENCY.T": {
+    values: [
+      ["", "male", "female"],
+      ["yes", 30, 20],
+      ["no", 10, 40]
+    ],
+    formula: "=CONTINGENCY.T(A1:C3,1,0.05)",
+    previewRange: "E2:J26"
+  },
+  "CONTINGENCY.G": {
+    values: [
+      ["column", "row", "count"],
+      ["male", "yes", 30],
+      ["male", "no", 10],
+      ["female", "yes", 20],
+      ["female", "no", 40]
+    ],
+    formula: "=CONTINGENCY.G(A1:A5,B1:B5,C1:C5,0.05,1)",
+    previewRange: "E2:J26"
+  },
+  "CORREL.MATRIX": {
+    values: [
+      ["x", "y", "z"],
+      [1, 2, 8],
+      [2, 4, 7],
+      [3, 6, 5],
+      [4, 8, 4],
+      [5, 10, 3]
+    ],
+    formula: "=CORREL.MATRIX(A1:C6,0,3,1,1)",
+    previewRange: "E2:J14"
+  }
+};
+
 async function runTutorial(functionName) {
   const definition = tutorialDefinitions[functionName];
   if (definition?.customRun) {
@@ -597,6 +674,67 @@ async function runTutorial(functionName) {
       const state = await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getItem(sheetName);
         const preview = sheet.getRange(definition.range);
+        preview.load("text");
+        await context.sync();
+        return {
+          attempt,
+          formula: definition.formula,
+          text: preview.text
+        };
+      });
+
+      const busy = state.text.flat().some(textLooksBusy);
+      if (attempt === 1 || attempt % 5 === 0 || !busy) {
+        debugLog("Tutorial calculation poll", { functionName, ...state });
+      }
+      if (!busy) {
+        break;
+      }
+      await sleep(500);
+    }
+
+    setStatus(t("tutorialReady"));
+    debugLog("Tutorial completed", { functionName, sheetName });
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : String(error));
+    debugLog("Tutorial failed", { functionName, message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+async function runMatrixTutorial(functionName) {
+  const definition = matrixTutorialDefinitions[functionName];
+  let sheetName = "";
+
+  debugLog("Tutorial clicked", { functionName, hasExcel: Boolean(window.Excel), hasOffice: Boolean(window.Office) });
+  if (!window.Excel) {
+    setStatus(t("tutorialUnavailable"));
+    debugLog("Tutorial unavailable: Excel API missing", { functionName });
+    return;
+  }
+
+  try {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.add();
+      sheet.activate();
+      sheet.load("name");
+
+      sheet.getRangeByIndexes(0, 0, definition.values.length, definition.values[0].length).values = definition.values;
+      sheet.getRangeByIndexes(0, 0, 1, definition.values[0].length).format.font.bold = true;
+      sheet.getRange("F2").formulas = [[definition.formula]];
+      sheet.getRange("A:O").format.autofitColumns();
+      await context.sync();
+
+      sheetName = sheet.name;
+      debugLog("Tutorial formulas written", { functionName, sheetName, formula: definition.formula });
+      context.workbook.application.calculate(Excel.CalculationType.full);
+      await context.sync();
+      debugLog("Tutorial recalculation requested", { functionName, type: "full" });
+    });
+
+    for (let attempt = 1; attempt <= 30; attempt += 1) {
+      const state = await Excel.run(async (context) => {
+        const sheet = context.workbook.worksheets.getItem(sheetName);
+        const preview = sheet.getRange(definition.previewRange);
         preview.load("text");
         await context.sync();
         return {

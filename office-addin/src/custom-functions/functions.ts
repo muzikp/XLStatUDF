@@ -1220,6 +1220,639 @@ function pivotIqr(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesInput: 
   return pivotTable(rowsInput, columnsInput, valuesInput, "iqr");
 }
 
+function isIntegerCount(value: number): boolean {
+  return value >= 0 && Math.abs(value - Math.round(value)) < 1e-9;
+}
+
+function completeNumericMatrix(input: ExcelInput, headerMode: HeaderMode, defaultPrefix: string): { names: string[]; rows: number[][] } {
+  const matrix = asRows(input);
+  if (matrix.length < 1 || matrix[0].length < 2) {
+    throw invalidValue("Expected a matrix with at least two columns");
+  }
+
+  const columnCount = matrix[0].length;
+  const shouldSkipHeader = headerMode === HEADER_HAS || (
+    headerMode === HEADER_AUTO &&
+    matrix.length > 1 &&
+    matrix[0].every((value) => !isBlank(value) && tryGetNumber(value) === null) &&
+    matrix.slice(1).some((row) => row.some((value) => !isBlank(value))) &&
+    matrix.slice(1).every((row) => row.every((value) => isBlank(value) || tryGetNumber(value) !== null))
+  );
+  const startRow = shouldSkipHeader ? 1 : 0;
+  const names = new Array(columnCount).fill(null).map((_, index) => {
+    if (shouldSkipHeader) {
+      const label = matrix[0][index];
+      return isBlank(label) ? `${defaultPrefix} ${index + 1}` : String(label);
+    }
+    return `${defaultPrefix} ${index + 1}`;
+  });
+
+  const rows: number[][] = [];
+  for (let rowIndex = startRow; rowIndex < matrix.length; rowIndex += 1) {
+    const row = matrix[rowIndex];
+    const values = new Array(columnCount).fill(0);
+    let hasAny = false;
+    let hasBlank = false;
+    for (let columnIndex = 0; columnIndex < columnCount; columnIndex += 1) {
+      const value = row[columnIndex];
+      if (isBlank(value)) {
+        hasBlank = true;
+        continue;
+      }
+      const parsed = tryGetNumber(value);
+      if (parsed === null) {
+        throw invalidValue("Expected numeric matrix data");
+      }
+      hasAny = true;
+      values[columnIndex] = parsed;
+    }
+    if (!hasAny) {
+      continue;
+    }
+    if (!hasBlank) {
+      rows.push(values);
+    }
+  }
+
+  if (rows.length < 2) {
+    throw invalidValue("Not enough complete rows");
+  }
+
+  return { names, rows };
+}
+
+function matrixTranspose(matrix: number[][]): number[][] {
+  return matrix[0].map((_, columnIndex) => matrix.map((row) => row[columnIndex]));
+}
+
+function matrixMultiply(left: number[][], right: number[][]): number[][] {
+  const result = new Array(left.length).fill(null).map(() => new Array(right[0].length).fill(0));
+  for (let row = 0; row < left.length; row += 1) {
+    for (let column = 0; column < right[0].length; column += 1) {
+      for (let inner = 0; inner < right.length; inner += 1) {
+        result[row][column] += left[row][inner] * right[inner][column];
+      }
+    }
+  }
+  return result;
+}
+
+function matrixVectorMultiply(matrix: number[][], vector: number[]): number[] {
+  return matrix.map((row) => row.reduce((sum, value, index) => sum + (value * vector[index]), 0));
+}
+
+function vectorDot(left: number[], right: number[]): number {
+  return left.reduce((sum, value, index) => sum + (value * right[index]), 0);
+}
+
+function matrixInverse(input: number[][]): number[][] {
+  const size = input.length;
+  const augmented = input.map((row, rowIndex) => [
+    ...row,
+    ...new Array(size).fill(0).map((_, columnIndex) => rowIndex === columnIndex ? 1 : 0)
+  ]);
+
+  for (let column = 0; column < size; column += 1) {
+    let pivotRow = column;
+    for (let row = column + 1; row < size; row += 1) {
+      if (Math.abs(augmented[row][column]) > Math.abs(augmented[pivotRow][column])) {
+        pivotRow = row;
+      }
+    }
+    if (Math.abs(augmented[pivotRow][column]) < 1e-12) {
+      throw invalidNumber("Singular model matrix");
+    }
+    [augmented[column], augmented[pivotRow]] = [augmented[pivotRow], augmented[column]];
+
+    const pivot = augmented[column][column];
+    for (let item = 0; item < size * 2; item += 1) {
+      augmented[column][item] /= pivot;
+    }
+    for (let row = 0; row < size; row += 1) {
+      if (row === column) {
+        continue;
+      }
+      const factor = augmented[row][column];
+      for (let item = 0; item < size * 2; item += 1) {
+        augmented[row][item] -= factor * augmented[column][item];
+      }
+    }
+  }
+
+  return augmented.map((row) => row.slice(size));
+}
+
+function fitLinearModel(design: number[][], y: number[]): {
+  success: boolean;
+  coefficients: number[];
+  covariance: number[][];
+  sse: number;
+  df: number;
+  mse: number;
+} {
+  try {
+    const xt = matrixTranspose(design);
+    const xtx = matrixMultiply(xt, design);
+    const xtxInverse = matrixInverse(xtx);
+    const xty = xt.map((row) => vectorDot(row, y));
+    const coefficients = matrixVectorMultiply(xtxInverse, xty);
+    const fitted = design.map((row) => vectorDot(row, coefficients));
+    const residuals = y.map((value, index) => value - fitted[index]);
+    const sse = vectorDot(residuals, residuals);
+    const df = y.length - design[0].length;
+    const mse = df > 0 ? sse / df : Number.NaN;
+    const covariance = xtxInverse.map((row) => row.map((value) => value * mse));
+    return { success: Number.isFinite(mse), coefficients, covariance, sse, df, mse };
+  } catch {
+    return { success: false, coefficients: [], covariance: [], sse: Number.NaN, df: 0, mse: Number.NaN };
+  }
+}
+
+function nestedFTest(reduced: ReturnType<typeof fitLinearModel>, full: ReturnType<typeof fitLinearModel>): {
+  ss: number;
+  df: number;
+  ms: number;
+  f: number;
+  p: number;
+} {
+  if (!reduced.success || !full.success || full.df <= 0 || full.mse <= 0) {
+    return { ss: Number.NaN, df: 0, ms: Number.NaN, f: Number.NaN, p: Number.NaN };
+  }
+  const ss = Math.max(0, reduced.sse - full.sse);
+  const df = reduced.df - full.df;
+  if (df <= 0) {
+    return { ss: Number.NaN, df: 0, ms: Number.NaN, f: Number.NaN, p: Number.NaN };
+  }
+  const ms = ss / df;
+  const f = ms / full.mse;
+  return { ss, df, ms, f, p: 1 - jStat.centralF.cdf(f, df, full.df) };
+}
+
+function sigLabelAlpha(pValue: number, alpha: number): string {
+  return pValue < 0.001 ? "***" : pValue < 0.01 ? "**" : pValue < alpha ? "*" : "ns";
+}
+
+function anovaRm(valuesInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05, postHoc?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const parsedPostHoc = parsePostHoc(postHoc);
+  const { names, rows: matrix } = completeNumericMatrix(valuesInput, parseHeaderMode(hasHeader), "condition");
+  const subjectCount = matrix.length;
+  const conditionCount = names.length;
+  if (subjectCount < 2 || conditionCount < 2) {
+    throw invalidValue("At least two subjects and two conditions are required");
+  }
+
+  const allValues = matrix.flat();
+  const grandMean = mean(allValues);
+  const conditionMeans = names.map((_, column) => mean(matrix.map((row) => row[column])));
+  const subjectMeans = matrix.map((row) => mean(row));
+  const ssTotal = allValues.reduce((sum, value) => sum + ((value - grandMean) ** 2), 0);
+  const ssConditions = subjectCount * conditionMeans.reduce((sum, value) => sum + ((value - grandMean) ** 2), 0);
+  const ssSubjects = conditionCount * subjectMeans.reduce((sum, value) => sum + ((value - grandMean) ** 2), 0);
+  const ssError = Math.max(0, ssTotal - ssConditions - ssSubjects);
+  const dfConditions = conditionCount - 1;
+  const dfSubjects = subjectCount - 1;
+  const dfError = dfConditions * dfSubjects;
+  const dfTotal = (subjectCount * conditionCount) - 1;
+  const msConditions = ssConditions / dfConditions;
+  const msSubjects = ssSubjects / dfSubjects;
+  const msError = ssError / dfError;
+  const f = msError === 0 ? 0 : msConditions / msError;
+  const p = 1 - jStat.centralF.cdf(f, dfConditions, dfError);
+  const fCrit = jStat.centralF.inv(1 - alpha, dfConditions, dfError);
+  const eta2 = ssTotal <= 0 ? "" : ssConditions / ssTotal;
+  const eta2p = (ssConditions + ssError) <= 0 ? "" : ssConditions / (ssConditions + ssError);
+  const omega2 = (ssTotal + msError) <= 0 ? "" : Math.max(0, (ssConditions - (dfConditions * msError)) / (ssTotal + msError));
+  const omega2p = Math.max(0, (dfConditions * (f - 1)) / Math.max(1e-12, (dfConditions * (f - 1)) + subjectCount));
+
+  const rows: Primitive[][] = [
+    ["POPISNÉ STATISTIKY", "", "", "", "", "", ""],
+    ["condition", "n", "mean", "median", "sd", "min", "max"],
+    ...names.map((name, column) => {
+      const series = matrix.map((row) => row[column]);
+      return [name, subjectCount, mean(series), median(series), sampleStandardDeviation(series), Math.min(...series), Math.max(...series)];
+    }),
+    ["", "", "", "", "", "", ""],
+    ["ANOVA S OPAKOVANÝM MĚŘENÍM", "", "", "", "", "", "", "", "", ""],
+    ["source", "SS", "df", "MS", "F", "p", "η²", "η²p", "ω²", "ω²p"],
+    ["conditions", ssConditions, dfConditions, msConditions, f, p, eta2, eta2p, omega2, omega2p],
+    ["subjects", ssSubjects, dfSubjects, msSubjects, "", "", "", "", "", ""],
+    ["residual", ssError, dfError, msError, "", "", "", "", "", ""],
+    ["total", ssTotal, dfTotal, "", "", "", "", "", "", ""],
+    ["α", alpha, "", "", "", "", "", "", "", ""],
+    ["Fᶜʳⁱᵗ(1−α)", fCrit, "", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", "", "", ""],
+    ["POZNÁMKA", ""],
+    ["sphericity", "not tested"],
+  ];
+
+  if (parsedPostHoc !== "none") {
+    const m = (conditionCount * (conditionCount - 1)) / 2;
+    rows.push(["", "", "", "", ""]);
+    rows.push([`POST-HOC: ${parsedPostHoc.toUpperCase()}${parsedPostHoc === "bonferroni" ? "" : " (BONFERRONI FALLBACK)"}`, "", "", "", ""]);
+    rows.push(["condition A", "condition B", "mean_diff", "p", "sig"]);
+    for (let i = 0; i < conditionCount; i += 1) {
+      for (let j = i + 1; j < conditionCount; j += 1) {
+        const differences = matrix.map((row) => row[i] - row[j]);
+        const diff = mean(differences);
+        const sdDiff = sampleStandardDeviation(differences);
+        const se = sdDiff / Math.sqrt(differences.length);
+        const t = se === 0 ? 0 : Math.abs(diff) / se;
+        const rawP = 2 * (1 - jStat.studentt.cdf(t, differences.length - 1));
+        const pValue = Math.min(1, rawP * m);
+        rows.push([names[i], names[j], diff, pValue, sigLabelAlpha(pValue, alpha)]);
+      }
+    }
+  }
+
+  return rectangularRows(rows);
+}
+
+function hasContingencyTableHeaders(matrix: Primitive[][]): boolean {
+  if (matrix.length < 3 || matrix[0].length < 3 || tryGetNumber(matrix[0][0]) !== null) {
+    return false;
+  }
+  const topHeader = matrix[0].slice(1).some((value) => !isBlank(value) && tryGetNumber(value) === null);
+  const leftHeader = matrix.slice(1).some((row) => !isBlank(row[0]) && tryGetNumber(row[0]) === null);
+  return topHeader && leftHeader && matrix.slice(1).every((row) => row.slice(1).every((value) => tryGetNumber(value) !== null));
+}
+
+function contingencyReport(observed: number[][], rowLabels: string[], columnLabels: string[], alpha: number): ExcelOutput {
+  const rowCount = observed.length;
+  const columnCount = observed[0].length;
+  const rowTotals = observed.map((row) => row.reduce((sum, value) => sum + value, 0));
+  const columnTotals = new Array(columnCount).fill(0).map((_, column) => observed.reduce((sum, row) => sum + row[column], 0));
+  const total = rowTotals.reduce((sum, value) => sum + value, 0);
+  if (total <= 0) {
+    throw invalidNumber("Observed counts must sum to a positive value");
+  }
+
+  const expected = observed.map((row, rowIndex) => row.map((_, columnIndex) => (rowTotals[rowIndex] * columnTotals[columnIndex]) / total));
+  let chiSquare = 0;
+  for (let row = 0; row < rowCount; row += 1) {
+    for (let column = 0; column < columnCount; column += 1) {
+      if (expected[row][column] > 0) {
+        chiSquare += ((observed[row][column] - expected[row][column]) ** 2) / expected[row][column];
+      }
+    }
+  }
+  const df = (rowCount - 1) * (columnCount - 1);
+  const critical = jStat.chisquare.inv(1 - alpha, df);
+  const p = 1 - jStat.chisquare.cdf(chiSquare, df);
+  const pearsonC = Math.sqrt(chiSquare / (chiSquare + total));
+  const cramerV = Math.sqrt(chiSquare / (total * Math.min(rowCount - 1, columnCount - 1)));
+  const phi = rowCount === 2 && columnCount === 2 ? Math.sqrt(chiSquare / total) : "";
+
+  const tableHeader = ["", ...columnLabels, "Σ"];
+  const rows: Primitive[][] = [
+    ["OBSERVED CONTINGENCY TABLE", ...new Array(columnCount + 1).fill("")],
+    tableHeader,
+    ...observed.map((row, index) => [rowLabels[index], ...row, rowTotals[index]]),
+    ["Σ", ...columnTotals, total],
+    ["", ...new Array(columnCount + 1).fill("")],
+    ["EXPECTED COUNTS", ...new Array(columnCount + 1).fill("")],
+    tableHeader,
+    ...expected.map((row, index) => [rowLabels[index], ...row, rowTotals[index]]),
+    ["Σ", ...columnTotals, total],
+    ["", ...new Array(columnCount + 1).fill("")],
+    ["TEST SUMMARY", ""],
+    ["n", total],
+    ["df", df],
+    ["α", alpha],
+    ["χ²", chiSquare],
+    ["χ²ᶜʳⁱᵗ(1−α)", critical],
+    ["p", p],
+    ["", ""],
+    ["ASSOCIATION MEASURES", ""],
+    ["Pearson C", pearsonC],
+    ["Cramér V", cramerV],
+    ["phi", phi],
+  ];
+  return rectangularRows(rows);
+}
+
+function contingencyT(tableInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05): ExcelOutput {
+  validateAlpha(alpha);
+  const matrix = asRows(tableInput);
+  const headerMode = parseHeaderMode(hasHeader);
+  const hasHeaders = headerMode === HEADER_HAS || (headerMode === HEADER_AUTO && hasContingencyTableHeaders(matrix));
+  const rowOffset = hasHeaders ? 1 : 0;
+  const columnOffset = hasHeaders ? 1 : 0;
+  const dataRows = matrix.length - rowOffset;
+  const dataColumns = (matrix[0]?.length ?? 0) - columnOffset;
+  if (dataRows < 2 || dataColumns < 2) {
+    throw invalidValue("Contingency table must be at least 2 x 2");
+  }
+
+  const observed = new Array(dataRows).fill(null).map((_, row) => new Array(dataColumns).fill(0).map((__, column) => {
+    const parsed = tryGetNumber(matrix[row + rowOffset][column + columnOffset]);
+    if (parsed === null || !isIntegerCount(parsed)) {
+      throw invalidValue("Observed counts must be non-negative integers");
+    }
+    return parsed;
+  }));
+  const rowLabels = new Array(dataRows).fill(null).map((_, index) => hasHeaders ? String(matrix[index + 1][0] ?? index + 1) : String(index + 1));
+  const columnLabels = new Array(dataColumns).fill(null).map((_, index) => hasHeaders ? String(matrix[0][index + 1] ?? index + 1) : String(index + 1));
+  return contingencyReport(observed, rowLabels, columnLabels, alpha);
+}
+
+function contingencyG(columnInput: ExcelInput, rowInput: ExcelInput, countsInput?: ExcelInput, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  let columns = flatten(columnInput);
+  let rows = flatten(rowInput);
+  let counts = countsInput === undefined || isBlank(countsInput as Primitive) ? null : flatten(countsInput);
+  if (columns.length !== rows.length || (counts && counts.length !== columns.length)) {
+    throw invalidValue("Grouped contingency inputs must have the same length");
+  }
+  const headerMode = parseHeaderMode(hasHeader);
+  if (headerMode === HEADER_HAS || (headerMode === HEADER_AUTO && shouldSkipLeadingHeader(columns, (item) => !isBlank(item)) && shouldSkipLeadingHeader(rows, (item) => !isBlank(item)))) {
+    columns = columns.slice(1);
+    rows = rows.slice(1);
+    counts = counts ? counts.slice(1) : null;
+  }
+
+  const rowSet = new Set<string>();
+  const columnSet = new Set<string>();
+  const pairCounts = new Map<string, number>();
+  for (let index = 0; index < columns.length; index += 1) {
+    if (isBlank(columns[index]) || isBlank(rows[index]) || (counts && isBlank(counts[index]))) {
+      continue;
+    }
+    const rowLabel = String(rows[index]);
+    const columnLabel = String(columns[index]);
+    let count = 1;
+    if (counts) {
+      const parsed = tryGetNumber(counts[index]);
+      if (parsed === null || !isIntegerCount(parsed)) {
+        throw invalidValue("Counts must be non-negative integers");
+      }
+      count = parsed;
+    }
+    rowSet.add(rowLabel);
+    columnSet.add(columnLabel);
+    const key = `${rowLabel}\u0000${columnLabel}`;
+    pairCounts.set(key, (pairCounts.get(key) ?? 0) + count);
+  }
+  const rowLabels = Array.from(rowSet).sort();
+  const columnLabels = Array.from(columnSet).sort();
+  if (rowLabels.length < 2 || columnLabels.length < 2) {
+    throw invalidValue("At least two row and two column categories are required");
+  }
+  const observed = rowLabels.map((rowLabel) => columnLabels.map((columnLabel) => pairCounts.get(`${rowLabel}\u0000${columnLabel}`) ?? 0));
+  return contingencyReport(observed, rowLabels, columnLabels, alpha);
+}
+
+function correlMatrix(dataInput: ExcelInput, method?: Primitive, output?: Primitive, pMinimum?: Primitive, hasHeader?: Primitive): ExcelOutput {
+  const parsedMethod = parseOptionalInteger(method, 0);
+  const parsedOutput = parseOptionalInteger(output, 0);
+  if (parsedMethod < 0 || parsedMethod > 1 || parsedOutput < 0 || parsedOutput > 4) {
+    throw invalidValue("Invalid correlation matrix option");
+  }
+  let parsedPMinimum: number | null = null;
+  if (!isBlank(pMinimum)) {
+    const p = tryGetNumber(pMinimum);
+    if (p === null || p < 0 || p > 1) {
+      throw invalidValue("Invalid p minimum");
+    }
+    parsedPMinimum = p;
+  }
+
+  const { names, rows: matrix } = completeNumericMatrix(dataInput, parseHeaderMode(hasHeader), "variable");
+  if (names.length < 2 || matrix.length < 3) {
+    throw invalidValue("Correlation matrix requires at least two variables and three rows");
+  }
+
+  const n = matrix.length;
+  const valuesByColumn = names.map((_, column) => matrix.map((row) => row[column]));
+  if (valuesByColumn.some((values) => values.every((value) => Math.abs(value - values[0]) < 1e-12))) {
+    throw invalidNumber("Correlation matrix variables must vary");
+  }
+  const coefficients = names.map(() => new Array(names.length).fill(0));
+  const pValues = names.map(() => new Array(names.length).fill(0));
+  const significance = names.map(() => new Array(names.length).fill(""));
+  for (let i = 0; i < names.length; i += 1) {
+    for (let j = i; j < names.length; j += 1) {
+      const coefficient = i === j ? 1 : parsedMethod === 0
+        ? pearsonCorrelation(valuesByColumn[i], valuesByColumn[j])
+        : pearsonCorrelation(midRank(valuesByColumn[i]), midRank(valuesByColumn[j]));
+      const pValue = Math.abs(1 - Math.abs(coefficient)) < 1e-12 ? 0 : 2 * (1 - jStat.studentt.cdf(Math.abs(coefficient * Math.sqrt(n - 2) / Math.sqrt(1 - (coefficient * coefficient))), n - 2));
+      coefficients[i][j] = coefficients[j][i] = coefficient;
+      pValues[i][j] = pValues[j][i] = pValue;
+      significance[i][j] = significance[j][i] = pValue < 0.001 ? "***" : pValue < 0.01 ? "**" : pValue < 0.05 ? "*" : "";
+    }
+  }
+  const visible = (i: number, j: number): boolean => parsedPMinimum === null ? true : i !== j && pValues[i][j] < parsedPMinimum;
+
+  if (parsedOutput === 2 || parsedOutput === 3) {
+    const blockHeight = parsedOutput === 3 ? 3 : 2;
+    const rows: Primitive[][] = [["", "", ...names]];
+    for (let row = 0; row < names.length; row += 1) {
+      rows.push([names[row], "r", ...names.map((_, column) => visible(row, column) ? coefficients[row][column] : "")]);
+      rows.push(["", "p", ...names.map((_, column) => visible(row, column) ? pValues[row][column] : "")]);
+      if (blockHeight === 3) {
+        rows.push(["", "sig.", ...names.map((_, column) => visible(row, column) ? significance[row][column] : "")]);
+      }
+    }
+    return rows;
+  }
+
+  return [
+    ["", ...names],
+    ...names.map((name, row) => [
+      name,
+      ...names.map((_, column) => {
+        if (!visible(row, column)) {
+          return "";
+        }
+        if (parsedOutput === 1) {
+          return pValues[row][column];
+        }
+        if (parsedOutput === 4) {
+          return `${Number(coefficients[row][column].toFixed(5))}${significance[row][column]}`;
+        }
+        return coefficients[row][column];
+      })
+    ])
+  ];
+}
+
+type AncovaData = {
+  groups: string[];
+  y: number[];
+  covariates: number[][];
+  covariateNames: string[];
+  groupLabels: string[];
+};
+
+function readAncovaData(groupsInput: ExcelInput, yInput: ExcelInput, covariatesInput: ExcelInput, headerMode: HeaderMode): AncovaData {
+  let rawGroups = flatten(groupsInput);
+  let rawY = flatten(yInput);
+  const covariateMatrix = asRows(covariatesInput);
+  if (rawGroups.length !== rawY.length || rawGroups.length !== covariateMatrix.length || covariateMatrix[0].length < 1) {
+    throw invalidValue("ANCOVA inputs must have matching lengths");
+  }
+  const shouldSkipHeader = headerMode === HEADER_HAS || (
+    headerMode === HEADER_AUTO &&
+    shouldSkipLeadingHeader(rawGroups, (item) => !isBlank(item)) &&
+    shouldSkipLeadingHeader(rawY, (item) => tryGetNumber(item) !== null) &&
+    covariateMatrix[0].every((_, column) => shouldSkipLeadingHeader(covariateMatrix.map((row) => row[column]), (item) => tryGetNumber(item) !== null))
+  );
+  const startRow = shouldSkipHeader ? 1 : 0;
+  const covariateNames = covariateMatrix[0].map((value, index) => shouldSkipHeader && !isBlank(value) ? String(value) : `covariate ${index + 1}`);
+  rawGroups = rawGroups.slice(startRow);
+  rawY = rawY.slice(startRow);
+  const rawCovariates = covariateMatrix.slice(startRow);
+
+  const groups: string[] = [];
+  const y: number[] = [];
+  const covariates: number[][] = [];
+  for (let row = 0; row < rawGroups.length; row += 1) {
+    if (isBlank(rawGroups[row]) || isBlank(rawY[row])) {
+      continue;
+    }
+    const yValue = tryGetNumber(rawY[row]);
+    if (yValue === null) {
+      throw invalidValue("Expected numeric dependent variable");
+    }
+    const covariateRow: number[] = [];
+    let skip = false;
+    for (const cell of rawCovariates[row]) {
+      if (isBlank(cell)) {
+        skip = true;
+        break;
+      }
+      const parsed = tryGetNumber(cell);
+      if (parsed === null) {
+        throw invalidValue("Expected numeric covariate");
+      }
+      covariateRow.push(parsed);
+    }
+    if (skip) {
+      continue;
+    }
+    groups.push(String(rawGroups[row]));
+    y.push(yValue);
+    covariates.push(covariateRow);
+  }
+  const groupLabels = Array.from(new Set(groups)).sort();
+  if (groups.length < 3 || groupLabels.length < 2 || groupLabels.some((group) => groups.filter((value) => value === group).length < 2)) {
+    throw invalidValue("ANCOVA requires at least two groups with at least two rows each");
+  }
+  return { groups, y, covariates, covariateNames, groupLabels };
+}
+
+function ancovaDesign(data: AncovaData, includeGroups: boolean, covariates: number[], interactionCovariate?: number): number[][] {
+  const groupDummies = includeGroups ? data.groupLabels.slice(1) : [];
+  return data.y.map((_, rowIndex) => {
+    const row = [1];
+    for (const group of groupDummies) {
+      row.push(data.groups[rowIndex] === group ? 1 : 0);
+    }
+    for (const covariate of covariates) {
+      row.push(data.covariates[rowIndex][covariate]);
+    }
+    if (interactionCovariate !== undefined) {
+      for (const group of groupDummies) {
+        row.push((data.groups[rowIndex] === group ? 1 : 0) * data.covariates[rowIndex][interactionCovariate]);
+      }
+    }
+    return row;
+  });
+}
+
+function buildAncovaEffectRow(name: string, test: ReturnType<typeof nestedFTest>, ssTotal: number, ssError: number, mse: number, sampleSize: number): Primitive[] {
+  const eta2 = ssTotal <= 0 ? "" : test.ss / ssTotal;
+  const eta2p = (test.ss + ssError) <= 0 ? "" : test.ss / (test.ss + ssError);
+  const omega2 = (ssTotal + mse) <= 0 ? "" : Math.max(0, (test.ss - (test.df * mse)) / (ssTotal + mse));
+  const omega2p = !Number.isFinite(test.f) ? "" : Math.max(0, (test.df * (test.f - 1)) / ((test.df * (test.f - 1)) + sampleSize));
+  return [name, test.ss, test.df, test.ms, test.f, test.p, eta2, eta2p, omega2, omega2p];
+}
+
+function ancovaG(groupsInput: ExcelInput, valuesInput: ExcelInput, covariatesInput: ExcelInput, postHoc?: Primitive, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const parsedPostHoc = parsePostHoc(postHoc);
+  const data = readAncovaData(groupsInput, valuesInput, covariatesInput, parseHeaderMode(hasHeader));
+  const covariateIndexes = data.covariateNames.map((_, index) => index);
+  const fullModel = fitLinearModel(ancovaDesign(data, true, covariateIndexes), data.y);
+  const covariateOnlyModel = fitLinearModel(ancovaDesign(data, false, covariateIndexes), data.y);
+  if (!fullModel.success || fullModel.df <= 0 || !covariateOnlyModel.success) {
+    throw invalidNumber("ANCOVA model could not be fitted");
+  }
+  const factorTest = nestedFTest(covariateOnlyModel, fullModel);
+  const covariateTests = covariateIndexes.map((index) => {
+    const reduced = fitLinearModel(ancovaDesign(data, true, covariateIndexes.filter((item) => item !== index)), data.y);
+    return { name: data.covariateNames[index], test: nestedFTest(reduced, fullModel) };
+  });
+  const interactionTests = covariateIndexes.map((index) => {
+    const interactionModel = fitLinearModel(ancovaDesign(data, true, covariateIndexes, index), data.y);
+    return { name: data.covariateNames[index], test: nestedFTest(fullModel, interactionModel) };
+  });
+  const ssTotal = data.y.reduce((sum, value) => sum + ((value - mean(data.y)) ** 2), 0);
+  const modelSsTotal = factorTest.ss + covariateTests.reduce((sum, item) => sum + item.test.ss, 0) + fullModel.sse;
+  const descriptiveWidth = Math.max(4, 3 + data.covariateNames.length);
+  const rows: Primitive[][] = [
+    ["POPISNÉ STATISTIKY", ...new Array(descriptiveWidth - 1).fill("")],
+    ["group", "n", "y", ...data.covariateNames],
+    ...data.groupLabels.map((group) => {
+      const indexes = data.groups.map((value, index) => value === group ? index : -1).filter((index) => index >= 0);
+      return [group, indexes.length, mean(indexes.map((index) => data.y[index])), ...covariateIndexes.map((covariate) => mean(indexes.map((index) => data.covariates[index][covariate])))];
+    }),
+    ["", "", "", ""],
+    ["ANCOVA", "", "", "", "", "", "", "", "", ""],
+    ["source", "SS", "df", "MS", "F", "p", "η²", "η²p", "ω²", "ω²p"],
+    buildAncovaEffectRow("factor", factorTest, modelSsTotal, fullModel.sse, fullModel.mse, data.y.length),
+    ...covariateTests.map((item) => buildAncovaEffectRow(item.name, item.test, modelSsTotal, fullModel.sse, fullModel.mse, data.y.length)),
+    ...interactionTests.map((item) => buildAncovaEffectRow(`group × ${item.name}`, item.test, item.test.ss + fullModel.sse, fullModel.sse, fullModel.mse, data.y.length)),
+    ["residual", fullModel.sse, fullModel.df, fullModel.mse, "", "", "", "", "", ""],
+    ["total", ssTotal, data.y.length - 1, "", "", "", "", "", "", ""],
+    ["α", alpha, "", "", "", "", "", "", "", ""],
+    ["Fᶜʳⁱᵗ(1−α)", jStat.centralF.inv(1 - alpha, Math.max(1, factorTest.df), fullModel.df), "", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", "", "", ""],
+    ["ADJUSTED MEANS", "", "", "", "", ""],
+    ["group", "adjusted_mean", "SE", "CI lower", "CI upper", ""],
+  ];
+
+  const covariateMeans = covariateIndexes.map((index) => mean(data.covariates.map((row) => row[index])));
+  const adjusted = data.groupLabels.map((group) => {
+    const design = [1, ...data.groupLabels.slice(1).map((label) => label === group ? 1 : 0), ...covariateMeans];
+    const adjustedMean = vectorDot(design, fullModel.coefficients);
+    const variance = vectorDot(design, matrixVectorMultiply(fullModel.covariance, design));
+    const se = Math.sqrt(Math.max(0, variance));
+    const tCrit = jStat.studentt.inv(1 - (alpha / 2), fullModel.df);
+    rows.push([group, adjustedMean, se, adjustedMean - (tCrit * se), adjustedMean + (tCrit * se), ""]);
+    return { group, mean: adjustedMean, design };
+  });
+
+  if (interactionTests.some((item) => Number.isFinite(item.test.p) && item.test.p < alpha)) {
+    rows.push(["", ""]);
+    rows.push(["WARNING", ""]);
+    rows.push(["slope homogeneity", "violated"]);
+  }
+
+  if (parsedPostHoc !== "none") {
+    const m = (adjusted.length * (adjusted.length - 1)) / 2;
+    rows.push(["", "", "", "", ""]);
+    rows.push([`POST-HOC: ${parsedPostHoc.toUpperCase()}${parsedPostHoc === "scheffe" || parsedPostHoc === "bonferroni" ? "" : " (BONFERRONI FALLBACK)"}`, "", "", "", ""]);
+    rows.push(["group A", "group B", "mean_diff", "p", "sig"]);
+    for (let i = 0; i < adjusted.length; i += 1) {
+      for (let j = i + 1; j < adjusted.length; j += 1) {
+        const diffVector = adjusted[i].design.map((value, index) => value - adjusted[j].design[index]);
+        const diff = adjusted[i].mean - adjusted[j].mean;
+        const variance = vectorDot(diffVector, matrixVectorMultiply(fullModel.covariance, diffVector));
+        const se = Math.sqrt(Math.max(0, variance));
+        const t = se === 0 ? 0 : Math.abs(diff) / se;
+        const rawP = 2 * (1 - jStat.studentt.cdf(t, fullModel.df));
+        const pValue = parsedPostHoc === "scheffe"
+          ? Math.min(1, 1 - jStat.centralF.cdf((t * t) / Math.max(1, adjusted.length - 1), adjusted.length - 1, fullModel.df))
+          : Math.min(1, rawP * m);
+        rows.push([adjusted[i].group, adjusted[j].group, diff, pValue, sigLabelAlpha(pValue, alpha)]);
+      }
+    }
+  }
+
+  return rectangularRows(rows);
+}
+
 function shapiroStatistic(sortedSample: number[]): number {
   const n = sortedSample.length;
   if (n === 3) {
@@ -1796,10 +2429,6 @@ function correlSpearman(xInput: ExcelInput, yInput: ExcelInput, direction?: Prim
   ]);
 }
 
-function pendingFeature(name: string): ExcelOutput {
-  throw notAvailable(`${name} is not yet ported to Office.js`);
-}
-
 function version(): string {
   return `${ADDIN_BRAND} ${ADDIN_RUNTIME} ${ADDIN_VERSION} build ${ADDIN_BUILD} (EVALYTICS)`;
 }
@@ -1838,11 +2467,11 @@ CustomFunctions.associate("MANN_WHITNEY_G", mannWhitneyG);
 CustomFunctions.associate("CHISQ_GOF", chisqGof);
 CustomFunctions.associate("ANOVA_G", anovaG);
 CustomFunctions.associate("CORREL_SPEARMAN", correlSpearman);
-CustomFunctions.associate("ANOVA_RM", () => pendingFeature("ANOVA.RM"));
-CustomFunctions.associate("ANCOVA_G", () => pendingFeature("ANCOVA.G"));
-CustomFunctions.associate("CONTINGENCY_T", () => pendingFeature("CONTINGENCY.T"));
-CustomFunctions.associate("CONTINGENCY_G", () => pendingFeature("CONTINGENCY.G"));
-CustomFunctions.associate("CORREL_MATRIX", () => pendingFeature("CORREL.MATRIX"));
+CustomFunctions.associate("ANOVA_RM", anovaRm);
+CustomFunctions.associate("ANCOVA_G", ancovaG);
+CustomFunctions.associate("CONTINGENCY_T", contingencyT);
+CustomFunctions.associate("CONTINGENCY_G", contingencyG);
+CustomFunctions.associate("CORREL_MATRIX", correlMatrix);
 CustomFunctions.associate("PIVOT_COUNT", pivotCount);
 CustomFunctions.associate("PIVOT_SUM", pivotSum);
 CustomFunctions.associate("PIVOT_AVERAGE", pivotAverage);

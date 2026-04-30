@@ -68,6 +68,8 @@ This file is a working memory for future AI sessions in this repository. Keep it
 - `FILL` is currently documented and registered as a stable two-argument function (`what`, `count`). `FILL.RANDOM` was removed after a repeating value/count-pair metadata attempt caused `#HODNOTA!` in Excel and the two-argument random form was not useful.
 - `PARSE.NUMBER` is scalar and intended for row-by-row cleanup beside raw source cells; it strips spaces/currency/noise and accepts comma or dot decimal separators with locale-aware ambiguity handling. Its optional second `else` argument returns a fallback string/number for unparseable values; the default fallback is 0.
 - PIVOT tutorials use `runPivotTutorial` in `taskpane.js`. Pivot row/column dimensions accept blank or scalar values (for example `FALSE`) as "no split" and return TOTAL summaries instead of throwing.
+- `ANOVA.RM`, `ANCOVA.G`, `CONTINGENCY.T`, `CONTINGENCY.G`, and `CORREL.MATRIX` were ported into the Office.js runtime; they should no longer be wired to `pendingFeature`.
+- The active documentation source remains `office-addin/src/public/function-docs.json`; keep both `cs` and `en` entries aligned when function signatures or outputs change.
 - Descriptive functions that consume ranges must declare those parameters with `dimensionality: "matrix"` in `functions.json`; scalar `any` metadata causes `#VÝPOČET!` when formulas pass ranges such as `A2:A11`.
 - Descriptive-function tutorials exist for weighted means/variance/stdev/CV. They create a clean data table and one result formula cell, without comments.
 - `PERCENTILE.INC.IFS` and `PERCENTILE.EXC.IFS` were removed from the Office add-in; percentile-with-filters use cases are expected to move into the pivot family instead.

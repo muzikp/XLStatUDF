@@ -1679,17 +1679,33 @@
     },
     "ANOVA.RM": {
       "category": "Testy",
-      "summary": "Provádí ANOVA s opakovaným měřením nad sloupci.",
+      "summary": "Provádí jednofaktorovou ANOVA s opakovaným měřením ve sloupcích.",
       "parameters": [
         {
           "sourceName": "hodnoty",
-          "description": "matice hodnot; řádky jsou subjekty, sloupce podmínky",
+          "description": "matice hodnot; řádky jsou subjekty a sloupce podmínky",
           "enumValues": []
         },
         {
           "sourceName": "ma_záhlaví",
-          "description": "0=autodetect, 1=první řádek je záhlaví, 2=bez záhlaví",
-          "enumValues": []
+          "description": "režim záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
         },
         {
           "sourceName": "alpha",
@@ -1698,31 +1714,31 @@
         },
         {
           "sourceName": "post_hoc",
-          "description": "volitelný kód post-hoc procedury; výchozí hodnota je 0",
+          "description": "post-hoc procedura",
           "enumValues": [
             {
               "value": "0",
-              "meaning": "none",
-              "default": false
+              "meaning": "bez post-hoc porovnání",
+              "default": true
             },
             {
               "value": "1",
-              "meaning": "tukey",
+              "meaning": "Tukey; v této implementaci Bonferroni fallback",
               "default": false
             },
             {
               "value": "2",
-              "meaning": "bonferroni",
+              "meaning": "Bonferroni",
               "default": false
             },
             {
               "value": "3",
-              "meaning": "scheffe",
+              "meaning": "Scheffe",
               "default": false
             },
             {
               "value": "4",
-              "meaning": "games-howell",
+              "meaning": "Games-Howell; v této implementaci Bonferroni fallback",
               "default": false
             }
           ]
@@ -1730,24 +1746,68 @@
       ],
       "output": [
         {
-          "name": "popisné statistiky po podmínkách",
-          "description": "popisné statistiky po podmínkách"
+          "name": "condition",
+          "description": "název podmínky"
         },
         {
-          "name": "Podmínky",
-          "description": "tabulku RM ANOVA s řádky Podmínky, Subjekty, Reziduum, Celkem"
+          "name": "n",
+          "description": "počet kompletních subjektů"
+        },
+        {
+          "name": "mean",
+          "description": "průměr podmínky"
+        },
+        {
+          "name": "median",
+          "description": "medián podmínky"
+        },
+        {
+          "name": "sd",
+          "description": "výběrová směrodatná odchylka podmínky"
+        },
+        {
+          "name": "SS",
+          "description": "součet čtverců v ANOVA tabulce"
+        },
+        {
+          "name": "df",
+          "description": "stupně volnosti"
+        },
+        {
+          "name": "MS",
+          "description": "průměrný čtverec"
+        },
+        {
+          "name": "F",
+          "description": "testová statistika F"
+        },
+        {
+          "name": "p",
+          "description": "p-hodnota testu"
         },
         {
           "name": "η²",
-          "description": "velikosti účinku η², η²p, ω², ω²p pro faktor"
+          "description": "eta kvadrát"
         },
         {
-          "name": "poznámku o netestované sphericitě",
-          "description": "poznámku o netestované sphericitě"
+          "name": "η²p",
+          "description": "parciální eta kvadrát"
         },
         {
-          "name": "volitelnou post-hoc část s párovými porovnáními podmínek",
-          "description": "volitelnou post-hoc část s párovými porovnáními podmínek"
+          "name": "ω²",
+          "description": "omega kvadrát"
+        },
+        {
+          "name": "ω²p",
+          "description": "parciální omega kvadrát"
+        },
+        {
+          "name": "sphericity",
+          "description": "poznámka, že sphericita není testována"
+        },
+        {
+          "name": "post-hoc",
+          "description": "párová porovnání podmínek"
         }
       ]
     },
@@ -1757,46 +1817,46 @@
       "parameters": [
         {
           "sourceName": "faktor",
-          "description": "kategorie faktoru",
+          "description": "řada skupinových kategorií",
           "enumValues": []
         },
         {
           "sourceName": "zavisla_promenna",
-          "description": "závislá proměnná",
+          "description": "řada hodnot závislé proměnné",
           "enumValues": []
         },
         {
           "sourceName": "kovariaty",
-          "description": "jedna nebo více kovariát ve sloupcích",
+          "description": "matice kovariát; jednotlivé kovariáty jsou ve sloupcích",
           "enumValues": []
         },
         {
           "sourceName": "post_hoc",
-          "description": "volitelný kód post-hoc procedury; výchozí hodnota je 0",
+          "description": "post-hoc procedura",
           "enumValues": [
             {
               "value": "0",
-              "meaning": "none",
-              "default": false
+              "meaning": "bez post-hoc porovnání",
+              "default": true
             },
             {
               "value": "1",
-              "meaning": "tukey",
+              "meaning": "Tukey; v této implementaci Bonferroni fallback",
               "default": false
             },
             {
               "value": "2",
-              "meaning": "bonferroni",
+              "meaning": "Bonferroni",
               "default": false
             },
             {
               "value": "3",
-              "meaning": "scheffe",
+              "meaning": "Scheffe",
               "default": false
             },
             {
               "value": "4",
-              "meaning": "games-howell",
+              "meaning": "Games-Howell; v této implementaci Bonferroni fallback",
               "default": false
             }
           ]
@@ -1808,12 +1868,12 @@
         },
         {
           "sourceName": "ma_záhlaví",
-          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "description": "režim záhlaví",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetekce záhlaví",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -1830,24 +1890,76 @@
       ],
       "output": [
         {
-          "name": "popisné statistiky po skupinách",
-          "description": "popisné statistiky po skupinách"
+          "name": "group",
+          "description": "název skupiny"
         },
         {
-          "name": "jednu společnou ANCOVA tabulku pro faktor, jednotlivé kovariáty i interakce",
-          "description": "jednu společnou ANCOVA tabulku pro faktor, jednotlivé kovariáty i interakce"
+          "name": "n",
+          "description": "počet kompletních pozorování ve skupině"
         },
         {
-          "name": "případné upozornění na porušení homogenity regresních sklonů",
-          "description": "případné upozornění na porušení homogenity regresních sklonů"
+          "name": "y",
+          "description": "průměr závislé proměnné ve skupině"
         },
         {
-          "name": "adjusted means po skupinách",
-          "description": "adjusted means po skupinách"
+          "name": "covariate",
+          "description": "průměr kovariáty ve skupině"
         },
         {
-          "name": "volitelnou post-hoc část",
-          "description": "volitelnou post-hoc část"
+          "name": "SS",
+          "description": "součet čtverců efektu"
+        },
+        {
+          "name": "df",
+          "description": "stupně volnosti efektu"
+        },
+        {
+          "name": "MS",
+          "description": "průměrný čtverec efektu"
+        },
+        {
+          "name": "F",
+          "description": "testová statistika F"
+        },
+        {
+          "name": "p",
+          "description": "p-hodnota efektu"
+        },
+        {
+          "name": "η²",
+          "description": "eta kvadrát"
+        },
+        {
+          "name": "η²p",
+          "description": "parciální eta kvadrát"
+        },
+        {
+          "name": "ω²",
+          "description": "omega kvadrát"
+        },
+        {
+          "name": "ω²p",
+          "description": "parciální omega kvadrát"
+        },
+        {
+          "name": "adjusted_mean",
+          "description": "adjustovaný průměr skupiny při průměrných kovariátách"
+        },
+        {
+          "name": "SE",
+          "description": "standardní chyba adjustovaného průměru"
+        },
+        {
+          "name": "CI lower",
+          "description": "dolní mez intervalu spolehlivosti"
+        },
+        {
+          "name": "CI upper",
+          "description": "horní mez intervalu spolehlivosti"
+        },
+        {
+          "name": "post-hoc",
+          "description": "párová porovnání adjustovaných průměrů"
         }
       ]
     },
@@ -1857,26 +1969,26 @@
       "parameters": [
         {
           "sourceName": "tabulka",
-          "description": "2D rozsah s pozorovanými četnostmi",
+          "description": "matice pozorovaných četností",
           "enumValues": []
         },
         {
           "sourceName": "ma_záhlaví",
-          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "description": "režim popisků tabulky",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetekce popisků",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
-              "meaning": "horní řádek i levý sloupec jsou popisky",
+              "meaning": "horní řádek a levý sloupec jsou popisky",
               "default": false
             },
             {
               "value": "2",
-              "meaning": "tabulka je čistě numerická bez popisků",
+              "meaning": "tabulka je bez popisků",
               "default": false
             }
           ]
@@ -1889,40 +2001,68 @@
       ],
       "output": [
         {
-          "name": "pozorovanou kontingenční tabulku včetně marginálních součtů",
-          "description": "pozorovanou kontingenční tabulku včetně marginálních součtů"
+          "name": "observed",
+          "description": "pozorované četnosti včetně marginálních součtů"
         },
         {
-          "name": "tabulku očekávaných četností",
-          "description": "tabulku očekávaných četností"
+          "name": "expected",
+          "description": "očekávané četnosti při nezávislosti"
         },
         {
           "name": "n",
-          "description": "souhrn testu n, df, α, χ², kritickou hodnotu a p"
+          "description": "celková četnost"
+        },
+        {
+          "name": "df",
+          "description": "stupně volnosti chí-kvadrát testu"
+        },
+        {
+          "name": "α",
+          "description": "hladina významnosti"
+        },
+        {
+          "name": "χ²",
+          "description": "testová statistika chí-kvadrát"
+        },
+        {
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "kritická hodnota chí-kvadrát rozdělení"
+        },
+        {
+          "name": "p",
+          "description": "p-hodnota testu nezávislosti"
         },
         {
           "name": "Pearson C",
-          "description": "míry asociace Pearson C, Cramér V a phi pro tabulku 2x2"
+          "description": "Pearsonův kontingenční koeficient"
+        },
+        {
+          "name": "Cramér V",
+          "description": "Cramérovo V"
+        },
+        {
+          "name": "phi",
+          "description": "koeficient phi pro tabulku 2 x 2"
         }
       ]
     },
     "CONTINGENCY.G": {
       "category": "Testy",
-      "summary": "Analyzuje kontingenční tabulku sestavenou z groupovaných sloupců.",
+      "summary": "Sestavuje a analyzuje kontingenční tabulku z groupovaných dat.",
       "parameters": [
         {
           "sourceName": "sloupce",
-          "description": "kategorie budoucích sloupců kontingenční tabulky",
+          "description": "řada kategorií budoucích sloupců tabulky",
           "enumValues": []
         },
         {
           "sourceName": "řádky",
-          "description": "kategorie budoucích řádků kontingenční tabulky",
+          "description": "řada kategorií budoucích řádků tabulky",
           "enumValues": []
         },
         {
           "sourceName": "počet",
-          "description": "volitelné četnosti dvojic; pokud chybí, každá dvojice má váhu 1",
+          "description": "řada četností dvojic; při vynechání má každá dvojice četnost 1",
           "enumValues": []
         },
         {
@@ -1932,12 +2072,12 @@
         },
         {
           "sourceName": "ma_záhlaví",
-          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "description": "režim záhlaví",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetekce záhlaví",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -1954,20 +2094,48 @@
       ],
       "output": [
         {
-          "name": "pozorovanou kontingenční tabulku",
-          "description": "pozorovanou kontingenční tabulku"
+          "name": "observed",
+          "description": "pozorované četnosti včetně marginálních součtů"
         },
         {
-          "name": "očekávané četnosti",
-          "description": "očekávané četnosti"
+          "name": "expected",
+          "description": "očekávané četnosti při nezávislosti"
+        },
+        {
+          "name": "n",
+          "description": "celková četnost"
+        },
+        {
+          "name": "df",
+          "description": "stupně volnosti chí-kvadrát testu"
+        },
+        {
+          "name": "α",
+          "description": "hladina významnosti"
         },
         {
           "name": "χ²",
-          "description": "souhrn testu χ²"
+          "description": "testová statistika chí-kvadrát"
+        },
+        {
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "kritická hodnota chí-kvadrát rozdělení"
+        },
+        {
+          "name": "p",
+          "description": "p-hodnota testu nezávislosti"
         },
         {
           "name": "Pearson C",
-          "description": "míry asociace Pearson C, Cramér V a případně phi"
+          "description": "Pearsonův kontingenční koeficient"
+        },
+        {
+          "name": "Cramér V",
+          "description": "Cramérovo V"
+        },
+        {
+          "name": "phi",
+          "description": "koeficient phi pro tabulku 2 x 2"
         }
       ]
     },
@@ -2070,17 +2238,17 @@
       "parameters": [
         {
           "sourceName": "data",
-          "description": "vstupní matice; sloupce jsou proměnné",
+          "description": "matice hodnot; sloupce jsou proměnné",
           "enumValues": []
         },
         {
           "sourceName": "metoda",
-          "description": "volitelný kód výpočetní metody; výchozí hodnota je 0",
+          "description": "výpočetní metoda",
           "enumValues": [
             {
               "value": "0",
               "meaning": "Pearson",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -2091,48 +2259,48 @@
         },
         {
           "sourceName": "vystup",
-          "description": "volitelný kód typu výstupu; výchozí hodnota je 0",
+          "description": "typ výstupu",
           "enumValues": [
             {
               "value": "0",
               "meaning": "jen korelační koeficienty",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
-              "meaning": "jen oboustranné p-hodnoty",
+              "meaning": "jen p-hodnoty",
               "default": false
             },
             {
               "value": "2",
-              "meaning": "korelační koeficient a v řádku pod ním p-hodnota",
+              "meaning": "koeficient a p-hodnota pod ním",
               "default": false
             },
             {
               "value": "3",
-              "meaning": "korelační koeficient, pod ním p-hodnota a na třetím řádku signifikance hvězdičkami",
+              "meaning": "koeficient, p-hodnota a signifikance pod sebou",
               "default": false
             },
             {
               "value": "4",
-              "meaning": "jen korelační koeficienty a za nimi v téže buňce signifikance hvězdičkami",
+              "meaning": "koeficient se signifikancí v jedné buňce",
               "default": false
             }
           ]
         },
         {
           "sourceName": "p_minimum",
-          "description": "volitelný filtr; vrátí jen vazby s p < p_minimum",
+          "description": "filtr zobrazených vazeb podle p-hodnoty",
           "enumValues": []
         },
         {
           "sourceName": "ma_záhlaví",
-          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "description": "režim záhlaví",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetekce záhlaví",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -2149,16 +2317,16 @@
       ],
       "output": [
         {
-          "name": "koeficient",
-          "description": "koeficient"
+          "name": "r",
+          "description": "korelační koeficient"
         },
         {
           "name": "p",
-          "description": "p"
+          "description": "oboustranná p-hodnota testu korelace"
         },
         {
           "name": "sig.",
-          "description": "volitelně sig."
+          "description": "značka signifikance podle p-hodnoty"
         }
       ]
     }
@@ -3843,7 +4011,7 @@
     },
     "ANOVA.RM": {
       "category": "Tests",
-      "summary": "Performs repeated-measures ANOVA across columns.",
+      "summary": "Performs one-way repeated-measures ANOVA across columns.",
       "parameters": [
         {
           "sourceName": "values",
@@ -3852,8 +4020,24 @@
         },
         {
           "sourceName": "has_header",
-          "description": "0=autodetect, 1=first row is a header, 2=no header",
-          "enumValues": []
+          "description": "header mode",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
         },
         {
           "sourceName": "alpha",
@@ -3862,31 +4046,31 @@
         },
         {
           "sourceName": "post_hoc",
-          "description": "optional post-hoc procedure code; default is 0",
+          "description": "post-hoc procedure",
           "enumValues": [
             {
               "value": "0",
-              "meaning": "none",
-              "default": false
+              "meaning": "no post-hoc comparisons",
+              "default": true
             },
             {
               "value": "1",
-              "meaning": "tukey",
+              "meaning": "Tukey; Bonferroni fallback in this implementation",
               "default": false
             },
             {
               "value": "2",
-              "meaning": "bonferroni",
+              "meaning": "Bonferroni",
               "default": false
             },
             {
               "value": "3",
-              "meaning": "scheffe",
+              "meaning": "Scheffe",
               "default": false
             },
             {
               "value": "4",
-              "meaning": "games-howell",
+              "meaning": "Games-Howell; Bonferroni fallback in this implementation",
               "default": false
             }
           ]
@@ -3894,24 +4078,68 @@
       ],
       "output": [
         {
-          "name": "descriptive statistics by condition",
-          "description": "descriptive statistics by condition"
+          "name": "condition",
+          "description": "condition name"
         },
         {
-          "name": "Conditions",
-          "description": "an RM ANOVA table with rows Conditions, Subjects, Residual, Total"
+          "name": "n",
+          "description": "number of complete subjects"
+        },
+        {
+          "name": "mean",
+          "description": "condition mean"
+        },
+        {
+          "name": "median",
+          "description": "condition median"
+        },
+        {
+          "name": "sd",
+          "description": "sample standard deviation of the condition"
+        },
+        {
+          "name": "SS",
+          "description": "sum of squares in the ANOVA table"
+        },
+        {
+          "name": "df",
+          "description": "degrees of freedom"
+        },
+        {
+          "name": "MS",
+          "description": "mean square"
+        },
+        {
+          "name": "F",
+          "description": "F statistic"
+        },
+        {
+          "name": "p",
+          "description": "p-value"
         },
         {
           "name": "η²",
-          "description": "effect sizes η², η²p, ω², ω²p for the repeated-measures factor"
+          "description": "eta squared"
         },
         {
-          "name": "a note about untested sphericity",
-          "description": "a note about untested sphericity"
+          "name": "η²p",
+          "description": "partial eta squared"
         },
         {
-          "name": "an optional post-hoc section with pairwise condition comparisons",
-          "description": "an optional post-hoc section with pairwise condition comparisons"
+          "name": "ω²",
+          "description": "omega squared"
+        },
+        {
+          "name": "ω²p",
+          "description": "partial omega squared"
+        },
+        {
+          "name": "sphericity",
+          "description": "note that sphericity is not tested"
+        },
+        {
+          "name": "post-hoc",
+          "description": "pairwise condition comparisons"
         }
       ]
     },
@@ -3921,46 +4149,46 @@
       "parameters": [
         {
           "sourceName": "factor",
-          "description": "factor categories",
+          "description": "series of group categories",
           "enumValues": []
         },
         {
           "sourceName": "dependent_variable",
-          "description": "dependent variable",
+          "description": "series of dependent-variable values",
           "enumValues": []
         },
         {
           "sourceName": "covariates",
-          "description": "one or more covariates arranged in columns",
+          "description": "covariate matrix; individual covariates are in columns",
           "enumValues": []
         },
         {
           "sourceName": "post_hoc",
-          "description": "optional post-hoc procedure code; default is 0",
+          "description": "post-hoc procedure",
           "enumValues": [
             {
               "value": "0",
-              "meaning": "none",
-              "default": false
+              "meaning": "no post-hoc comparisons",
+              "default": true
             },
             {
               "value": "1",
-              "meaning": "tukey",
+              "meaning": "Tukey; Bonferroni fallback in this implementation",
               "default": false
             },
             {
               "value": "2",
-              "meaning": "bonferroni",
+              "meaning": "Bonferroni",
               "default": false
             },
             {
               "value": "3",
-              "meaning": "scheffe",
+              "meaning": "Scheffe",
               "default": false
             },
             {
               "value": "4",
-              "meaning": "games-howell",
+              "meaning": "Games-Howell; Bonferroni fallback in this implementation",
               "default": false
             }
           ]
@@ -3972,12 +4200,12 @@
         },
         {
           "sourceName": "has_header",
-          "description": "optional header mode code; default is 0",
+          "description": "header mode",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetect header",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -3994,24 +4222,76 @@
       ],
       "output": [
         {
-          "name": "descriptive statistics by group",
-          "description": "descriptive statistics by group"
+          "name": "group",
+          "description": "group name"
         },
         {
-          "name": "one common ANCOVA table for the factor, individual covariates, and interactions",
-          "description": "one common ANCOVA table for the factor, individual covariates, and interactions"
+          "name": "n",
+          "description": "number of complete observations in the group"
         },
         {
-          "name": "an optional warning about violated homogeneity of regression slopes",
-          "description": "an optional warning about violated homogeneity of regression slopes"
+          "name": "y",
+          "description": "group mean of the dependent variable"
         },
         {
-          "name": "adjusted means by group",
-          "description": "adjusted means by group"
+          "name": "covariate",
+          "description": "group mean of the covariate"
         },
         {
-          "name": "an optional post-hoc section",
-          "description": "an optional post-hoc section"
+          "name": "SS",
+          "description": "effect sum of squares"
+        },
+        {
+          "name": "df",
+          "description": "effect degrees of freedom"
+        },
+        {
+          "name": "MS",
+          "description": "effect mean square"
+        },
+        {
+          "name": "F",
+          "description": "F statistic"
+        },
+        {
+          "name": "p",
+          "description": "effect p-value"
+        },
+        {
+          "name": "η²",
+          "description": "eta squared"
+        },
+        {
+          "name": "η²p",
+          "description": "partial eta squared"
+        },
+        {
+          "name": "ω²",
+          "description": "omega squared"
+        },
+        {
+          "name": "ω²p",
+          "description": "partial omega squared"
+        },
+        {
+          "name": "adjusted_mean",
+          "description": "group adjusted mean at mean covariate values"
+        },
+        {
+          "name": "SE",
+          "description": "standard error of the adjusted mean"
+        },
+        {
+          "name": "CI lower",
+          "description": "lower confidence-interval bound"
+        },
+        {
+          "name": "CI upper",
+          "description": "upper confidence-interval bound"
+        },
+        {
+          "name": "post-hoc",
+          "description": "pairwise adjusted-mean comparisons"
         }
       ]
     },
@@ -4021,17 +4301,17 @@
       "parameters": [
         {
           "sourceName": "table",
-          "description": "a 2D range of observed frequencies",
+          "description": "matrix of observed frequencies",
           "enumValues": []
         },
         {
           "sourceName": "has_header",
-          "description": "optional header mode code; default is 0",
+          "description": "table label mode",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetect labels",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -4040,7 +4320,7 @@
             },
             {
               "value": "2",
-              "meaning": "the table is purely numeric with no labels",
+              "meaning": "table has no labels",
               "default": false
             }
           ]
@@ -4053,40 +4333,68 @@
       ],
       "output": [
         {
-          "name": "the observed contingency table including marginal totals",
-          "description": "the observed contingency table including marginal totals"
+          "name": "observed",
+          "description": "observed frequencies including marginal totals"
         },
         {
-          "name": "the expected frequency table",
-          "description": "the expected frequency table"
+          "name": "expected",
+          "description": "expected frequencies under independence"
         },
         {
           "name": "n",
-          "description": "a test summary with n, df, α, χ², critical value, and p"
+          "description": "total frequency"
+        },
+        {
+          "name": "df",
+          "description": "chi-square test degrees of freedom"
+        },
+        {
+          "name": "α",
+          "description": "significance level"
+        },
+        {
+          "name": "χ²",
+          "description": "chi-square test statistic"
+        },
+        {
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "critical value of the chi-square distribution"
+        },
+        {
+          "name": "p",
+          "description": "p-value for the independence test"
         },
         {
           "name": "Pearson C",
-          "description": "association measures Pearson C, Cramér V, and phi for 2x2 tables"
+          "description": "Pearson contingency coefficient"
+        },
+        {
+          "name": "Cramér V",
+          "description": "Cramér V"
+        },
+        {
+          "name": "phi",
+          "description": "phi coefficient for 2 x 2 tables"
         }
       ]
     },
     "CONTINGENCY.G": {
       "category": "Tests",
-      "summary": "Analyzes a contingency table built from grouped columns.",
+      "summary": "Builds and analyzes a contingency table from grouped data.",
       "parameters": [
         {
           "sourceName": "columns",
-          "description": "categories of the future contingency table columns",
+          "description": "series of future table column categories",
           "enumValues": []
         },
         {
           "sourceName": "rows",
-          "description": "categories of the future contingency table rows",
+          "description": "series of future table row categories",
           "enumValues": []
         },
         {
           "sourceName": "count",
-          "description": "optional pair frequencies; if omitted, each pair has weight 1",
+          "description": "series of pair frequencies; when omitted, each pair has frequency 1",
           "enumValues": []
         },
         {
@@ -4096,12 +4404,12 @@
         },
         {
           "sourceName": "has_header",
-          "description": "optional header mode code; default is 0",
+          "description": "header mode",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetect header",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -4118,20 +4426,48 @@
       ],
       "output": [
         {
-          "name": "the observed contingency table",
-          "description": "the observed contingency table"
+          "name": "observed",
+          "description": "observed frequencies including marginal totals"
         },
         {
-          "name": "expected frequencies",
-          "description": "expected frequencies"
+          "name": "expected",
+          "description": "expected frequencies under independence"
+        },
+        {
+          "name": "n",
+          "description": "total frequency"
+        },
+        {
+          "name": "df",
+          "description": "chi-square test degrees of freedom"
+        },
+        {
+          "name": "α",
+          "description": "significance level"
         },
         {
           "name": "χ²",
-          "description": "a χ² test summary"
+          "description": "chi-square test statistic"
+        },
+        {
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "critical value of the chi-square distribution"
+        },
+        {
+          "name": "p",
+          "description": "p-value for the independence test"
         },
         {
           "name": "Pearson C",
-          "description": "association measures Pearson C, Cramér V, and possibly phi"
+          "description": "Pearson contingency coefficient"
+        },
+        {
+          "name": "Cramér V",
+          "description": "Cramér V"
+        },
+        {
+          "name": "phi",
+          "description": "phi coefficient for 2 x 2 tables"
         }
       ]
     },
@@ -4234,17 +4570,17 @@
       "parameters": [
         {
           "sourceName": "data",
-          "description": "input matrix; columns are variables",
+          "description": "value matrix; columns are variables",
           "enumValues": []
         },
         {
           "sourceName": "method",
-          "description": "optional computation method code; default is 0",
+          "description": "computation method",
           "enumValues": [
             {
               "value": "0",
               "meaning": "Pearson",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -4255,48 +4591,48 @@
         },
         {
           "sourceName": "output",
-          "description": "optional output type code; default is 0",
+          "description": "output type",
           "enumValues": [
             {
               "value": "0",
               "meaning": "coefficients only",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
-              "meaning": "two-tailed p-values only",
+              "meaning": "p-values only",
               "default": false
             },
             {
               "value": "2",
-              "meaning": "coefficient and p-value on the row below",
+              "meaning": "coefficient with p-value below",
               "default": false
             },
             {
               "value": "3",
-              "meaning": "coefficient, p-value below it, and significance stars on the third row",
+              "meaning": "coefficient, p-value, and significance below each other",
               "default": false
             },
             {
               "value": "4",
-              "meaning": "coefficients only, with significance stars appended in the same cell",
+              "meaning": "coefficient with significance in one cell",
               "default": false
             }
           ]
         },
         {
           "sourceName": "p_minimum",
-          "description": "optional filter; only links with p < p_minimum are returned",
+          "description": "filter for displayed links by p-value",
           "enumValues": []
         },
         {
           "sourceName": "has_header",
-          "description": "optional header mode code; default is 0",
+          "description": "header mode",
           "enumValues": [
             {
               "value": "0",
               "meaning": "autodetect header",
-              "default": false
+              "default": true
             },
             {
               "value": "1",
@@ -4313,19 +4649,18 @@
       ],
       "output": [
         {
-          "name": "coefficient",
-          "description": "coefficient"
+          "name": "r",
+          "description": "correlation coefficient"
         },
         {
           "name": "p",
-          "description": "p"
+          "description": "two-tailed p-value for the correlation test"
         },
         {
           "name": "sig.",
-          "description": "optionally sig."
+          "description": "significance mark based on the p-value"
         }
       ]
     }
   }
 }
-
