@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "evalytics: clean cache and start server",
+      "type": "shell",
+      "command": "npm run desktop:clear-cache; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; npm run local:serve",
+      "options": {
+        "cwd": "${workspaceFolder}/office-addin"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "evalytics: reset debug session",
+      "type": "shell",
+      "command": ".\\scripts\\reset-debug-session.cmd",
+      "options": {
+        "cwd": "${workspaceFolder}/office-addin"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "evalytics: hard reset debug session",
+      "type": "shell",
+      "command": ".\\scripts\\reset-debug-session.cmd -ClearOfficeCache",
+      "options": {
+        "cwd": "${workspaceFolder}/office-addin"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

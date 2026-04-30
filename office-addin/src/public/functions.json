@@ -1,0 +1,594 @@
+﻿{
+  "allowCustomDataForDataTypeAny": true,
+  "functions": [
+    {
+      "id": "VERSION",
+      "name": "VERSION",
+      "description": "Returns diagnostic information about the running Evalytics Office.js add-in.",
+      "parameters": [],
+      "result": { "type": "string", "dimensionality": "scalar" }
+    },
+    {
+      "id": "PING",
+      "name": "PING",
+      "description": "Returns 1 as a minimal custom-function latency probe.",
+      "parameters": [],
+      "result": { "type": "number", "dimensionality": "scalar" }
+    },
+    {
+      "id": "GENERATE_NORM",
+      "name": "GENERATE.NORM",
+      "description": "Generates one random value from a normal distribution with optional perturbation.",
+      "parameters": [
+        { "name": "mean", "type": "number" },
+        { "name": "standardDeviation", "type": "number" },
+        { "name": "outlierRate", "type": "number", "optional": true }
+      ],
+      "result": { "type": "number", "dimensionality": "scalar" }
+    },
+    {
+      "id": "GENERATE_NORM_ARRAY",
+      "name": "GENERATE.NORM.ARRAY",
+      "description": "Generates a single-column array of random values from a normal distribution.",
+      "parameters": [
+        { "name": "count", "type": "number" },
+        { "name": "mean", "type": "number" },
+        { "name": "standardDeviation", "type": "number" },
+        { "name": "outlierRate", "type": "number", "optional": true }
+      ],
+      "result": { "type": "number", "dimensionality": "matrix" }
+    },
+    {
+      "id": "GENERATE_INT",
+      "name": "GENERATE.INT",
+      "description": "Generates one random integer from an interval with optional perturbation.",
+      "parameters": [
+        { "name": "minimum", "type": "number", "optional": true },
+        { "name": "maximum", "type": "number", "optional": true },
+        { "name": "outlierRate", "type": "number", "optional": true }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "GENERATE_INT_ARRAY",
+      "name": "GENERATE.INT.ARRAY",
+      "description": "Generates a single-column array of random integers from an interval.",
+      "parameters": [
+        { "name": "count", "type": "number" },
+        { "name": "minimum", "type": "number" },
+        { "name": "maximum", "type": "number" },
+        { "name": "outlierRate", "type": "number", "optional": true }
+      ],
+      "result": { "type": "number", "dimensionality": "matrix" }
+    },
+    {
+      "id": "FILL",
+      "name": "FILL",
+      "description": "Repeats one scalar value into a single-column spill output.",
+      "parameters": [
+        { "name": "what", "type": "any" },
+        { "name": "count", "type": "number" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "NORM_DIST_RANGE",
+      "name": "NORM.DIST.RANGE",
+      "description": "Computes the probability of an interval under the normal distribution.",
+      "parameters": [
+        { "name": "mean", "type": "number" },
+        { "name": "standardDeviation", "type": "number" },
+        { "name": "lowerBound", "type": "any" },
+        { "name": "upperBound", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "AVERAGE_W",
+      "name": "AVERAGE.W",
+      "description": "Computes the weighted arithmetic mean.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "HARMEAN_W",
+      "name": "HARMEAN.W",
+      "description": "Computes the weighted harmonic mean.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "GEOMEAN_W",
+      "name": "GEOMEAN.W",
+      "description": "Computes the weighted geometric mean.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "VAR_P_W",
+      "name": "VAR.P.W",
+      "description": "Computes the weighted population variance.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "VAR_S_W",
+      "name": "VAR.S.W",
+      "description": "Computes the weighted sample variance.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "STDEV_P_W",
+      "name": "STDEV.P.W",
+      "description": "Computes the weighted population standard deviation.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "STDEV_S_W",
+      "name": "STDEV.S.W",
+      "description": "Computes the weighted sample standard deviation.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "VARCOEF",
+      "name": "VARCOEF",
+      "description": "Computes the population coefficient of variation.",
+      "parameters": [{ "name": "values", "type": "any" }],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "VARCOEF_S",
+      "name": "VARCOEF.S",
+      "description": "Computes the sample coefficient of variation.",
+      "parameters": [{ "name": "values", "type": "any" }],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "VARCOEF_W",
+      "name": "VARCOEF.W",
+      "description": "Computes the weighted population coefficient of variation.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "VARCOEF_S_W",
+      "name": "VARCOEF.S.W",
+      "description": "Computes the weighted sample coefficient of variation.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "weights", "type": "any" }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "PERCENTILE_INC_IFS",
+      "name": "PERCENTILE.INC.IFS",
+      "description": "Computes an inclusive percentile after applying filters.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "quantile", "type": "number" },
+        { "name": "criteriaArgs", "type": "any", "dimensionality": "matrix", "repeating": true, "optional": true }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "PERCENTILE_EXC_IFS",
+      "name": "PERCENTILE.EXC.IFS",
+      "description": "Computes an exclusive percentile after applying filters.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "quantile", "type": "number" },
+        { "name": "criteriaArgs", "type": "any", "dimensionality": "matrix", "repeating": true, "optional": true }
+      ],
+      "result": { "type": "number" }
+    },
+    {
+      "id": "SHAPIRO_WILK",
+      "name": "SHAPIRO.WILK",
+      "description": "Performs the Shapiro-Wilk normality test.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "KOLMOGOROV_SMIRNOV",
+      "name": "KOLMOGOROV.SMIRNOV",
+      "description": "Performs the Kolmogorov-Smirnov goodness-of-fit test.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "distribution", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "T_TEST_1S",
+      "name": "T.TEST.1S",
+      "description": "Performs a one-sample t-test.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "mu0", "type": "number" },
+        { "name": "direction", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PROP_TEST_1S",
+      "name": "PROP.TEST.1S",
+      "description": "Performs a one-sample proportion test.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "pi0", "type": "number" },
+        { "name": "direction", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "WILCOXON_PAIRED",
+      "name": "WILCOXON.PAIRED",
+      "description": "Performs the Wilcoxon signed-rank test for paired measurements.",
+      "parameters": [
+        { "name": "xValues", "type": "any" },
+        { "name": "yValues", "type": "any" },
+        { "name": "hasHeader", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "direction", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "WELCH_TEST_2S_G",
+      "name": "WELCH.TEST.2S.G",
+      "description": "Performs Welch's two-sample t-test for grouped data.",
+      "parameters": [
+        { "name": "categories", "type": "any", "dimensionality": "matrix" },
+        { "name": "values", "type": "any", "dimensionality": "matrix" },
+        { "name": "hasHeader", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "direction", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "MANN_WHITNEY_G",
+      "name": "MANN.WHITNEY.G",
+      "description": "Performs the Mann-Whitney test for grouped data.",
+      "parameters": [
+        { "name": "categories", "type": "any" },
+        { "name": "values", "type": "any" },
+        { "name": "hasHeader", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "direction", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "CHISQ_GOF",
+      "name": "CHISQ.GOF",
+      "description": "Performs the chi-square goodness-of-fit test.",
+      "parameters": [
+        { "name": "observed", "type": "any" },
+        { "name": "expected", "type": "any" },
+        { "name": "categories", "type": "any", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "ANOVA_G",
+      "name": "ANOVA.G",
+      "description": "Performs one-way ANOVA on grouped data.",
+      "parameters": [
+        { "name": "categories", "type": "any" },
+        { "name": "values", "type": "any" },
+        { "name": "hasHeader", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "postHoc", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "CORREL_SPEARMAN",
+      "name": "CORREL.SPEARMAN",
+      "description": "Computes Spearman correlation and its significance test.",
+      "parameters": [
+        { "name": "xValues", "type": "any" },
+        { "name": "yValues", "type": "any" },
+        { "name": "direction", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "ANOVA_RM",
+      "name": "ANOVA.RM",
+      "description": "Pending repeated-measures ANOVA migration.",
+      "parameters": [
+        { "name": "values", "type": "any" },
+        { "name": "hasHeader", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "postHoc", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "ANCOVA_G",
+      "name": "ANCOVA.G",
+      "description": "Pending ANCOVA migration.",
+      "parameters": [
+        { "name": "groups", "type": "any" },
+        { "name": "values", "type": "any" },
+        { "name": "covariates", "type": "any" },
+        { "name": "postHoc", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "CONTINGENCY_T",
+      "name": "CONTINGENCY.T",
+      "description": "Pending contingency-table migration.",
+      "parameters": [
+        { "name": "table", "type": "any" },
+        { "name": "hasHeader", "type": "number", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "CONTINGENCY_G",
+      "name": "CONTINGENCY.G",
+      "description": "Pending grouped contingency migration.",
+      "parameters": [
+        { "name": "columnCategories", "type": "any" },
+        { "name": "rowCategories", "type": "any" },
+        { "name": "counts", "type": "any", "optional": true },
+        { "name": "alpha", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "CORREL_MATRIX",
+      "name": "CORREL.MATRIX",
+      "description": "Pending correlation-matrix migration.",
+      "parameters": [
+        { "name": "data", "type": "any" },
+        { "name": "method", "type": "number", "optional": true },
+        { "name": "output", "type": "number", "optional": true },
+        { "name": "pMinimum", "type": "number", "optional": true },
+        { "name": "hasHeader", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_COUNT",
+      "name": "PIVOT.COUNT",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_SUM",
+      "name": "PIVOT.SUM",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_AVERAGE",
+      "name": "PIVOT.AVERAGE",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_MIN",
+      "name": "PIVOT.MIN",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_MAX",
+      "name": "PIVOT.MAX",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_MEDIAN",
+      "name": "PIVOT.MEDIAN",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_PERCENTILE",
+      "name": "PIVOT.PERCENTILE",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" },
+        { "name": "quantile", "type": "number" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_STDEV_S",
+      "name": "PIVOT.STDEV.S",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_STDEV_P",
+      "name": "PIVOT.STDEV.P",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_VAR_S",
+      "name": "PIVOT.VAR.S",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_VAR_P",
+      "name": "PIVOT.VAR.P",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_VARCOEF_S",
+      "name": "PIVOT.VARCOEF.S",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_VARCOEF_P",
+      "name": "PIVOT.VARCOEF.P",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_CONF_T",
+      "name": "PIVOT.CONF.T",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" },
+        { "name": "alpha", "type": "number" },
+        { "name": "direction", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_CONF_NORM",
+      "name": "PIVOT.CONF.NORM",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" },
+        { "name": "alpha", "type": "number" },
+        { "name": "direction", "type": "number", "optional": true }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_MAD",
+      "name": "PIVOT.MAD",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    },
+    {
+      "id": "PIVOT_IQR",
+      "name": "PIVOT.IQR",
+      "description": "Pending pivot migration.",
+      "parameters": [
+        { "name": "rows", "type": "any" },
+        { "name": "columns", "type": "any" },
+        { "name": "values", "type": "any" }
+      ],
+      "result": { "type": "any", "dimensionality": "matrix" }
+    }
+  ]
+}
+

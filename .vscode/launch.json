@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Evalytics: Clean Cache & Start Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "powershell -NoExit -ExecutionPolicy Bypass -Command \"$ErrorActionPreference = 'Stop'; Set-Location '${workspaceFolder}\\office-addin'; npm run desktop:clear-cache; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; npm run local:serve\""
+    },
+    {
+      "name": "Evalytics: Reset Debug Session",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cmd /k \"\"${workspaceFolder}\\office-addin\\scripts\\reset-debug-session.cmd\"\""
+    },
+    {
+      "name": "Evalytics: Hard Reset Debug Session",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "cmd /k \"\"${workspaceFolder}\\office-addin\\scripts\\reset-debug-session.cmd\" -ClearOfficeCache\""
+    }
+  ]
+}

@@ -1,0 +1,3190 @@
+{
+  "cs": {
+    "GENERATE.NORM": {
+      "category": "Obecné",
+      "summary": "Generuje jednu náhodnou hodnotu z normálního rozdělení.",
+      "parameters": [
+        {
+          "sourceName": "stredni_hodnota",
+          "description": "střední hodnota rozdělení",
+          "enumValues": []
+        },
+        {
+          "sourceName": "směrodatná_odchylka",
+          "description": "kladná směrodatná odchylka rozdělení",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "pravděpodobnost dodatečné náhodné perturbace v intervalu 0 až 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "jedna náhodně vygenerovaná číselná hodnota"
+        }
+      ]
+    },
+    "GENERATE.NORM.ARRAY": {
+      "category": "Obecné",
+      "summary": "Generuje jednosloupcovou řadu náhodných hodnot z normálního rozdělení.",
+      "parameters": [
+        {
+          "sourceName": "počet",
+          "description": "počet vrácených řádků",
+          "enumValues": []
+        },
+        {
+          "sourceName": "stredni_hodnota",
+          "description": "střední hodnota rozdělení",
+          "enumValues": []
+        },
+        {
+          "sourceName": "směrodatná_odchylka",
+          "description": "kladná směrodatná odchylka rozdělení",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "pravděpodobnost dodatečné náhodné perturbace v intervalu 0 až 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "jednosloupcová řada náhodně vygenerovaných číselných hodnot"
+        }
+      ]
+    },
+    "GENERATE.INT": {
+      "category": "Obecné",
+      "summary": "Generuje jedno náhodné celé číslo ze zadaného intervalu.",
+      "parameters": [
+        {
+          "sourceName": "minimum",
+          "description": "dolní mez intervalu",
+          "enumValues": []
+        },
+        {
+          "sourceName": "maximum",
+          "description": "horní mez intervalu",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "pravděpodobnost dodatečné náhodné perturbace v intervalu 0 až 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "jedno náhodně vygenerované celé číslo"
+        }
+      ]
+    },
+    "GENERATE.INT.ARRAY": {
+      "category": "Obecné",
+      "summary": "Generuje jednosloupcovou řadu náhodných celých čísel ze zadaného intervalu.",
+      "parameters": [
+        {
+          "sourceName": "počet",
+          "description": "počet vrácených řádků",
+          "enumValues": []
+        },
+        {
+          "sourceName": "minimum",
+          "description": "dolní mez intervalu",
+          "enumValues": []
+        },
+        {
+          "sourceName": "maximum",
+          "description": "horní mez intervalu",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "pravděpodobnost dodatečné náhodné perturbace v intervalu 0 až 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "jednosloupcová řada náhodně vygenerovaných celých čísel"
+        }
+      ]
+    },
+    "FILL": {
+      "category": "Obecné",
+      "summary": "Opakuje jednu zadanou hodnotu do jednosloupcového spill výstupu.",
+      "parameters": [
+        {
+          "sourceName": "co",
+          "description": "hodnota, která se má opakovat",
+          "enumValues": []
+        },
+        {
+          "sourceName": "počet",
+          "description": "počet opakování hodnoty",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "value",
+          "description": "jednosloupcová řada opakovaných hodnot"
+        }
+      ]
+    },
+    "AVERAGE.W": {
+      "category": "Popisné",
+      "summary": "Počítá vážený aritmetický průměr.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "nezáporné váhy; prázdné buňky vah se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "HARMEAN.W": {
+      "category": "Popisné",
+      "summary": "Počítá vážený harmonický průměr.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "kladná číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "nezáporné váhy; prázdné buňky vah se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "GEOMEAN.W": {
+      "category": "Popisné",
+      "summary": "Počítá vážený geometrický průměr.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "kladná číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "nezáporné váhy; prázdné buňky vah se berou jako 0",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "VAR.P.W": {
+      "category": "Popisné",
+      "summary": "Počítá vážený populační rozptyl.",
+      "parameters": [],
+      "output": []
+    },
+    "VAR.S.W": {
+      "category": "Popisné",
+      "summary": "Počítá vážený výběrový rozptyl.",
+      "parameters": [],
+      "output": []
+    },
+    "STDEV.P.W": {
+      "category": "Popisné",
+      "summary": "Počítá váženou populační směrodatnou odchylku.",
+      "parameters": [],
+      "output": []
+    },
+    "STDEV.S.W": {
+      "category": "Popisné",
+      "summary": "Počítá váženou výběrovou směrodatnou odchylku.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF": {
+      "category": "Popisné",
+      "summary": "Počítá populační variační koeficient.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF.S": {
+      "category": "Popisné",
+      "summary": "Počítá výběrový variační koeficient.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF.W": {
+      "category": "Popisné",
+      "summary": "Počítá vážený populační variační koeficient.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF.S.W": {
+      "category": "Popisné",
+      "summary": "Počítá vážený výběrový variační koeficient.",
+      "parameters": [],
+      "output": []
+    },
+    "PERCENTILE.INC.IFS": {
+      "category": "Popisné",
+      "summary": "Počítá inkluzivní percentil po aplikaci filtrů.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "číselná data",
+          "enumValues": []
+        },
+        {
+          "sourceName": "quantile",
+          "description": "hodnota od 0 do 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "criteria_range_n",
+          "description": "rozsah, podle kterého se filtruje",
+          "enumValues": []
+        },
+        {
+          "sourceName": "criteria_n",
+          "description": "přesná shoda, relační výraz nebo wildcard výraz",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "PERCENTILE.EXC.IFS": {
+      "category": "Popisné",
+      "summary": "Počítá exkluzivní percentil po aplikaci filtrů.",
+      "parameters": [],
+      "output": []
+    },
+    "PIVOT.COUNT": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá neprázdné hodnoty."
+    },
+    "PIVOT.SUM": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá součty."
+    },
+    "PIVOT.AVERAGE": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá aritmetické průměry."
+    },
+    "PIVOT.MIN": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá minima."
+    },
+    "PIVOT.MAX": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá maxima."
+    },
+    "PIVOT.MEDIAN": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá mediány."
+    },
+    "PIVOT.PERCENTILE": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá percentily."
+    },
+    "PIVOT.STDEV.S": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá výběrové směrodatné odchylky."
+    },
+    "PIVOT.STDEV.P": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá populační směrodatné odchylky."
+    },
+    "PIVOT.VAR.S": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá výběrové rozptyly."
+    },
+    "PIVOT.VAR.P": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá populační rozptyly."
+    },
+    "PIVOT.VARCOEF.S": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá výběrové variační koeficienty."
+    },
+    "PIVOT.VARCOEF.P": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá populační variační koeficienty."
+    },
+    "PIVOT.CONF.T": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá poloviční šířky t-intervalů spolehlivosti."
+    },
+    "PIVOT.CONF.NORM": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá poloviční šířky intervalů spolehlivosti přes normální aproximaci."
+    },
+    "PIVOT.MAD": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá medián absolutních odchylek."
+    },
+    "PIVOT.IQR": {
+      "category": "Popisné",
+      "summary": "Sestavuje pivot a počítá mezikvartilová rozpětí."
+    },
+    "NORM.DIST.RANGE": {
+      "category": "Testy",
+      "summary": "Počítá pravděpodobnost intervalu normálního rozdělení.",
+      "parameters": [
+        {
+          "sourceName": "mean",
+          "description": "střední hodnota rozdělení",
+          "enumValues": []
+        },
+        {
+          "sourceName": "standard_deviation",
+          "description": "kladná směrodatná odchylka",
+          "enumValues": []
+        },
+        {
+          "sourceName": "lower_bound",
+          "description": "dolní mez intervalu; prázdná buňka znamená mínus nekonečno",
+          "enumValues": []
+        },
+        {
+          "sourceName": "upper_bound",
+          "description": "horní mez intervalu; prázdná buňka znamená plus nekonečno",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "SHAPIRO.WILK": {
+      "category": "Testy",
+      "summary": "Provádí Shapiro-Wilkův test normality.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "číselný výběr; prázdné buňky jsou ignorovány",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "0=autodetect, 1=první buňka je záhlaví, 2=bez záhlaví",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "W",
+          "description": "testová statistika"
+        },
+        {
+          "name": "p",
+          "description": "p-hodnota"
+        }
+      ]
+    },
+    "KOLMOGOROV.SMIRNOV": {
+      "category": "Testy",
+      "summary": "Provádí Kolmogorov-Smirnovův test dobré shody pro zvolené rozdělení.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "číselný výběr; prázdné buňky jsou ignorovány",
+          "enumValues": []
+        },
+        {
+          "sourceName": "distribution",
+          "description": "volitelný kód testovaného rozdělení; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "normal",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "lognormal",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "exponential",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "uniform",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "weibull",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "0=autodetect, 1=první buňka je záhlaví, 2=bez záhlaví",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "D",
+          "description": "testová statistika"
+        },
+        {
+          "name": "p",
+          "description": "p-hodnota"
+        }
+      ]
+    },
+    "T.TEST.1S": {
+      "category": "Testy",
+      "summary": "Provádí jednovýběrový t-test vůči zadané hypotetické střední hodnotě.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "číselný výběr",
+          "enumValues": []
+        },
+        {
+          "sourceName": "mu_0",
+          "description": "hypotetická střední hodnota",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "volitelný kód směru testu; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "levostranný test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "pravostranný test",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první buňka je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "x̄",
+          "description": "x̄"
+        },
+        {
+          "name": "μ₀",
+          "description": "μ₀"
+        },
+        {
+          "name": "sₓ",
+          "description": "sₓ"
+        },
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "t",
+          "description": "t"
+        },
+        {
+          "name": "df",
+          "description": "df"
+        },
+        {
+          "name": "t",
+          "description": "kritickou hodnotu t"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        }
+      ]
+    },
+    "PROP.TEST.1S": {
+      "category": "Testy",
+      "summary": "Provádí jednovýběrový test podílu.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "binární výběr ve formátu 0/1 nebo FALSE/TRUE",
+          "enumValues": []
+        },
+        {
+          "sourceName": "pi_0",
+          "description": "hypotetický populační podíl",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "volitelný kód směru testu; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "levostranný test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "pravostranný test",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první buňka je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "p̂",
+          "description": "p̂"
+        },
+        {
+          "name": "π₀",
+          "description": "π₀"
+        },
+        {
+          "name": "x",
+          "description": "x"
+        },
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "z",
+          "description": "z"
+        },
+        {
+          "name": "z",
+          "description": "kritickou hodnotu z"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        }
+      ]
+    },
+    "WILCOXON.PAIRED": {
+      "category": "Testy",
+      "summary": "Provádí Wilcoxonův párový znaménkový test pro závislá měření.",
+      "parameters": [
+        {
+          "sourceName": "x",
+          "description": "první měření",
+          "enumValues": []
+        },
+        {
+          "sourceName": "y",
+          "description": "druhé měření",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první buňka je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "smer",
+          "description": "volitelný kód směru testu; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "levostranný test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "pravostranný test",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "med(d)",
+          "description": "med(d)"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "W+",
+          "description": "W+"
+        },
+        {
+          "name": "W-",
+          "description": "W-"
+        },
+        {
+          "name": "W",
+          "description": "W"
+        },
+        {
+          "name": "z",
+          "description": "z"
+        },
+        {
+          "name": "z",
+          "description": "kritickou hodnotu z"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        },
+        {
+          "name": "r",
+          "description": "efekt velikosti r"
+        }
+      ]
+    },
+    "WELCH.TEST.2S.G": {
+      "category": "Testy",
+      "summary": "Provádí Welchův dvouvýběrový t-test pro dvě nezávislé skupiny.",
+      "parameters": [
+        {
+          "sourceName": "categories",
+          "description": "štítky skupin pro právě dvě nezávislé skupiny",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "číselná pozorování ve stejném pořadí jako categories",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "kód režimu záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "kód směru testu",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný test",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "levostranný test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "pravostranný test",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "group",
+          "description": "název skupiny"
+        },
+        {
+          "name": "n",
+          "description": "počet pozorování ve skupině"
+        },
+        {
+          "name": "mean",
+          "description": "výběrový průměr"
+        },
+        {
+          "name": "median",
+          "description": "výběrový medián"
+        },
+        {
+          "name": "sd",
+          "description": "výběrová směrodatná odchylka"
+        },
+        {
+          "name": "min",
+          "description": "nejmenší pozorovaná hodnota"
+        },
+        {
+          "name": "max",
+          "description": "největší pozorovaná hodnota"
+        },
+        {
+          "name": "α",
+          "description": "hladina významnosti"
+        },
+        {
+          "name": "t",
+          "description": "testová statistika Welchova testu"
+        },
+        {
+          "name": "df",
+          "description": "stupně volnosti Welchova testu"
+        },
+        {
+          "name": "tᶜʳⁱᵗ",
+          "description": "kritická hodnota t pro zvolený směr testu a hladinu α"
+        },
+        {
+          "name": "p",
+          "description": "p-hodnota"
+        },
+        {
+          "name": "d",
+          "description": "Cohenovo d"
+        },
+        {
+          "name": "r",
+          "description": "velikost účinku ve tvaru korelačního koeficientu"
+        }
+      ]
+    },
+    "MANN.WHITNEY.G": {
+      "category": "Testy",
+      "summary": "Provádí Mann-Whitneyho test pro dvě nezávislé skupiny.",
+      "parameters": [
+        {
+          "sourceName": "kategorie",
+          "description": "štítky právě dvou skupin",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "smer",
+          "description": "volitelný kód směru testu; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "levostranný test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "pravostranný test",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "tabulku popisných statistik po skupinách",
+          "description": "tabulku popisných statistik po skupinách"
+        },
+        {
+          "name": "U",
+          "description": "U"
+        },
+        {
+          "name": "U₁",
+          "description": "U₁"
+        },
+        {
+          "name": "U₂",
+          "description": "U₂"
+        },
+        {
+          "name": "z",
+          "description": "z"
+        },
+        {
+          "name": "z",
+          "description": "kritickou hodnotu z"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        },
+        {
+          "name": "r",
+          "description": "efekt velikosti r"
+        }
+      ]
+    },
+    "CHISQ.GOF": {
+      "category": "Testy",
+      "summary": "Provádí chí-kvadrát test dobré shody.",
+      "parameters": [
+        {
+          "sourceName": "observed",
+          "description": "pozorované četnosti kategorií",
+          "enumValues": []
+        },
+        {
+          "sourceName": "expected",
+          "description": "očekávané četnosti nebo pravděpodobnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "categories",
+          "description": "volitelné názvy kategorií",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "χ²",
+          "description": "souhrn testu χ², df, α, kritickou hodnotu a p"
+        },
+        {
+          "name": "O",
+          "description": "tabulku kategorií s O, E a příspěvkem (O−E)² / E"
+        }
+      ]
+    },
+    "ANOVA.G": {
+      "category": "Testy",
+      "summary": "Provádí jednofaktorovou ANOVA nad groupovanými daty.",
+      "parameters": [
+        {
+          "sourceName": "categories",
+          "description": "štítky skupin",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "číselná pozorování",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "0=autodetect, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "post_hoc",
+          "description": "volitelný kód post-hoc procedury; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "none",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "tukey",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "bonferroni",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "scheffe",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "games-howell",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "popisné statistiky po skupinách",
+          "description": "popisné statistiky po skupinách"
+        },
+        {
+          "name": "hlavní ANOVA tabulku",
+          "description": "hlavní ANOVA tabulku"
+        },
+        {
+          "name": "Leveneho test homogenity rozptylů",
+          "description": "Leveneho test homogenity rozptylů"
+        },
+        {
+          "name": "η²",
+          "description": "velikosti účinku η², ω² a f"
+        },
+        {
+          "name": "volitelnou post-hoc část",
+          "description": "volitelnou post-hoc část"
+        }
+      ]
+    },
+    "ANOVA.RM": {
+      "category": "Testy",
+      "summary": "Provádí ANOVA s opakovaným měřením nad sloupci.",
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "matice hodnot; řádky jsou subjekty, sloupce podmínky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "0=autodetect, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "post_hoc",
+          "description": "volitelný kód post-hoc procedury; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "none",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "tukey",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "bonferroni",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "scheffe",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "games-howell",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "popisné statistiky po podmínkách",
+          "description": "popisné statistiky po podmínkách"
+        },
+        {
+          "name": "Podmínky",
+          "description": "tabulku RM ANOVA s řádky Podmínky, Subjekty, Reziduum, Celkem"
+        },
+        {
+          "name": "η²",
+          "description": "velikosti účinku η², η²p, ω², ω²p pro faktor"
+        },
+        {
+          "name": "poznámku o netestované sphericitě",
+          "description": "poznámku o netestované sphericitě"
+        },
+        {
+          "name": "volitelnou post-hoc část s párovými porovnáními podmínek",
+          "description": "volitelnou post-hoc část s párovými porovnáními podmínek"
+        }
+      ]
+    },
+    "ANCOVA.G": {
+      "category": "Testy",
+      "summary": "Provádí ANCOVA s jedním faktorem a jednou nebo více kovariátami.",
+      "parameters": [
+        {
+          "sourceName": "faktor",
+          "description": "kategorie faktoru",
+          "enumValues": []
+        },
+        {
+          "sourceName": "zavisla_promenna",
+          "description": "závislá proměnná",
+          "enumValues": []
+        },
+        {
+          "sourceName": "kovariaty",
+          "description": "jedna nebo více kovariát ve sloupcích",
+          "enumValues": []
+        },
+        {
+          "sourceName": "post_hoc",
+          "description": "volitelný kód post-hoc procedury; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "none",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "tukey",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "bonferroni",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "scheffe",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "games-howell",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "popisné statistiky po skupinách",
+          "description": "popisné statistiky po skupinách"
+        },
+        {
+          "name": "jednu společnou ANCOVA tabulku pro faktor, jednotlivé kovariáty i interakce",
+          "description": "jednu společnou ANCOVA tabulku pro faktor, jednotlivé kovariáty i interakce"
+        },
+        {
+          "name": "případné upozornění na porušení homogenity regresních sklonů",
+          "description": "případné upozornění na porušení homogenity regresních sklonů"
+        },
+        {
+          "name": "adjusted means po skupinách",
+          "description": "adjusted means po skupinách"
+        },
+        {
+          "name": "volitelnou post-hoc část",
+          "description": "volitelnou post-hoc část"
+        }
+      ]
+    },
+    "CONTINGENCY.T": {
+      "category": "Testy",
+      "summary": "Analyzuje kontingenční tabulku zadanou přímo jako matici četností.",
+      "parameters": [
+        {
+          "sourceName": "tabulka",
+          "description": "2D rozsah s pozorovanými četnostmi",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce popisků",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "horní řádek i levý sloupec jsou popisky",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "tabulka je čistě numerická bez popisků",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "pozorovanou kontingenční tabulku včetně marginálních součtů",
+          "description": "pozorovanou kontingenční tabulku včetně marginálních součtů"
+        },
+        {
+          "name": "tabulku očekávaných četností",
+          "description": "tabulku očekávaných četností"
+        },
+        {
+          "name": "n",
+          "description": "souhrn testu n, df, α, χ², kritickou hodnotu a p"
+        },
+        {
+          "name": "Pearson C",
+          "description": "míry asociace Pearson C, Cramér V a phi pro tabulku 2x2"
+        }
+      ]
+    },
+    "CONTINGENCY.G": {
+      "category": "Testy",
+      "summary": "Analyzuje kontingenční tabulku sestavenou z groupovaných sloupců.",
+      "parameters": [
+        {
+          "sourceName": "sloupce",
+          "description": "kategorie budoucích sloupců kontingenční tabulky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "řádky",
+          "description": "kategorie budoucích řádků kontingenční tabulky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "počet",
+          "description": "volitelné četnosti dvojic; pokud chybí, každá dvojice má váhu 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "pozorovanou kontingenční tabulku",
+          "description": "pozorovanou kontingenční tabulku"
+        },
+        {
+          "name": "očekávané četnosti",
+          "description": "očekávané četnosti"
+        },
+        {
+          "name": "χ²",
+          "description": "souhrn testu χ²"
+        },
+        {
+          "name": "Pearson C",
+          "description": "míry asociace Pearson C, Cramér V a případně phi"
+        }
+      ]
+    },
+    "CORREL.SPEARMAN": {
+      "category": "Testy",
+      "summary": "Počítá Spearmanův korelační koeficient a test jeho významnosti.",
+      "parameters": [
+        {
+          "sourceName": "x_values",
+          "description": "první číselný rozsah",
+          "enumValues": []
+        },
+        {
+          "sourceName": "y_values",
+          "description": "druhý číselný rozsah",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "volitelný kód směru testu; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "levostranný test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "pravostranný test",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "ρ",
+          "description": "ρ"
+        },
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "t",
+          "description": "t"
+        },
+        {
+          "name": "df",
+          "description": "df"
+        },
+        {
+          "name": "t",
+          "description": "kritickou hodnotu t"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        }
+      ]
+    },
+    "CORREL.MATRIX": {
+      "category": "Testy",
+      "summary": "Sestavuje korelační matici včetně p-hodnot a značek signifikance.",
+      "parameters": [
+        {
+          "sourceName": "data",
+          "description": "vstupní matice; sloupce jsou proměnné",
+          "enumValues": []
+        },
+        {
+          "sourceName": "metoda",
+          "description": "volitelný kód výpočetní metody; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "Pearson",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "Spearman",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "vystup",
+          "description": "volitelný kód typu výstupu; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "jen korelační koeficienty",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "jen oboustranné p-hodnoty",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "korelační koeficient a v řádku pod ním p-hodnota",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "korelační koeficient, pod ním p-hodnota a na třetím řádku signifikance hvězdičkami",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "jen korelační koeficienty a za nimi v téže buňce signifikance hvězdičkami",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "p_minimum",
+          "description": "volitelný filtr; vrátí jen vazby s p < p_minimum",
+          "enumValues": []
+        },
+        {
+          "sourceName": "ma_záhlaví",
+          "description": "volitelný kód režimu záhlaví; výchozí hodnota je 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "koeficient",
+          "description": "koeficient"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        },
+        {
+          "name": "sig.",
+          "description": "volitelně sig."
+        }
+      ]
+    }
+  },
+  "en": {
+    "GENERATE.NORM": {
+      "category": "General",
+      "summary": "Generates one random value from a normal distribution.",
+      "parameters": [
+        {
+          "sourceName": "mean",
+          "description": "mean of the distribution",
+          "enumValues": []
+        },
+        {
+          "sourceName": "stdev",
+          "description": "positive standard deviation of the distribution",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "probability of an additional random perturbation between 0 and 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "one randomly generated numeric value"
+        }
+      ]
+    },
+    "GENERATE.NORM.ARRAY": {
+      "category": "General",
+      "summary": "Generates a single-column series of random values from a normal distribution.",
+      "parameters": [
+        {
+          "sourceName": "count",
+          "description": "number of returned rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "mean",
+          "description": "mean of the distribution",
+          "enumValues": []
+        },
+        {
+          "sourceName": "stdev",
+          "description": "positive standard deviation of the distribution",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "probability of an additional random perturbation between 0 and 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "single-column series of randomly generated numeric values"
+        }
+      ]
+    },
+    "GENERATE.INT": {
+      "category": "General",
+      "summary": "Generates one random integer from a specified interval.",
+      "parameters": [
+        {
+          "sourceName": "minimum",
+          "description": "lower bound of the interval",
+          "enumValues": []
+        },
+        {
+          "sourceName": "maximum",
+          "description": "upper bound of the interval",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "probability of an additional random perturbation between 0 and 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "one randomly generated integer"
+        }
+      ]
+    },
+    "GENERATE.INT.ARRAY": {
+      "category": "General",
+      "summary": "Generates a single-column series of random integers from a specified interval.",
+      "parameters": [
+        {
+          "sourceName": "count",
+          "description": "number of returned rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "minimum",
+          "description": "lower bound of the interval",
+          "enumValues": []
+        },
+        {
+          "sourceName": "maximum",
+          "description": "upper bound of the interval",
+          "enumValues": []
+        },
+        {
+          "sourceName": "outlier_rate",
+          "description": "probability of an additional random perturbation between 0 and 1",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "x",
+          "description": "single-column series of randomly generated integers"
+        }
+      ]
+    },
+    "FILL": {
+      "category": "General",
+      "summary": "Repeats one value into a single-column spill output.",
+      "parameters": [
+        {
+          "sourceName": "what",
+          "description": "value to repeat",
+          "enumValues": []
+        },
+        {
+          "sourceName": "count",
+          "description": "number of repetitions",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "value",
+          "description": "single-column series of repeated values"
+        }
+      ]
+    },
+    "AVERAGE.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted arithmetic mean.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank weight cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "HARMEAN.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted harmonic mean.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "positive numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank weight cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "GEOMEAN.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted geometric mean.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "positive numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "weights",
+          "description": "non-negative weights; blank weight cells are treated as 0",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "VAR.P.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted population variance.",
+      "parameters": [],
+      "output": []
+    },
+    "VAR.S.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted sample variance.",
+      "parameters": [],
+      "output": []
+    },
+    "STDEV.P.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted population standard deviation.",
+      "parameters": [],
+      "output": []
+    },
+    "STDEV.S.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted sample standard deviation.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF": {
+      "category": "Descriptive",
+      "summary": "Computes the population coefficient of variation.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF.S": {
+      "category": "Descriptive",
+      "summary": "Computes the sample coefficient of variation.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted population coefficient of variation.",
+      "parameters": [],
+      "output": []
+    },
+    "VARCOEF.S.W": {
+      "category": "Descriptive",
+      "summary": "Computes the weighted sample coefficient of variation.",
+      "parameters": [],
+      "output": []
+    },
+    "PERCENTILE.INC.IFS": {
+      "category": "Descriptive",
+      "summary": "Computes the inclusive percentile after applying filters.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric data",
+          "enumValues": []
+        },
+        {
+          "sourceName": "quantile",
+          "description": "a value from 0 to 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "criteria_range_n",
+          "description": "range used for filtering",
+          "enumValues": []
+        },
+        {
+          "sourceName": "criteria_n",
+          "description": "exact match, relational expression, or wildcard expression",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "PERCENTILE.EXC.IFS": {
+      "category": "Descriptive",
+      "summary": "Computes the exclusive percentile after applying filters.",
+      "parameters": [],
+      "output": []
+    },
+    "PIVOT.COUNT": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and counts non-empty values."
+    },
+    "PIVOT.SUM": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes sums."
+    },
+    "PIVOT.AVERAGE": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes arithmetic means."
+    },
+    "PIVOT.MIN": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes minimums."
+    },
+    "PIVOT.MAX": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes maximums."
+    },
+    "PIVOT.MEDIAN": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes medians."
+    },
+    "PIVOT.PERCENTILE": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes percentiles."
+    },
+    "PIVOT.STDEV.S": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes sample standard deviations."
+    },
+    "PIVOT.STDEV.P": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes population standard deviations."
+    },
+    "PIVOT.VAR.S": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes sample variances."
+    },
+    "PIVOT.VAR.P": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes population variances."
+    },
+    "PIVOT.VARCOEF.S": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes sample coefficients of variation."
+    },
+    "PIVOT.VARCOEF.P": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes population coefficients of variation."
+    },
+    "PIVOT.CONF.T": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes t-based confidence interval half-widths."
+    },
+    "PIVOT.CONF.NORM": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes normal-approximation confidence interval half-widths."
+    },
+    "PIVOT.MAD": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes median absolute deviations."
+    },
+    "PIVOT.IQR": {
+      "category": "Descriptive",
+      "summary": "Builds a pivot and computes interquartile ranges."
+    },
+    "NORM.DIST.RANGE": {
+      "category": "Tests",
+      "summary": "Computes the probability of an interval under the normal distribution.",
+      "parameters": [
+        {
+          "sourceName": "mean",
+          "description": "distribution mean",
+          "enumValues": []
+        },
+        {
+          "sourceName": "standard_deviation",
+          "description": "positive standard deviation",
+          "enumValues": []
+        },
+        {
+          "sourceName": "lower_bound",
+          "description": "lower interval bound; a blank cell means minus infinity",
+          "enumValues": []
+        },
+        {
+          "sourceName": "upper_bound",
+          "description": "upper interval bound; a blank cell means plus infinity",
+          "enumValues": []
+        }
+      ],
+      "output": []
+    },
+    "SHAPIRO.WILK": {
+      "category": "Tests",
+      "summary": "Performs the Shapiro-Wilk normality test.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric sample; blank cells are ignored",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "0=autodetect, 1=first cell is a header, 2=no header",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "W",
+          "description": "test statistic"
+        },
+        {
+          "name": "p",
+          "description": "p-value"
+        }
+      ]
+    },
+    "KOLMOGOROV.SMIRNOV": {
+      "category": "Tests",
+      "summary": "Performs the Kolmogorov-Smirnov goodness-of-fit test for the selected distribution.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric sample; blank cells are ignored",
+          "enumValues": []
+        },
+        {
+          "sourceName": "distribution",
+          "description": "optional code of the tested distribution; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "normal",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "lognormal",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "exponential",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "uniform",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "weibull",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "has_header",
+          "description": "0=autodetect, 1=first cell is a header, 2=no header",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "D",
+          "description": "test statistic"
+        },
+        {
+          "name": "p",
+          "description": "p-value"
+        }
+      ]
+    },
+    "T.TEST.1S": {
+      "category": "Tests",
+      "summary": "Performs a one-sample t-test against a specified hypothetical mean.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "numeric sample",
+          "enumValues": []
+        },
+        {
+          "sourceName": "mu_0",
+          "description": "hypothetical mean",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "optional direction code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "left-sided test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "right-sided test",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first cell is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "x̄",
+          "description": "x̄"
+        },
+        {
+          "name": "μ₀",
+          "description": "μ₀"
+        },
+        {
+          "name": "sₓ",
+          "description": "sₓ"
+        },
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "t",
+          "description": "t"
+        },
+        {
+          "name": "df",
+          "description": "df"
+        },
+        {
+          "name": "t",
+          "description": "critical t"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        }
+      ]
+    },
+    "PROP.TEST.1S": {
+      "category": "Tests",
+      "summary": "Performs a one-sample proportion test.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "binary sample in 0/1 or FALSE/TRUE form",
+          "enumValues": []
+        },
+        {
+          "sourceName": "pi_0",
+          "description": "hypothetical population proportion",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "optional direction code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "left-sided test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "right-sided test",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first cell is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "p̂",
+          "description": "p̂"
+        },
+        {
+          "name": "π₀",
+          "description": "π₀"
+        },
+        {
+          "name": "x",
+          "description": "x"
+        },
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "z",
+          "description": "z"
+        },
+        {
+          "name": "z",
+          "description": "critical z"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        }
+      ]
+    },
+    "WILCOXON.PAIRED": {
+      "category": "Tests",
+      "summary": "Performs the Wilcoxon signed-rank test for dependent measurements.",
+      "parameters": [
+        {
+          "sourceName": "x",
+          "description": "first measurement",
+          "enumValues": []
+        },
+        {
+          "sourceName": "y",
+          "description": "second measurement",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first cell is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "optional direction code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "left-sided test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "right-sided test",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "med(d)",
+          "description": "med(d)"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "W+",
+          "description": "W+"
+        },
+        {
+          "name": "W-",
+          "description": "W-"
+        },
+        {
+          "name": "W",
+          "description": "W"
+        },
+        {
+          "name": "z",
+          "description": "z"
+        },
+        {
+          "name": "z",
+          "description": "critical z"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        },
+        {
+          "name": "r",
+          "description": "effect size r"
+        }
+      ]
+    },
+    "WELCH.TEST.2S.G": {
+      "category": "Tests",
+      "summary": "Performs Welch's two-sample t-test for two independent groups.",
+      "parameters": [
+        {
+          "sourceName": "categories",
+          "description": "group labels defining exactly two independent groups",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "numeric observations aligned with categories",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "header mode code",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "test direction code",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided test",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "left-sided test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "right-sided test",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "group",
+          "description": "group label"
+        },
+        {
+          "name": "n",
+          "description": "number of observations in the group"
+        },
+        {
+          "name": "mean",
+          "description": "sample mean"
+        },
+        {
+          "name": "median",
+          "description": "sample median"
+        },
+        {
+          "name": "sd",
+          "description": "sample standard deviation"
+        },
+        {
+          "name": "min",
+          "description": "minimum observed value"
+        },
+        {
+          "name": "max",
+          "description": "maximum observed value"
+        },
+        {
+          "name": "α",
+          "description": "significance level"
+        },
+        {
+          "name": "t",
+          "description": "Welch test statistic"
+        },
+        {
+          "name": "df",
+          "description": "degrees of freedom of Welch's test"
+        },
+        {
+          "name": "tᶜʳⁱᵗ",
+          "description": "critical t value for the selected direction and α"
+        },
+        {
+          "name": "p",
+          "description": "p-value"
+        },
+        {
+          "name": "d",
+          "description": "Cohen's d"
+        },
+        {
+          "name": "r",
+          "description": "correlation-style effect size"
+        }
+      ]
+    },
+    "MANN.WHITNEY.G": {
+      "category": "Tests",
+      "summary": "Performs the Mann-Whitney test for two independent groups.",
+      "parameters": [
+        {
+          "sourceName": "categories",
+          "description": "labels of exactly two groups",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "optional direction code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "left-sided test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "right-sided test",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "a descriptive statistics table by group",
+          "description": "a descriptive statistics table by group"
+        },
+        {
+          "name": "U",
+          "description": "U"
+        },
+        {
+          "name": "U₁",
+          "description": "U₁"
+        },
+        {
+          "name": "U₂",
+          "description": "U₂"
+        },
+        {
+          "name": "z",
+          "description": "z"
+        },
+        {
+          "name": "z",
+          "description": "critical z"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        },
+        {
+          "name": "r",
+          "description": "effect size r"
+        }
+      ]
+    },
+    "CHISQ.GOF": {
+      "category": "Tests",
+      "summary": "Performs the chi-square goodness-of-fit test.",
+      "parameters": [
+        {
+          "sourceName": "observed",
+          "description": "observed category frequencies",
+          "enumValues": []
+        },
+        {
+          "sourceName": "expected",
+          "description": "expected frequencies or probabilities",
+          "enumValues": []
+        },
+        {
+          "sourceName": "categories",
+          "description": "optional category labels",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "χ²",
+          "description": "a test summary with χ², df, α, critical value, and p"
+        },
+        {
+          "name": "O",
+          "description": "a category table with O, E, and contribution (O−E)² / E"
+        }
+      ]
+    },
+    "ANOVA.G": {
+      "category": "Tests",
+      "summary": "Performs one-way ANOVA on grouped data.",
+      "parameters": [
+        {
+          "sourceName": "categories",
+          "description": "group labels",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "numeric observations",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "0=autodetect, 1=first row is a header, 2=no header",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "post_hoc",
+          "description": "optional post-hoc procedure code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "none",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "tukey",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "bonferroni",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "scheffe",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "games-howell",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "descriptive statistics by group",
+          "description": "descriptive statistics by group"
+        },
+        {
+          "name": "the main ANOVA table",
+          "description": "the main ANOVA table"
+        },
+        {
+          "name": "Levene's homogeneity test",
+          "description": "Levene's homogeneity test"
+        },
+        {
+          "name": "η²",
+          "description": "effect sizes η², ω², and f"
+        },
+        {
+          "name": "an optional post-hoc section",
+          "description": "an optional post-hoc section"
+        }
+      ]
+    },
+    "ANOVA.RM": {
+      "category": "Tests",
+      "summary": "Performs repeated-measures ANOVA across columns.",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "value matrix; rows are subjects and columns are conditions",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "0=autodetect, 1=first row is a header, 2=no header",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "post_hoc",
+          "description": "optional post-hoc procedure code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "none",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "tukey",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "bonferroni",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "scheffe",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "games-howell",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "descriptive statistics by condition",
+          "description": "descriptive statistics by condition"
+        },
+        {
+          "name": "Conditions",
+          "description": "an RM ANOVA table with rows Conditions, Subjects, Residual, Total"
+        },
+        {
+          "name": "η²",
+          "description": "effect sizes η², η²p, ω², ω²p for the repeated-measures factor"
+        },
+        {
+          "name": "a note about untested sphericity",
+          "description": "a note about untested sphericity"
+        },
+        {
+          "name": "an optional post-hoc section with pairwise condition comparisons",
+          "description": "an optional post-hoc section with pairwise condition comparisons"
+        }
+      ]
+    },
+    "ANCOVA.G": {
+      "category": "Tests",
+      "summary": "Performs ANCOVA with one factor and one or more covariates.",
+      "parameters": [
+        {
+          "sourceName": "factor",
+          "description": "factor categories",
+          "enumValues": []
+        },
+        {
+          "sourceName": "dependent_variable",
+          "description": "dependent variable",
+          "enumValues": []
+        },
+        {
+          "sourceName": "covariates",
+          "description": "one or more covariates arranged in columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "post_hoc",
+          "description": "optional post-hoc procedure code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "none",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "tukey",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "bonferroni",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "scheffe",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "games-howell",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "descriptive statistics by group",
+          "description": "descriptive statistics by group"
+        },
+        {
+          "name": "one common ANCOVA table for the factor, individual covariates, and interactions",
+          "description": "one common ANCOVA table for the factor, individual covariates, and interactions"
+        },
+        {
+          "name": "an optional warning about violated homogeneity of regression slopes",
+          "description": "an optional warning about violated homogeneity of regression slopes"
+        },
+        {
+          "name": "adjusted means by group",
+          "description": "adjusted means by group"
+        },
+        {
+          "name": "an optional post-hoc section",
+          "description": "an optional post-hoc section"
+        }
+      ]
+    },
+    "CONTINGENCY.T": {
+      "category": "Tests",
+      "summary": "Analyzes a contingency table entered directly as a frequency matrix.",
+      "parameters": [
+        {
+          "sourceName": "table",
+          "description": "a 2D range of observed frequencies",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect labels",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "top row and left column are labels",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "the table is purely numeric with no labels",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "name": "the observed contingency table including marginal totals",
+          "description": "the observed contingency table including marginal totals"
+        },
+        {
+          "name": "the expected frequency table",
+          "description": "the expected frequency table"
+        },
+        {
+          "name": "n",
+          "description": "a test summary with n, df, α, χ², critical value, and p"
+        },
+        {
+          "name": "Pearson C",
+          "description": "association measures Pearson C, Cramér V, and phi for 2x2 tables"
+        }
+      ]
+    },
+    "CONTINGENCY.G": {
+      "category": "Tests",
+      "summary": "Analyzes a contingency table built from grouped columns.",
+      "parameters": [
+        {
+          "sourceName": "columns",
+          "description": "categories of the future contingency table columns",
+          "enumValues": []
+        },
+        {
+          "sourceName": "rows",
+          "description": "categories of the future contingency table rows",
+          "enumValues": []
+        },
+        {
+          "sourceName": "count",
+          "description": "optional pair frequencies; if omitted, each pair has weight 1",
+          "enumValues": []
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "the observed contingency table",
+          "description": "the observed contingency table"
+        },
+        {
+          "name": "expected frequencies",
+          "description": "expected frequencies"
+        },
+        {
+          "name": "χ²",
+          "description": "a χ² test summary"
+        },
+        {
+          "name": "Pearson C",
+          "description": "association measures Pearson C, Cramér V, and possibly phi"
+        }
+      ]
+    },
+    "CORREL.SPEARMAN": {
+      "category": "Tests",
+      "summary": "Computes Spearman correlation and its significance test.",
+      "parameters": [
+        {
+          "sourceName": "x_values",
+          "description": "first numeric range",
+          "enumValues": []
+        },
+        {
+          "sourceName": "y_values",
+          "description": "second numeric range",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "optional direction code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided test",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "left-sided test",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "right-sided test",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "ρ",
+          "description": "ρ"
+        },
+        {
+          "name": "n",
+          "description": "n"
+        },
+        {
+          "name": "α",
+          "description": "α"
+        },
+        {
+          "name": "t",
+          "description": "t"
+        },
+        {
+          "name": "df",
+          "description": "df"
+        },
+        {
+          "name": "t",
+          "description": "critical t"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        }
+      ]
+    },
+    "CORREL.MATRIX": {
+      "category": "Tests",
+      "summary": "Builds a correlation matrix including p-values and significance markers.",
+      "parameters": [
+        {
+          "sourceName": "data",
+          "description": "input matrix; columns are variables",
+          "enumValues": []
+        },
+        {
+          "sourceName": "method",
+          "description": "optional computation method code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "Pearson",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "Spearman",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "output",
+          "description": "optional output type code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "coefficients only",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "two-tailed p-values only",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "coefficient and p-value on the row below",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "coefficient, p-value below it, and significance stars on the third row",
+              "default": false
+            },
+            {
+              "value": "4",
+              "meaning": "coefficients only, with significance stars appended in the same cell",
+              "default": false
+            }
+          ]
+        },
+        {
+          "sourceName": "p_minimum",
+          "description": "optional filter; only links with p < p_minimum are returned",
+          "enumValues": []
+        },
+        {
+          "sourceName": "has_header",
+          "description": "optional header mode code; default is 0",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": false
+            },
+            {
+              "value": "1",
+              "meaning": "first row is a header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "name": "coefficient",
+          "description": "coefficient"
+        },
+        {
+          "name": "p",
+          "description": "p"
+        },
+        {
+          "name": "sig.",
+          "description": "optionally sig."
+        }
+      ]
+    }
+  }
+}

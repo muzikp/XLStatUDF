@@ -1,0 +1,32 @@
+{
+  "name": "office-addin",
+  "version": "1.0.0",
+  "description": "Evalytics Office.js custom functions",
+  "main": "dist/functions.js",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "clean": "powershell -Command \"if (Test-Path dist) { Remove-Item -Recurse -Force dist }\"",
+    "local:manifest": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-local-manifest.ps1",
+    "local:serve": "powershell -ExecutionPolicy Bypass -File .\\scripts\\serve-local.ps1",
+    "local:sideload": "powershell -ExecutionPolicy Bypass -File .\\scripts\\sideload-manifest.ps1",
+    "local:unsideload": "powershell -ExecutionPolicy Bypass -File .\\scripts\\unsideload-manifest.ps1",
+    "desktop:catalog": "powershell -ExecutionPolicy Bypass -File .\\scripts\\install-desktop-catalog.ps1",
+    "desktop:clear-cache": "powershell -ExecutionPolicy Bypass -File .\\scripts\\clear-office-cache.ps1",
+    "desktop:reset-debug": "powershell -ExecutionPolicy Bypass -File .\\scripts\\reset-debug-session.ps1"
+  },
+  "keywords": [
+    "excel",
+    "office-js",
+    "statistics"
+  ],
+  "author": "Evalytics",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "jstat": "^1.9.6"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "typescript": "^6.0.3"
+  }
+}
