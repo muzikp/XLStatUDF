@@ -28,16 +28,16 @@ export type LocaleContent = {
 export const localeByLanguage: Record<LanguageCode, LocaleContent> = {
   cs: {
     code: 'cs',
-    siteTitle: 'XLStatUDF',
+    siteTitle: 'Evalytics',
     siteTagline: 'Statistický doplněk pro Microsoft Excel',
     languageLabel: 'Čeština',
     otherLanguageLabel: 'English',
     navHome: 'Úvod',
     navDocs: 'Dokumentace',
     navDownloads: 'Stažení',
-    heroTitle: 'XLStatUDF pro Microsoft Excel',
+    heroTitle: 'Evalytics pro Microsoft Excel',
     heroBody:
-      'XLStatUDF je add-in pro Excel, který pomocí vlastních funkcí překlenuje mezeru mezi základním Excelem a statistickými softwary. Jeho cílem je zjednodušit výuku statistiky, kdy není hlavním zájmem učit studenty převádět vzorce do Excelu, ale naučit je používat statistiku k řešení problémů.',
+      'Evalytics je add-in pro Excel, který pomocí vlastních funkcí překlenuje mezeru mezi základním Excelem a statistickými softwary. Jeho cílem je zjednodušit výuku statistiky, kdy není hlavním zájmem učit studenty převádět vzorce do Excelu, ale naučit je používat statistiku k řešení problémů.',
     docsTitle: 'Rejstřík funkcí',
     docsBody:
       'Vyhledávatelný přehled dostupných excelových funkcí s odkazy na jejich detailní dokumentaci.',
@@ -55,16 +55,16 @@ export const localeByLanguage: Record<LanguageCode, LocaleContent> = {
   },
   en: {
     code: 'en',
-    siteTitle: 'XLStatUDF',
+    siteTitle: 'Evalytics',
     siteTagline: 'Statistical add-in for Microsoft Excel',
     languageLabel: 'English',
     otherLanguageLabel: 'Čeština',
     navHome: 'Home',
     navDocs: 'Documentation',
     navDownloads: 'Downloads',
-    heroTitle: 'XLStatUDF for Microsoft Excel',
+    heroTitle: 'Evalytics for Microsoft Excel',
     heroBody:
-      'XLStatUDF is an Excel add-in that bridges the gap between standard spreadsheets and dedicated statistical software through custom worksheet functions. Its purpose is to simplify statistics teaching, where the main goal is not to train students to translate formulas into Excel, but to teach them how to use statistics to solve problems.',
+      'Evalytics is an Excel add-in that bridges the gap between standard spreadsheets and dedicated statistical software through custom worksheet functions. Its purpose is to simplify statistics teaching, where the main goal is not to train students to translate formulas into Excel, but to teach them how to use statistics to solve problems.',
     docsTitle: 'Function Index',
     docsBody:
       'Searchable index of available Excel functions with links to detailed documentation.',

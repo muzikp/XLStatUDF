@@ -181,10 +181,10 @@ if (-not $NoExcel) {
 Write-Host ""
 if ($ClearOfficeCache) {
     Write-Host "Office cache was cleared. In Excel, use Home > Add-ins > Advanced > Shared Folder if the add-ins are not already visible."
-    Write-Host "Add both Evalytics and Evalytics Docs from \\localhost\EvalyticsOfficeAddin."
+    Write-Host "Add Evalytics StatLab for Excel from \\localhost\EvalyticsOfficeAddin."
 }
 else {
-    Write-Host "Office cache was kept. If the add-ins were already added before, they should remain available."
+    Write-Host "Office cache was kept. If the add-in was already added before, it should remain available."
     Write-Host "If Excel still shows stale custom-function metadata, rerun with -ClearOfficeCache."
 }
 }

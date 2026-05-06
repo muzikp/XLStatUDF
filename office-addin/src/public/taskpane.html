@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Evalytics Function Docs</title>
+    <title>Evalytics StatLab for Excel</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="./taskpane.css" />
   </head>
@@ -14,19 +14,44 @@
         <div>
           <p class="eyebrow">Evalytics</p>
           <h1 data-i18n="title">Function Docs</h1>
-          <p class="subtitle" data-i18n="subtitle">Searchable documentation for Evalytics worksheet functions.</p>
+          <p class="subtitle" data-i18n="subtitle">Statistical functions, demos, options, and wizards in one Excel workspace.</p>
           <p class="build-stamp" id="build-stamp">Build __BUILD_STAMP__</p>
-        </div>
-        <div class="language-switch" aria-label="Language">
-          <button type="button" data-lang="cs">CZ</button>
-          <button type="button" data-lang="en">EN</button>
         </div>
       </header>
 
-      <section class="search-card">
-        <label for="search" data-i18n="searchLabel">Search functions</label>
-        <input id="search" type="search" autocomplete="off" data-i18n-placeholder="searchPlaceholder" />
-        <p class="hint" data-i18n="hint">Tip: formulas use the EVALYTICS namespace in Excel.</p>
+      <nav class="tabs" aria-label="Panel sections">
+        <button class="tab-button active" type="button" data-tab-target="functions-tab" data-i18n="functionsTab">Functions</button>
+        <button class="tab-button" type="button" data-tab-target="settings-tab" data-i18n="settingsTab">Settings</button>
+      </nav>
+
+      <section class="tab-panel active" id="functions-tab">
+        <section class="search-card">
+          <label for="search" data-i18n="searchLabel">Search functions</label>
+          <input id="search" type="search" autocomplete="off" data-i18n-placeholder="searchPlaceholder" />
+          <p class="hint" data-i18n="hint">Tip: formulas use the EVALYTICS namespace in Excel.</p>
+        </section>
+
+        <section class="function-list" id="function-list" aria-live="polite"></section>
+      </section>
+
+      <section class="tab-panel" id="settings-tab" hidden>
+        <section class="settings-card">
+          <h2 data-i18n="settingsLanguage">Language</h2>
+          <div class="language-switch" aria-label="Language">
+            <button type="button" data-lang="cs">CZ</button>
+            <button type="button" data-lang="en">EN</button>
+          </div>
+          <p class="hint" data-i18n="settingsLanguageHint">Changing language also recalculates workbook formulas.</p>
+        </section>
+        <section class="settings-card">
+          <h2 data-i18n="settingsAccount">Account</h2>
+          <p class="auth-status" id="auth-status"></p>
+          <div class="auth-actions">
+            <button type="button" id="auth-dev-login" data-i18n="authDevLogin">Simulate login</button>
+            <button type="button" id="auth-logout" data-i18n="authLogout">Sign out</button>
+          </div>
+          <p class="hint" data-i18n="authHint">This local development login will be replaced by CVUT OAuth.</p>
+        </section>
       </section>
 
       <section class="status" id="status" role="status"></section>
@@ -37,14 +62,15 @@
         </div>
         <pre id="debug-log"></pre>
       </details>
-      <section class="function-list" id="function-list" aria-live="polite"></section>
+
+      <section class="wizard-panel" id="wizard-panel" hidden></section>
     </main>
 
     <template id="function-card-template">
       <article class="function-card">
         <button class="function-header" type="button">
           <span class="function-name"></span>
-          <span class="function-category"></span>
+          <span class="actions"></span>
         </button>
         <div class="function-body">
           <p class="description"></p>
@@ -52,9 +78,6 @@
           <pre class="signature"></pre>
           <div class="parameters"></div>
           <div class="outputs"></div>
-          <div class="actions">
-            <button class="copy-button" type="button" data-i18n-copy>Copy formula</button>
-          </div>
         </div>
       </article>
     </template>

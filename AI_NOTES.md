@@ -16,7 +16,7 @@ This file is a working memory for future AI sessions in this repository. Keep it
 - Normal reset workflow:
   - closes Excel
   - stops the local server on port 3000
-  - keeps Office WEF cache so already added local add-ins remain available
+  - keeps Office WEF cache so the already added local add-in remains available
   - ensures local HTTPS cert
   - runs `npm run build`
   - regenerates local manifests
@@ -28,7 +28,8 @@ This file is a working memory for future AI sessions in this repository. Keep it
 - Local server logs:
   - `office-addin/.local-serve.out.log`
   - `office-addin/.local-serve.err.log`
-- If add-ins are missing after cache clear, add both `Evalytics` and `Evalytics Docs` from `\\localhost\EvalyticsOfficeAddin`.
+- The Office add-in is merged into one manifest named `Evalytics StatLab for Excel`, combining custom functions, documentation, demos, options sheets, and wizards.
+- If the add-in is missing after cache clear, add `Evalytics StatLab for Excel` from `\\localhost\EvalyticsOfficeAddin`.
 
 ## Important Office.js Findings
 
@@ -70,6 +71,19 @@ This file is a working memory for future AI sessions in this repository. Keep it
 - PIVOT tutorials use `runPivotTutorial` in `taskpane.js`. Pivot row/column dimensions accept blank or scalar values (for example `FALSE`) as "no split" and return TOTAL summaries instead of throwing.
 - `ANOVA.RM`, `ANCOVA.G`, `CONTINGENCY.T`, `CONTINGENCY.G`, and `CORREL.MATRIX` were ported into the Office.js runtime; they should no longer be wired to `pendingFeature`.
 - The active documentation source remains `office-addin/src/public/function-docs.json`; keep both `cs` and `en` entries aligned when function signatures or outputs change.
+- Spill output labels can be localized from the custom-functions runtime. The taskpane stores the selected language under `evalytics.language`; custom functions read that synchronously and fall back to `navigator.language` / `Intl` locale. Existing spill outputs update after workbook recalculation, so the taskpane language switch requests a full recalculation.
+- `ANOVA.RM` and `ANCOVA.G` now use localized section/label text for Czech and English spill outputs.
+- Sidepanel UI uses two tabs: function docs and settings. Language controls live in the settings tab. Function documentation sections are intentionally collapsed by default; the section +/- indicator is CSS-driven from the `.collapsed` class.
+- Test-function tutorials are wired through `matrixTutorialDefinitions` in `office-addin/src/public/taskpane.js` for `SHAPIRO.WILK`, `KOLMOGOROV.SMIRNOV`, `T.TEST.1S`, `PROP.TEST.1S`, `WILCOXON.PAIRED`, `MANN.WHITNEY.G`, `CHISQ.GOF`, `ANOVA.G`, and `CORREL.SPEARMAN`; `NORM.DIST.RANGE` uses the simple scalar tutorial path. Spearman tutorial data intentionally avoids perfect monotonic ordering so the test statistic stays finite.
+- If range-based test tutorials show `#VÝPOČET!` while scalar functions work, re-check `functions.json`: range parameters must have `"dimensionality": "matrix"`. Changes to `functions.json` require `Evalytics: Hard Reset Debug Session` because Excel caches custom-functions metadata.
+- UDF spill outputs should prefer readable statistical symbols (`α`, `μ₀`, `π₀`, `sₓ`, `χ²`, `η²`, `ω²`, `tᶜʳⁱᵗ`) and align with `function-docs.json`, which is the documentation source of truth.
+- Custom functions must not return `NaN` or `Infinity`; `buildRows` and `rectangularRows` sanitize non-finite numbers to blank cells to avoid Excel turning the whole spill into `#HODNOTA!`.
+- Pivot tutorials create source data with `FILL` for row/column dimensions and `GENERATE.NORM.ARRAY` for values. Pivot aggregation skips records whose value is blank and whose row or column dimension is also blank; unlabeled row/column categories are preserved when a value exists.
+- Pivot docs in `function-docs.json` should describe the shared TOTAL-row/TOTAL-column output, blank/scalar dimension behavior, and blank-value omission consistently for both Czech and English.
+- `OPTIONS("key", value, ...)` returns an internal `__EVALYTICS_OPTIONS__:` JSON marker from inline key/value pairs. `OPTIONS.T(range)` does the same from a two-column option/value table. `ANCOVA.G` supports `ANCOVA.G(groups, values, covariates, OPTIONS(...))` and `ANCOVA.G(groups, values, covariates, OPTIONS.T(range))`; the JS runtime still accepts the old scalar optional arguments for compatibility.
+- Sidepanel renders documented `options` entries from `function-docs.json` and offers an Options sheet button. The generated sheet includes option/value columns and Excel validation lists for enum options.
+- Sidepanel has a generic modal function wizard for documented functions with parameters. It captures ranges from the current Excel selection through Office.js, renders enum arguments as localized dropdowns from `function-docs.json`, localizes decimal display, pre-fills fields when the selected cell contains the same UDF call, and validates ranges/numbers before insertion. Parameter-level wizard metadata lives under `parameters[].wizard` in `function-docs.json`. Office.js does not expose the native COM-style Function Arguments range picker inside custom task panes.
+- Wizard number fields use `input type="number"` with `min`/`max`/`step` from `parameters[].wizard` metadata. Programmatic numeric values use invariant decimal dots because HTML number inputs reject comma values in many WebViews; parsing still accepts comma if the WebView allows the user to type it.
 - Descriptive functions that consume ranges must declare those parameters with `dimensionality: "matrix"` in `functions.json`; scalar `any` metadata causes `#VÝPOČET!` when formulas pass ranges such as `A2:A11`.
 - Descriptive-function tutorials exist for weighted means/variance/stdev/CV. They create a clean data table and one result formula cell, without comments.
 - `PERCENTILE.INC.IFS` and `PERCENTILE.EXC.IFS` were removed from the Office add-in; percentile-with-filters use cases are expected to move into the pivot family instead.

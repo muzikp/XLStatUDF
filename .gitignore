@@ -10,7 +10,9 @@ artifacts/main/
 
 # IDE files
 .vs/
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
 *.user
 *.suo
 
@@ -27,6 +29,10 @@ installer/*.xll
 # Local scratch data
 _tmp/
 .env
+node_modules/
+office-addin/dist/
+office-addin/.certs/
+office-addin/.catalog/
 
 # OS noise
 Thumbs.db

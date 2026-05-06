@@ -18,7 +18,7 @@ if (-not (Test-Path $source)) {
 $targetDir = Join-Path $env:LOCALAPPDATA "Microsoft\Office\16.0\Wef"
 New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
 
-$target = Join-Path $targetDir "Evalytics.Office.local.xml"
+$target = Join-Path $targetDir "Evalytics.StatLab.local.xml"
 Copy-Item -LiteralPath $source -Destination $target -Force
 
 Write-Host "Sideloaded manifest to $target"

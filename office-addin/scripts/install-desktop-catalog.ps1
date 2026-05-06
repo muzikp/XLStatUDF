@@ -8,13 +8,13 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $catalogDir = Join-Path $root ".catalog"
 $manifestSource = Join-Path $root "dist\manifest.local.xml"
-$docsManifestSource = Join-Path $root "dist\manifest.docs.local.xml"
-$manifestTarget = Join-Path $catalogDir "Evalytics.Office.local.xml"
-$docsManifestTarget = Join-Path $catalogDir "Evalytics.Docs.local.xml"
+$manifestTarget = Join-Path $catalogDir "Evalytics.StatLab.local.xml"
+$legacyManifestTarget = Join-Path $catalogDir "Evalytics.Office.local.xml"
+$legacyDocsManifestTarget = Join-Path $catalogDir "Evalytics.Docs.local.xml"
 $catalogUrl = "\\localhost\$ShareName"
 $registryPath = "HKCU:\Software\Microsoft\Office\16.0\WEF\TrustedCatalogs\$CatalogId"
 
-if (-not (Test-Path $manifestSource) -or -not (Test-Path $docsManifestSource)) {
+if (-not (Test-Path $manifestSource)) {
     & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "generate-local-manifest.ps1")
 }
 
@@ -22,20 +22,16 @@ if (-not (Test-Path $manifestSource) -or (Get-Item -LiteralPath $manifestSource)
     throw "Local manifest not found: $manifestSource"
 }
 
-if (-not (Test-Path $docsManifestSource) -or (Get-Item -LiteralPath $docsManifestSource).Length -eq 0) {
-    throw "Local docs manifest not found: $docsManifestSource"
-}
-
 New-Item -ItemType Directory -Force -Path $catalogDir | Out-Null
 Copy-Item -LiteralPath $manifestSource -Destination $manifestTarget -Force
-Copy-Item -LiteralPath $docsManifestSource -Destination $docsManifestTarget -Force
+foreach ($legacyTarget in @($legacyManifestTarget, $legacyDocsManifestTarget)) {
+    if (Test-Path -LiteralPath $legacyTarget) {
+        Remove-Item -LiteralPath $legacyTarget -Force
+    }
+}
 
 if ((Get-Item -LiteralPath $manifestTarget).Length -eq 0) {
     throw "Catalog manifest copy failed: $manifestTarget"
-}
-
-if ((Get-Item -LiteralPath $docsManifestTarget).Length -eq 0) {
-    throw "Catalog docs manifest copy failed: $docsManifestTarget"
 }
 
 $shareReady = $false
@@ -59,8 +55,7 @@ New-ItemProperty -Path $registryPath -Name "Url" -Value $catalogUrl -PropertyTyp
 New-ItemProperty -Path $registryPath -Name "Flags" -Value 1 -PropertyType DWord -Force | Out-Null
 
 Write-Host "Desktop Excel manifest catalog prepared."
-Write-Host "  UDF manifest: $manifestTarget"
-Write-Host "  Docs manifest: $docsManifestTarget"
+Write-Host "  Manifest: $manifestTarget"
 Write-Host "  Catalog URL: $catalogUrl"
 Write-Host "  Registry: $registryPath"
 Write-Host "  SMB share ready: $shareReady"
@@ -74,4 +69,4 @@ if (-not $shareReady) {
     Write-Host "  4. Give your Windows user read permission"
     Write-Host ""
 }
-Write-Host "Then restart Excel, go to Home > Add-ins > Advanced > Shared Folder, and add Evalytics plus Evalytics Docs."
+Write-Host "Then restart Excel, go to Home > Add-ins > Advanced > Shared Folder, and add Evalytics StatLab for Excel."

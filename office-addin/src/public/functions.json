@@ -146,6 +146,53 @@
       }
     },
     {
+      "id": "STACK_G",
+      "name": "STACK",
+      "description": "Stacks selected columns into a two-column group/value table.",
+      "parameters": [
+        {
+          "name": "data",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
+      "id": "UNSTACK_G",
+      "name": "UNSTACK",
+      "description": "Converts a group/value table into separate columns per group.",
+      "parameters": [
+        {
+          "name": "groups",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "values",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
       "id": "PARSE_NUMBER",
       "name": "PARSE.NUMBER",
       "description": "Converts numeric text with locale-aware decimal and thousands separators into a number.",
@@ -407,7 +454,8 @@
       "parameters": [
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "hasHeader",
@@ -427,7 +475,8 @@
       "parameters": [
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "distribution",
@@ -452,7 +501,8 @@
       "parameters": [
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "mu0",
@@ -486,7 +536,8 @@
       "parameters": [
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "pi0",
@@ -520,11 +571,13 @@
       "parameters": [
         {
           "name": "xValues",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "yValues",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "hasHeader",
@@ -549,7 +602,7 @@
     },
     {
       "id": "WELCH_TEST_2S_G",
-      "name": "WELCH.TEST.2S.G",
+      "name": "WELCH.TEST.2S",
       "description": "Performs Welch's two-sample t-test for grouped data.",
       "parameters": [
         {
@@ -585,16 +638,18 @@
     },
     {
       "id": "MANN_WHITNEY_G",
-      "name": "MANN.WHITNEY.G",
+      "name": "MANN.WHITNEY",
       "description": "Performs the Mann-Whitney test for grouped data.",
       "parameters": [
         {
           "name": "categories",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "hasHeader",
@@ -624,15 +679,18 @@
       "parameters": [
         {
           "name": "observed",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "expected",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "categories",
           "type": "any",
+          "dimensionality": "matrix",
           "optional": true
         },
         {
@@ -653,16 +711,18 @@
     },
     {
       "id": "ANOVA_G",
-      "name": "ANOVA.G",
+      "name": "ANOVA",
       "description": "Performs one-way ANOVA on grouped data.",
       "parameters": [
         {
           "name": "categories",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "values",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "hasHeader",
@@ -692,11 +752,13 @@
       "parameters": [
         {
           "name": "xValues",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "yValues",
-          "type": "any"
+          "type": "any",
+          "dimensionality": "matrix"
         },
         {
           "name": "direction",
@@ -752,7 +814,7 @@
     },
     {
       "id": "ANCOVA_G",
-      "name": "ANCOVA.G",
+      "name": "ANCOVA",
       "description": "Performs ANCOVA with one factor and one or more covariates.",
       "parameters": [
         {
@@ -819,7 +881,7 @@
     },
     {
       "id": "CONTINGENCY_G",
-      "name": "CONTINGENCY.G",
+      "name": "CONTINGENCY",
       "description": "Analyzes a contingency table built from grouped columns.",
       "parameters": [
         {

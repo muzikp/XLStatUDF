@@ -18,9 +18,19 @@ const ADDIN_VERSION = "1.0.0";
 declare const __EVALYTICS_BUILD_STAMP__: string;
 
 const ADDIN_BUILD = __EVALYTICS_BUILD_STAMP__;
+const ADDIN_DISPLAY_VERSION = /^\d+$/.test(ADDIN_BUILD) ? `${ADDIN_VERSION}.${ADDIN_BUILD}` : ADDIN_VERSION;
 
 const HEADER_AUTO: HeaderMode = 0;
 const HEADER_HAS: HeaderMode = 1;
+const AUTH_STORAGE_KEY = "evalytics.auth.snapshot";
+
+type AuthSnapshot = {
+  expiresAt?: number | string;
+  entitlements?: {
+    allowedFunctions?: string[];
+    deniedFunctions?: string[];
+  };
+};
 
 function invalidValue(message = "Invalid value"): Error {
   return new CustomFunctions.Error(CustomFunctions.ErrorCode.invalidValue, message);
@@ -34,8 +44,84 @@ function notAvailable(message = "Not available"): Error {
   return new CustomFunctions.Error(CustomFunctions.ErrorCode.notAvailable, message);
 }
 
+function unauthorized(): Error {
+  return notAvailable("#UNAUTHORIZED");
+}
+
 function divisionByZero(message = "Division by zero"): Error {
   return new CustomFunctions.Error(CustomFunctions.ErrorCode.divisionByZero, message);
+}
+
+function readAuthSnapshot(): AuthSnapshot | null {
+  try {
+    if (typeof localStorage === "undefined") {
+      return null;
+    }
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw) as AuthSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+async function readAuthSnapshotShared(): Promise<AuthSnapshot | null> {
+  try {
+    const runtime = (globalThis as any).OfficeRuntime;
+    if (runtime?.storage?.getItem) {
+      const raw = await runtime.storage.getItem(AUTH_STORAGE_KEY);
+      if (raw) {
+        return JSON.parse(raw) as AuthSnapshot;
+      }
+    }
+  } catch {
+    // Fallback to localStorage below.
+  }
+  return readAuthSnapshot();
+}
+
+function authExpiresAt(snapshot: AuthSnapshot): number {
+  if (typeof snapshot.expiresAt === "number") {
+    return snapshot.expiresAt;
+  }
+  if (typeof snapshot.expiresAt === "string") {
+    const parsed = Date.parse(snapshot.expiresAt);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function functionListIncludes(list: string[] | undefined, functionName: string): boolean {
+  return Array.isArray(list) && (list.includes("*") || list.includes(functionName));
+}
+
+function isFunctionAuthorized(functionName: string, snapshot: AuthSnapshot | null): boolean {
+  if (!snapshot || authExpiresAt(snapshot) <= Date.now()) {
+    return false;
+  }
+
+  const allowedFunctions = snapshot.entitlements?.allowedFunctions;
+  const deniedFunctions = snapshot.entitlements?.deniedFunctions;
+  if (functionListIncludes(deniedFunctions, functionName)) {
+    return false;
+  }
+
+  return functionListIncludes(allowedFunctions, functionName);
+}
+
+async function requireAuthorized(functionName: string): Promise<void> {
+  if (!isFunctionAuthorized(functionName, await readAuthSnapshotShared())) {
+    throw unauthorized();
+  }
+}
+
+function protectedFunction<T extends (...args: any[]) => any>(functionName: string, fn: T): T {
+  return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+    await requireAuthorized(functionName);
+    return fn(...args);
+  }) as T;
 }
 
 function isBlank(value: Primitive): boolean {
@@ -466,12 +552,16 @@ function criticalLabel(symbol: string, direction: Direction): string {
 }
 
 function buildRows(rows: Primitive[][]): Primitive[][] {
-  return rows;
+  return rows.map((row) => row.map(safeCellValue));
 }
 
 function rectangularRows(rows: Primitive[][], width?: number): Primitive[][] {
   const columnCount = width ?? rows.reduce((maximum, row) => Math.max(maximum, row.length), 0);
-  return rows.map((row) => [...row, ...new Array(Math.max(0, columnCount - row.length)).fill("")]);
+  return rows.map((row) => [...row.map(safeCellValue), ...new Array(Math.max(0, columnCount - row.length)).fill("")]);
+}
+
+function safeCellValue(value: Primitive): Primitive {
+  return typeof value === "number" && !Number.isFinite(value) ? "" : value;
 }
 
 function percentileInc(sortedValues: number[], quantile: number): number {
@@ -685,6 +775,95 @@ function fill(what: string, count: Primitive): string[][] {
   }
 
   return values.map((value) => [value]);
+}
+
+function stackG(dataInput: ExcelInput, hasHeader?: Primitive): ExcelOutput {
+  const matrix = asRows(dataInput);
+  if (matrix.length < 1 || matrix[0].length < 1) {
+    throw invalidValue("Expected a matrix with at least one column");
+  }
+
+  const headerMode = parseHeaderMode(hasHeader);
+  const hasDetectedHeader = headerMode === HEADER_HAS || (
+    headerMode === HEADER_AUTO &&
+    matrix.length > 1 &&
+    matrix[0].some((value) => !isBlank(value)) &&
+    matrix[0].every((value) => isBlank(value) || tryGetNumber(value) === null)
+  );
+  const startRow = hasDetectedHeader ? 1 : 0;
+  const columnCount = matrix[0].length;
+  const labels = new Array(columnCount).fill(null).map((_, index) => {
+    if (hasDetectedHeader) {
+      const label = matrix[0][index];
+      return isBlank(label) ? `group ${index + 1}` : String(label);
+    }
+    return `group ${index + 1}`;
+  });
+
+  const rows: Primitive[][] = [];
+  for (let column = 0; column < columnCount; column += 1) {
+    for (let row = startRow; row < matrix.length; row += 1) {
+      const value = matrix[row][column];
+      if (isBlank(value)) {
+        continue;
+      }
+      rows.push([labels[column], value]);
+    }
+  }
+
+  if (rows.length < 2) {
+    throw invalidValue("No data rows to stack");
+  }
+
+  return rectangularRows(rows, 2);
+}
+
+function unstackG(groupsInput: ExcelInput, valuesInput: ExcelInput, hasHeader?: Primitive): ExcelOutput {
+  let groups = flatten(groupsInput);
+  let values = flatten(valuesInput);
+  if (groups.length !== values.length) {
+    throw invalidValue("Groups and values must have the same length");
+  }
+
+  const headerMode = parseHeaderMode(hasHeader);
+  const hasDetectedHeader = headerMode === HEADER_HAS || (
+    headerMode === HEADER_AUTO &&
+    groups.length > 1 &&
+    !isBlank(groups[0]) &&
+    !isBlank(values[0]) &&
+    tryGetNumber(groups[0]) === null &&
+    tryGetNumber(values[0]) === null
+  );
+  if (hasDetectedHeader) {
+    groups = groups.slice(1);
+    values = values.slice(1);
+  }
+
+  const categoryOrder: string[] = [];
+  const bucket = new Map<string, Primitive[]>();
+  for (let index = 0; index < groups.length; index += 1) {
+    if (isBlank(groups[index]) || isBlank(values[index])) {
+      continue;
+    }
+    const key = String(groups[index]);
+    if (!bucket.has(key)) {
+      bucket.set(key, []);
+      categoryOrder.push(key);
+    }
+    bucket.get(key)!.push(values[index]);
+  }
+
+  if (categoryOrder.length < 1) {
+    throw invalidValue("No non-empty group/value pairs");
+  }
+
+  const maxRows = categoryOrder.reduce((maximum, key) => Math.max(maximum, bucket.get(key)?.length ?? 0), 0);
+  const rows: Primitive[][] = [];
+  for (let row = 0; row < maxRows; row += 1) {
+    rows.push(categoryOrder.map((key) => bucket.get(key)?.[row] ?? ""));
+  }
+
+  return rectangularRows(rows, categoryOrder.length);
 }
 
 function runtimeDecimalSeparator(): "." | "," {
@@ -970,6 +1149,10 @@ function cellKey(values: Primitive[]): string {
   return JSON.stringify(values.map((value) => String(value ?? "")));
 }
 
+function isBlankDimension(values: Primitive[]): boolean {
+  return values.every((value) => isBlank(value));
+}
+
 function parsePivotDirection(input?: Primitive): Direction {
   if (isBlank(input)) {
     return "two";
@@ -1005,7 +1188,11 @@ function readPivotData(rowsInput: ExcelInput, columnsInput: ExcelInput, valuesIn
   for (let index = 0; index < dataLength; index += 1) {
     const row = rowDimension.rows[index];
     const column = columnDimension.rows[index];
-    records.push({ row, column, value: valueMatrix[index + 1]?.[0] });
+    const value = valueMatrix[index + 1]?.[0];
+    if (isBlank(value) && (isBlankDimension(row) || isBlankDimension(column))) {
+      continue;
+    }
+    records.push({ row, column, value });
   }
 
   return { rowHeaders: rowDimension.headers, columnHeaders: columnDimension.headers, records };
@@ -1392,6 +1579,141 @@ function sigLabelAlpha(pValue: number, alpha: number): string {
   return pValue < 0.001 ? "***" : pValue < 0.01 ? "**" : pValue < alpha ? "*" : "ns";
 }
 
+const OUTPUT_LANGUAGE_STORAGE_KEY = "evalytics.language";
+type OutputLanguage = "cs" | "en";
+
+const outputLabels: Record<OutputLanguage, Record<string, string>> = {
+  cs: {
+    descriptiveStats: "POPISNÉ STATISTIKY",
+    condition: "podmínka",
+    n: "n",
+    mean: "průměr",
+    median: "medián",
+    sd: "sd",
+    min: "min",
+    max: "max",
+    groupDescriptives: "POPISNÉ STATISTIKY SKUPIN",
+    anovaTable: "TABULKA ANOVA",
+    between: "mezi skupinami",
+    within: "uvnitř skupin",
+    leveneTest: "LEVENEŮV TEST",
+    heterogeneous: "heterogenní",
+    effectSize: "VELIKOST EFEKTU",
+    anovaRm: "ANOVA S OPAKOVANÝM MĚŘENÍM",
+    source: "zdroj",
+    conditions: "podmínky",
+    subjects: "subjekty",
+    residual: "rezidua",
+    total: "celkem",
+    note: "POZNÁMKA",
+    sphericity: "sfericita",
+    notTested: "netestována",
+    group: "skupina",
+    factor: "faktor",
+    adjustedMeans: "ADJUSTOVANÉ PRŮMĚRY",
+    adjustedMean: "adjustovaný průměr",
+    ciLower: "dolní CI",
+    ciUpper: "horní CI",
+    warning: "VAROVÁNÍ",
+    slopeHomogeneity: "homogenita sklonů",
+    violated: "porušena",
+    groupA: "skupina A",
+    groupB: "skupina B",
+    meanDiff: "rozdíl průměrů",
+    sig: "sig."
+  },
+  en: {
+    descriptiveStats: "DESCRIPTIVE STATISTICS",
+    condition: "condition",
+    n: "n",
+    mean: "mean",
+    median: "median",
+    sd: "sd",
+    min: "min",
+    max: "max",
+    groupDescriptives: "GROUP DESCRIPTIVES",
+    anovaTable: "ANOVA TABLE",
+    between: "between",
+    within: "within",
+    leveneTest: "LEVENE TEST",
+    heterogeneous: "heterogeneous",
+    effectSize: "EFFECT SIZE",
+    anovaRm: "REPEATED-MEASURES ANOVA",
+    source: "source",
+    conditions: "conditions",
+    subjects: "subjects",
+    residual: "residual",
+    total: "total",
+    note: "NOTE",
+    sphericity: "sphericity",
+    notTested: "not tested",
+    group: "group",
+    factor: "factor",
+    adjustedMeans: "ADJUSTED MEANS",
+    adjustedMean: "adjusted_mean",
+    ciLower: "CI lower",
+    ciUpper: "CI upper",
+    warning: "WARNING",
+    slopeHomogeneity: "slope homogeneity",
+    violated: "violated",
+    groupA: "group A",
+    groupB: "group B",
+    meanDiff: "mean_diff",
+    sig: "sig"
+  }
+};
+
+function normalizeOutputLanguage(value: string | null | undefined): OutputLanguage | null {
+  if (!value) {
+    return null;
+  }
+  const lower = value.toLowerCase();
+  if (lower.startsWith("cs")) {
+    return "cs";
+  }
+  if (lower.startsWith("en")) {
+    return "en";
+  }
+  return null;
+}
+
+function currentOutputLanguage(): OutputLanguage {
+  try {
+    const stored = typeof localStorage === "undefined" ? null : localStorage.getItem(OUTPUT_LANGUAGE_STORAGE_KEY);
+    const storedLanguage = normalizeOutputLanguage(stored);
+    if (storedLanguage) {
+      return storedLanguage;
+    }
+  } catch {
+    // Some Office custom-functions runtimes may not expose localStorage.
+  }
+
+  const navigatorLanguage = normalizeOutputLanguage(
+    typeof navigator === "undefined" ? null : navigator.language
+  );
+  if (navigatorLanguage) {
+    return navigatorLanguage;
+  }
+
+  try {
+    const intlLanguage = normalizeOutputLanguage(
+      typeof Intl === "undefined" ? null : Intl.DateTimeFormat().resolvedOptions().locale
+    );
+    if (intlLanguage) {
+      return intlLanguage;
+    }
+  } catch {
+    // Some Office custom-functions runtimes may not expose Intl.
+  }
+
+  return "en";
+}
+
+function outLabel(key: string): string {
+  const language = currentOutputLanguage();
+  return outputLabels[language][key] ?? outputLabels.en[key] ?? key;
+}
+
 function anovaRm(valuesInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05, postHoc?: Primitive): ExcelOutput {
   validateAlpha(alpha);
   const parsedPostHoc = parsePostHoc(postHoc);
@@ -1426,31 +1748,31 @@ function anovaRm(valuesInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05, p
   const omega2p = Math.max(0, (dfConditions * (f - 1)) / Math.max(1e-12, (dfConditions * (f - 1)) + subjectCount));
 
   const rows: Primitive[][] = [
-    ["POPISNÉ STATISTIKY", "", "", "", "", "", ""],
-    ["condition", "n", "mean", "median", "sd", "min", "max"],
+    [outLabel("descriptiveStats"), "", "", "", "", "", ""],
+    [outLabel("condition"), outLabel("n"), outLabel("mean"), outLabel("median"), outLabel("sd"), outLabel("min"), outLabel("max")],
     ...names.map((name, column) => {
       const series = matrix.map((row) => row[column]);
       return [name, subjectCount, mean(series), median(series), sampleStandardDeviation(series), Math.min(...series), Math.max(...series)];
     }),
     ["", "", "", "", "", "", ""],
-    ["ANOVA S OPAKOVANÝM MĚŘENÍM", "", "", "", "", "", "", "", "", ""],
-    ["source", "SS", "df", "MS", "F", "p", "η²", "η²p", "ω²", "ω²p"],
-    ["conditions", ssConditions, dfConditions, msConditions, f, p, eta2, eta2p, omega2, omega2p],
-    ["subjects", ssSubjects, dfSubjects, msSubjects, "", "", "", "", "", ""],
-    ["residual", ssError, dfError, msError, "", "", "", "", "", ""],
-    ["total", ssTotal, dfTotal, "", "", "", "", "", "", ""],
+    [outLabel("anovaRm"), "", "", "", "", "", "", "", "", ""],
+    [outLabel("source"), "SS", "df", "MS", "F", "p", "η²", "η²p", "ω²", "ω²p"],
+    [outLabel("conditions"), ssConditions, dfConditions, msConditions, f, p, eta2, eta2p, omega2, omega2p],
+    [outLabel("subjects"), ssSubjects, dfSubjects, msSubjects, "", "", "", "", "", ""],
+    [outLabel("residual"), ssError, dfError, msError, "", "", "", "", "", ""],
+    [outLabel("total"), ssTotal, dfTotal, "", "", "", "", "", "", ""],
     ["α", alpha, "", "", "", "", "", "", "", ""],
     ["Fᶜʳⁱᵗ(1−α)", fCrit, "", "", "", "", "", "", "", ""],
     ["", "", "", "", "", "", "", "", "", ""],
-    ["POZNÁMKA", ""],
-    ["sphericity", "not tested"],
+    [outLabel("note"), ""],
+    [outLabel("sphericity"), outLabel("notTested")],
   ];
 
   if (parsedPostHoc !== "none") {
     const m = (conditionCount * (conditionCount - 1)) / 2;
     rows.push(["", "", "", "", ""]);
     rows.push([`POST-HOC: ${parsedPostHoc.toUpperCase()}${parsedPostHoc === "bonferroni" ? "" : " (BONFERRONI FALLBACK)"}`, "", "", "", ""]);
-    rows.push(["condition A", "condition B", "mean_diff", "p", "sig"]);
+    rows.push([`${outLabel("condition")} A`, `${outLabel("condition")} B`, outLabel("meanDiff"), "p", outLabel("sig")]);
     for (let i = 0; i < conditionCount; i += 1) {
       for (let j = i + 1; j < conditionCount; j += 1) {
         const differences = matrix.map((row) => row[i] - row[j]);
@@ -1526,7 +1848,7 @@ function contingencyReport(observed: number[][], rowLabels: string[], columnLabe
     ["ASSOCIATION MEASURES", ""],
     ["Pearson C", pearsonC],
     ["Cramér V", cramerV],
-    ["phi", phi],
+    ["φ", phi],
   ];
   return rectangularRows(rows);
 }
@@ -1769,9 +2091,10 @@ function buildAncovaEffectRow(name: string, test: ReturnType<typeof nestedFTest>
 }
 
 function ancovaG(groupsInput: ExcelInput, valuesInput: ExcelInput, covariatesInput: ExcelInput, postHoc?: Primitive, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
-  validateAlpha(alpha);
-  const parsedPostHoc = parsePostHoc(postHoc);
-  const data = readAncovaData(groupsInput, valuesInput, covariatesInput, parseHeaderMode(hasHeader));
+  try {
+    validateAlpha(alpha);
+    const parsedPostHoc = parsePostHoc(postHoc);
+    const data = readAncovaData(groupsInput, valuesInput, covariatesInput, parseHeaderMode(hasHeader));
   const covariateIndexes = data.covariateNames.map((_, index) => index);
   const fullModel = fitLinearModel(ancovaDesign(data, true, covariateIndexes), data.y);
   const covariateOnlyModel = fitLinearModel(ancovaDesign(data, false, covariateIndexes), data.y);
@@ -1791,25 +2114,25 @@ function ancovaG(groupsInput: ExcelInput, valuesInput: ExcelInput, covariatesInp
   const modelSsTotal = factorTest.ss + covariateTests.reduce((sum, item) => sum + item.test.ss, 0) + fullModel.sse;
   const descriptiveWidth = Math.max(4, 3 + data.covariateNames.length);
   const rows: Primitive[][] = [
-    ["POPISNÉ STATISTIKY", ...new Array(descriptiveWidth - 1).fill("")],
-    ["group", "n", "y", ...data.covariateNames],
+    [outLabel("descriptiveStats"), ...new Array(descriptiveWidth - 1).fill("")],
+    [outLabel("group"), outLabel("n"), "y", ...data.covariateNames],
     ...data.groupLabels.map((group) => {
       const indexes = data.groups.map((value, index) => value === group ? index : -1).filter((index) => index >= 0);
       return [group, indexes.length, mean(indexes.map((index) => data.y[index])), ...covariateIndexes.map((covariate) => mean(indexes.map((index) => data.covariates[index][covariate])))];
     }),
     ["", "", "", ""],
     ["ANCOVA", "", "", "", "", "", "", "", "", ""],
-    ["source", "SS", "df", "MS", "F", "p", "η²", "η²p", "ω²", "ω²p"],
-    buildAncovaEffectRow("factor", factorTest, modelSsTotal, fullModel.sse, fullModel.mse, data.y.length),
+    [outLabel("source"), "SS", "df", "MS", "F", "p", "η²", "η²p", "ω²", "ω²p"],
+    buildAncovaEffectRow(outLabel("factor"), factorTest, modelSsTotal, fullModel.sse, fullModel.mse, data.y.length),
     ...covariateTests.map((item) => buildAncovaEffectRow(item.name, item.test, modelSsTotal, fullModel.sse, fullModel.mse, data.y.length)),
-    ...interactionTests.map((item) => buildAncovaEffectRow(`group × ${item.name}`, item.test, item.test.ss + fullModel.sse, fullModel.sse, fullModel.mse, data.y.length)),
-    ["residual", fullModel.sse, fullModel.df, fullModel.mse, "", "", "", "", "", ""],
-    ["total", ssTotal, data.y.length - 1, "", "", "", "", "", "", ""],
+    ...interactionTests.map((item) => buildAncovaEffectRow(`${outLabel("group")} × ${item.name}`, item.test, item.test.ss + fullModel.sse, fullModel.sse, fullModel.mse, data.y.length)),
+    [outLabel("residual"), fullModel.sse, fullModel.df, fullModel.mse, "", "", "", "", "", ""],
+    [outLabel("total"), ssTotal, data.y.length - 1, "", "", "", "", "", "", ""],
     ["α", alpha, "", "", "", "", "", "", "", ""],
     ["Fᶜʳⁱᵗ(1−α)", jStat.centralF.inv(1 - alpha, Math.max(1, factorTest.df), fullModel.df), "", "", "", "", "", "", "", ""],
     ["", "", "", "", "", "", "", "", "", ""],
-    ["ADJUSTED MEANS", "", "", "", "", ""],
-    ["group", "adjusted_mean", "SE", "CI lower", "CI upper", ""],
+    [outLabel("adjustedMeans"), "", "", "", "", ""],
+    [outLabel("group"), outLabel("adjustedMean"), "SE", outLabel("ciLower"), outLabel("ciUpper"), ""],
   ];
 
   const covariateMeans = covariateIndexes.map((index) => mean(data.covariates.map((row) => row[index])));
@@ -1825,15 +2148,15 @@ function ancovaG(groupsInput: ExcelInput, valuesInput: ExcelInput, covariatesInp
 
   if (interactionTests.some((item) => Number.isFinite(item.test.p) && item.test.p < alpha)) {
     rows.push(["", ""]);
-    rows.push(["WARNING", ""]);
-    rows.push(["slope homogeneity", "violated"]);
+    rows.push([outLabel("warning"), ""]);
+    rows.push([outLabel("slopeHomogeneity"), outLabel("violated")]);
   }
 
   if (parsedPostHoc !== "none") {
     const m = (adjusted.length * (adjusted.length - 1)) / 2;
     rows.push(["", "", "", "", ""]);
     rows.push([`POST-HOC: ${parsedPostHoc.toUpperCase()}${parsedPostHoc === "scheffe" || parsedPostHoc === "bonferroni" ? "" : " (BONFERRONI FALLBACK)"}`, "", "", "", ""]);
-    rows.push(["group A", "group B", "mean_diff", "p", "sig"]);
+    rows.push([outLabel("groupA"), outLabel("groupB"), outLabel("meanDiff"), "p", outLabel("sig")]);
     for (let i = 0; i < adjusted.length; i += 1) {
       for (let j = i + 1; j < adjusted.length; j += 1) {
         const diffVector = adjusted[i].design.map((value, index) => value - adjusted[j].design[index]);
@@ -1850,7 +2173,19 @@ function ancovaG(groupsInput: ExcelInput, valuesInput: ExcelInput, covariatesInp
     }
   }
 
-  return rectangularRows(rows);
+    return rectangularRows(rows);
+  } catch (error) {
+    return rectangularRows([
+      ["Evalytics diagnostic", "ANCOVA failed"],
+      ["message", error instanceof Error ? error.message : String(error)],
+      ["groupsItems", flatten(groupsInput).length],
+      ["valueItems", flatten(valuesInput).length],
+      ["covariateItems", flatten(covariatesInput).length],
+      ["postHoc", String(postHoc ?? "")],
+      ["alpha", String(alpha ?? "")],
+      ["hasHeader", String(hasHeader ?? "")]
+    ], 10);
+  }
 }
 
 function shapiroStatistic(sortedSample: number[]): number {
@@ -2048,10 +2383,10 @@ function tTest1S(valuesInput: ExcelInput, mu0: number, direction?: Primitive, al
   const t = (avg - mu0) / (s / Math.sqrt(n));
   return buildRows([
     ["mean", avg],
-    ["mu0", mu0],
-    ["s", s],
+    ["μ₀", mu0],
+    ["sₓ", s],
     ["n", n],
-    ["alpha", alpha],
+    ["α", alpha],
     ["t", t],
     ["df", df],
     [criticalLabel("t", parsedDirection), criticalT(alpha, df, parsedDirection)],
@@ -2072,11 +2407,11 @@ function propTest1S(valuesInput: ExcelInput, pi0: number, direction?: Primitive,
   const pHat = successes / count;
   const z = (pHat - pi0) / Math.sqrt((pi0 * (1 - pi0)) / count);
   return buildRows([
-    ["phat", pHat],
-    ["pi0", pi0],
+    ["p̂", pHat],
+    ["π₀", pi0],
     ["x", successes],
     ["n", count],
-    ["alpha", alpha],
+    ["α", alpha],
     ["z", z],
     [criticalLabel("z", parsedDirection), criticalZ(alpha, parsedDirection)],
     ["p", pValueFromZ(z, parsedDirection)],
@@ -2112,7 +2447,7 @@ function wilcoxonPaired(xInput: ExcelInput, yInput: ExcelInput, hasHeader?: Prim
   return buildRows([
     ["n", n],
     ["median_diff", median(differences)],
-    ["alpha", alpha],
+    ["α", alpha],
     ["W+", wPlus],
     ["W-", wMinus],
     ["W", w],
@@ -2151,6 +2486,7 @@ function welchTest2SGCore(categoriesInput: ExcelInput, valuesInput: ExcelInput, 
   const imbalanceRatio = Math.max(n1, n2) / Math.min(n1, n2);
   const r = imbalanceRatio > 1.5 ? Math.sign(t) * Math.sqrt((t * t) / ((t * t) + df)) : d / Math.sqrt((d * d) + 4);
   return buildRows([
+    ["GROUP DESCRIPTIVES", "", "", "", "", "", ""],
     ["group", "n", "mean", "median", "sd", "min", "max"],
     [groupAName, n1, mean1, median(groupA), sd1, Math.min(...groupA), Math.max(...groupA)],
     [groupBName, n2, mean2, median(groupB), sd2, Math.min(...groupB), Math.max(...groupB)],
@@ -2170,7 +2506,7 @@ function welchTest2SG(categoriesInput: ExcelInput, valuesInput: ExcelInput, hasH
     return welchTest2SGCore(categoriesInput, valuesInput, hasHeader, alpha, direction);
   } catch (error) {
     return rectangularRows([
-      ["Evalytics diagnostic", "WELCH.TEST.2S.G failed"],
+      ["Evalytics diagnostic", "WELCH.TEST.2S failed"],
       ["message", error instanceof Error ? error.message : String(error)],
       ["hasHeader", String(hasHeader ?? "")],
       ["alpha", String(alpha ?? "")],
@@ -2222,7 +2558,7 @@ function mannWhitneyG(categoriesInput: ExcelInput, valuesInput: ExcelInput, hasH
     [groupAName, n1, mean(groupA), median(groupA), sampleStandardDeviation(groupA), Math.min(...groupA), Math.max(...groupA)],
     [groupBName, n2, mean(groupB), median(groupB), sampleStandardDeviation(groupB), Math.min(...groupB), Math.max(...groupB)],
     ["", "", "", "", "", "", ""],
-    ["alpha", alpha, "", "", "", "", ""],
+    ["α", alpha, "", "", "", "", ""],
     ["U", uStatistic, "", "", "", "", ""],
     ["U1", u1, "", "", "", "", ""],
     ["U2", u2, "", "", "", "", ""],
@@ -2276,10 +2612,10 @@ function chisqGof(observedInput: ExcelInput, expectedInput: ExcelInput, categori
   const critical = jStat.chisquare.inv(1 - alpha, df);
   const p = 1 - jStat.chisquare.cdf(chiSquare, df);
   const rows: Primitive[][] = [
-    ["chi2", chiSquare, "", ""],
+    ["χ²", chiSquare, "", ""],
     ["df", df, "", ""],
-    ["alpha", alpha, "", ""],
-    ["chi2_crit", critical, "", ""],
+    ["α", alpha, "", ""],
+    ["χ²ᶜʳⁱᵗ(1−α)", critical, "", ""],
     ["p", p, "", ""],
     ["", "", "", ""],
     ["category", "O", "E", "(O-E)^2/E"],
@@ -2313,8 +2649,8 @@ function anovaG(categoriesInput: ExcelInput, valuesInput: ExcelInput, hasHeader?
   validateAlpha(alpha);
   const parsedPostHoc = parsePostHoc(postHoc);
   const groups = Array.from(readGroups(categoriesInput, valuesInput, parseHeaderMode(hasHeader)).entries()).sort(([a], [b]) => a.localeCompare(b));
-  if (groups.length < 3) {
-    throw invalidValue("ANOVA requires at least three groups");
+  if (groups.length < 2) {
+    throw invalidValue("ANOVA requires at least two groups");
   }
   if (groups.some(([, values]) => values.length < 2)) {
     throw invalidValue("Each group must contain at least two observations");
@@ -2355,27 +2691,32 @@ function anovaG(categoriesInput: ExcelInput, valuesInput: ExcelInput, hasHeader?
   const cohensF = etaSquared >= 1 ? Number.POSITIVE_INFINITY : Math.sqrt(etaSquared / Math.max(1e-12, 1 - etaSquared));
 
   const rows: Primitive[][] = [
-    ["group", "n", "mean", "median", "sd", "min", "max"],
+    [outLabel("groupDescriptives"), "", "", "", "", "", ""],
+    [outLabel("group"), outLabel("n"), outLabel("mean"), outLabel("median"), outLabel("sd"), outLabel("min"), outLabel("max")],
     ...groups.map(([name, values]) => [name, values.length, mean(values), median(values), sampleStandardDeviation(values), Math.min(...values), Math.max(...values)]),
     ["", "", "", "", "", "", ""],
-    ["source", "SS", "df", "MS", "F", "p", ""],
-    ["between", ssBetween, dfBetween, msBetween, f, p, ""],
-    ["within", ssWithin, dfWithin, msWithin, "", "", ""],
-    ["total", ssTotal, dfTotal, "", "", "", ""],
-    ["alpha", alpha, "", "", "", "", ""],
-    ["F_crit", fCrit, "", "", "", "", ""],
+    [outLabel("anovaTable"), "", "", "", "", "", ""],
+    [outLabel("source"), "SS", "df", "MS", "F", "p", ""],
+    [outLabel("between"), ssBetween, dfBetween, msBetween, f, p, ""],
+    [outLabel("within"), ssWithin, dfWithin, msWithin, "", "", ""],
+    [outLabel("total"), ssTotal, dfTotal, "", "", "", ""],
+    ["α", alpha, "", "", "", "", ""],
+    ["Fᶜʳⁱᵗ(1−α)", fCrit, "", "", "", "", ""],
     ["", "", "", "", "", "", ""],
-    ["levene_F", leveneF, "df1", dfBetween, "df2", dfWithin, ""],
-    ["levene_p", leveneP, "heterogenous", heterogenous, "", "", ""],
+    [outLabel("leveneTest"), "", "", "", "", "", ""],
+    ["F", leveneF, "df1", dfBetween, "df2", dfWithin, ""],
+    ["p", leveneP, outLabel("heterogeneous"), heterogenous, "", "", ""],
     ["", "", "", "", "", "", ""],
-    ["eta2", etaSquared, "", "", "", "", ""],
-    ["omega2", omegaSquared, "", "", "", "", ""],
-    ["cohens_f", cohensF, "", "", "", "", ""],
+    [outLabel("effectSize"), "", "", "", "", "", ""],
+    ["η²", etaSquared, "", "", "", "", ""],
+    ["ω²", omegaSquared, "", "", "", "", ""],
+    ["Cohen f", cohensF, "", "", "", "", ""],
   ];
 
   if (parsedPostHoc !== "none") {
     rows.push(["", "", "", "", "", "", ""]);
-    rows.push(["groupA", "groupB", "mean_diff", "p", "sig", "", ""]);
+    rows.push([`POST-HOC (${parsedPostHoc})`, "", "", "", "", "", ""]);
+    rows.push([outLabel("groupA"), outLabel("groupB"), "mean(A)-mean(B)", "p", outLabel("sig"), "", ""]);
     const m = (groups.length * (groups.length - 1)) / 2;
     for (let i = 0; i < groups.length; i += 1) {
       for (let j = i + 1; j < groups.length; j += 1) {
@@ -2419,9 +2760,9 @@ function correlSpearman(xInput: ExcelInput, yInput: ExcelInput, direction?: Prim
   const df = x.length - 2;
   const t = Math.abs(1 - Math.abs(rho)) < 1e-12 ? Math.sign(rho) * Number.POSITIVE_INFINITY : (rho * Math.sqrt(df)) / Math.sqrt(1 - (rho * rho));
   return buildRows([
-    ["rho", rho],
+    ["ρ", rho],
     ["n", x.length],
-    ["alpha", alpha],
+    ["α", alpha],
     ["t", t],
     ["df", df],
     [criticalLabel("t", parsedDirection), criticalT(alpha, df, parsedDirection)],
@@ -2430,7 +2771,7 @@ function correlSpearman(xInput: ExcelInput, yInput: ExcelInput, direction?: Prim
 }
 
 function version(): string {
-  return `${ADDIN_BRAND} ${ADDIN_RUNTIME} ${ADDIN_VERSION} build ${ADDIN_BUILD} (EVALYTICS)`;
+  return `${ADDIN_BRAND} ${ADDIN_RUNTIME} ${ADDIN_DISPLAY_VERSION} (EVALYTICS)`;
 }
 
 function ping(): number {
@@ -2439,53 +2780,55 @@ function ping(): number {
 
 CustomFunctions.associate("VERSION", version);
 CustomFunctions.associate("PING", ping);
-CustomFunctions.associate("GENERATE_NORM", generateNorm);
-CustomFunctions.associate("GENERATE_NORM_ARRAY", generateNormArray);
-CustomFunctions.associate("GENERATE_INT", generateInt);
-CustomFunctions.associate("GENERATE_INT_ARRAY", generateIntArray);
+CustomFunctions.associate("GENERATE_NORM", protectedFunction("GENERATE.NORM", generateNorm));
+CustomFunctions.associate("GENERATE_NORM_ARRAY", protectedFunction("GENERATE.NORM.ARRAY", generateNormArray));
+CustomFunctions.associate("GENERATE_INT", protectedFunction("GENERATE.INT", generateInt));
+CustomFunctions.associate("GENERATE_INT_ARRAY", protectedFunction("GENERATE.INT.ARRAY", generateIntArray));
 CustomFunctions.associate("FILL", fill);
+CustomFunctions.associate("STACK_G", stackG);
+CustomFunctions.associate("UNSTACK_G", unstackG);
 CustomFunctions.associate("PARSE_NUMBER", parseNumber);
-CustomFunctions.associate("NORM_DIST_RANGE", normDistRange);
-CustomFunctions.associate("AVERAGE_W", averageW);
-CustomFunctions.associate("HARMEAN_W", harmMeanW);
-CustomFunctions.associate("GEOMEAN_W", geoMeanW);
-CustomFunctions.associate("VAR_P_W", varPW);
-CustomFunctions.associate("VAR_S_W", varSW);
-CustomFunctions.associate("STDEV_P_W", stdevPW);
-CustomFunctions.associate("STDEV_S_W", stdevSW);
-CustomFunctions.associate("VARCOEF", varcoef);
-CustomFunctions.associate("VARCOEF_S", varcoefS);
-CustomFunctions.associate("VARCOEF_W", (values: ExcelInput, weights: ExcelInput) => varcoefW(values, weights, false));
-CustomFunctions.associate("VARCOEF_S_W", (values: ExcelInput, weights: ExcelInput) => varcoefW(values, weights, true));
-CustomFunctions.associate("SHAPIRO_WILK", shapiroWilk);
-CustomFunctions.associate("KOLMOGOROV_SMIRNOV", kolmogorovSmirnov);
-CustomFunctions.associate("T_TEST_1S", tTest1S);
-CustomFunctions.associate("PROP_TEST_1S", propTest1S);
-CustomFunctions.associate("WILCOXON_PAIRED", wilcoxonPaired);
-CustomFunctions.associate("WELCH_TEST_2S_G", welchTest2SG);
-CustomFunctions.associate("MANN_WHITNEY_G", mannWhitneyG);
-CustomFunctions.associate("CHISQ_GOF", chisqGof);
-CustomFunctions.associate("ANOVA_G", anovaG);
-CustomFunctions.associate("CORREL_SPEARMAN", correlSpearman);
-CustomFunctions.associate("ANOVA_RM", anovaRm);
-CustomFunctions.associate("ANCOVA_G", ancovaG);
-CustomFunctions.associate("CONTINGENCY_T", contingencyT);
-CustomFunctions.associate("CONTINGENCY_G", contingencyG);
-CustomFunctions.associate("CORREL_MATRIX", correlMatrix);
-CustomFunctions.associate("PIVOT_COUNT", pivotCount);
-CustomFunctions.associate("PIVOT_SUM", pivotSum);
-CustomFunctions.associate("PIVOT_AVERAGE", pivotAverage);
-CustomFunctions.associate("PIVOT_MIN", pivotMin);
-CustomFunctions.associate("PIVOT_MAX", pivotMax);
-CustomFunctions.associate("PIVOT_MEDIAN", pivotMedian);
-CustomFunctions.associate("PIVOT_PERCENTILE", pivotPercentile);
-CustomFunctions.associate("PIVOT_STDEV_S", pivotStdevS);
-CustomFunctions.associate("PIVOT_STDEV_P", pivotStdevP);
-CustomFunctions.associate("PIVOT_VAR_S", pivotVarS);
-CustomFunctions.associate("PIVOT_VAR_P", pivotVarP);
-CustomFunctions.associate("PIVOT_VARCOEF_S", pivotVarcoefS);
-CustomFunctions.associate("PIVOT_VARCOEF_P", pivotVarcoefP);
-CustomFunctions.associate("PIVOT_CONF_T", pivotConfT);
-CustomFunctions.associate("PIVOT_CONF_NORM", pivotConfNorm);
-CustomFunctions.associate("PIVOT_MAD", pivotMad);
-CustomFunctions.associate("PIVOT_IQR", pivotIqr);
+CustomFunctions.associate("NORM_DIST_RANGE", protectedFunction("NORM.DIST.RANGE", normDistRange));
+CustomFunctions.associate("AVERAGE_W", protectedFunction("AVERAGE.W", averageW));
+CustomFunctions.associate("HARMEAN_W", protectedFunction("HARMEAN.W", harmMeanW));
+CustomFunctions.associate("GEOMEAN_W", protectedFunction("GEOMEAN.W", geoMeanW));
+CustomFunctions.associate("VAR_P_W", protectedFunction("VAR.P.W", varPW));
+CustomFunctions.associate("VAR_S_W", protectedFunction("VAR.S.W", varSW));
+CustomFunctions.associate("STDEV_P_W", protectedFunction("STDEV.P.W", stdevPW));
+CustomFunctions.associate("STDEV_S_W", protectedFunction("STDEV.S.W", stdevSW));
+CustomFunctions.associate("VARCOEF", protectedFunction("VARCOEF", varcoef));
+CustomFunctions.associate("VARCOEF_S", protectedFunction("VARCOEF.S", varcoefS));
+CustomFunctions.associate("VARCOEF_W", protectedFunction("VARCOEF.W", (values: ExcelInput, weights: ExcelInput) => varcoefW(values, weights, false)));
+CustomFunctions.associate("VARCOEF_S_W", protectedFunction("VARCOEF.S.W", (values: ExcelInput, weights: ExcelInput) => varcoefW(values, weights, true)));
+CustomFunctions.associate("SHAPIRO_WILK", protectedFunction("SHAPIRO.WILK", shapiroWilk));
+CustomFunctions.associate("KOLMOGOROV_SMIRNOV", protectedFunction("KOLMOGOROV.SMIRNOV", kolmogorovSmirnov));
+CustomFunctions.associate("T_TEST_1S", protectedFunction("T.TEST.1S", tTest1S));
+CustomFunctions.associate("PROP_TEST_1S", protectedFunction("PROP.TEST.1S", propTest1S));
+CustomFunctions.associate("WILCOXON_PAIRED", protectedFunction("WILCOXON.PAIRED", wilcoxonPaired));
+CustomFunctions.associate("WELCH_TEST_2S_G", protectedFunction("WELCH.TEST.2S", welchTest2SG));
+CustomFunctions.associate("MANN_WHITNEY_G", protectedFunction("MANN.WHITNEY", mannWhitneyG));
+CustomFunctions.associate("CHISQ_GOF", protectedFunction("CHISQ.GOF", chisqGof));
+CustomFunctions.associate("ANOVA_G", protectedFunction("ANOVA", anovaG));
+CustomFunctions.associate("CORREL_SPEARMAN", protectedFunction("CORREL.SPEARMAN", correlSpearman));
+CustomFunctions.associate("ANOVA_RM", protectedFunction("ANOVA.RM", anovaRm));
+CustomFunctions.associate("ANCOVA_G", protectedFunction("ANCOVA", ancovaG));
+CustomFunctions.associate("CONTINGENCY_T", protectedFunction("CONTINGENCY.T", contingencyT));
+CustomFunctions.associate("CONTINGENCY_G", protectedFunction("CONTINGENCY", contingencyG));
+CustomFunctions.associate("CORREL_MATRIX", protectedFunction("CORREL.MATRIX", correlMatrix));
+CustomFunctions.associate("PIVOT_COUNT", protectedFunction("PIVOT.COUNT", pivotCount));
+CustomFunctions.associate("PIVOT_SUM", protectedFunction("PIVOT.SUM", pivotSum));
+CustomFunctions.associate("PIVOT_AVERAGE", protectedFunction("PIVOT.AVERAGE", pivotAverage));
+CustomFunctions.associate("PIVOT_MIN", protectedFunction("PIVOT.MIN", pivotMin));
+CustomFunctions.associate("PIVOT_MAX", protectedFunction("PIVOT.MAX", pivotMax));
+CustomFunctions.associate("PIVOT_MEDIAN", protectedFunction("PIVOT.MEDIAN", pivotMedian));
+CustomFunctions.associate("PIVOT_PERCENTILE", protectedFunction("PIVOT.PERCENTILE", pivotPercentile));
+CustomFunctions.associate("PIVOT_STDEV_S", protectedFunction("PIVOT.STDEV.S", pivotStdevS));
+CustomFunctions.associate("PIVOT_STDEV_P", protectedFunction("PIVOT.STDEV.P", pivotStdevP));
+CustomFunctions.associate("PIVOT_VAR_S", protectedFunction("PIVOT.VAR.S", pivotVarS));
+CustomFunctions.associate("PIVOT_VAR_P", protectedFunction("PIVOT.VAR.P", pivotVarP));
+CustomFunctions.associate("PIVOT_VARCOEF_S", protectedFunction("PIVOT.VARCOEF.S", pivotVarcoefS));
+CustomFunctions.associate("PIVOT_VARCOEF_P", protectedFunction("PIVOT.VARCOEF.P", pivotVarcoefP));
+CustomFunctions.associate("PIVOT_CONF_T", protectedFunction("PIVOT.CONF.T", pivotConfT));
+CustomFunctions.associate("PIVOT_CONF_NORM", protectedFunction("PIVOT.CONF.NORM", pivotConfNorm));
+CustomFunctions.associate("PIVOT_MAD", protectedFunction("PIVOT.MAD", pivotMad));
+CustomFunctions.associate("PIVOT_IQR", protectedFunction("PIVOT.IQR", pivotIqr));

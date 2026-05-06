@@ -1,34 +1,42 @@
-# XLStatUDF
+# Evalytics StatLab for Excel
 
-XLStatUDF is a statistical add-in for Microsoft Excel built with C#, .NET 8, and Excel-DNA. It provides a growing set of user-defined functions for descriptive statistics, hypothesis testing, correlation analysis, contingency tables, ANOVA/ANCOVA, random-data generation, and pivot-style statistical summaries directly in worksheets.
+Evalytics StatLab for Excel is an `Office.js` add-in that brings statistical worksheet functions, documentation, demos, options, and function wizards into one Excel workspace.
 
-The project is primarily intended for users who want spreadsheet-first statistical tools without leaving Excel, while still keeping the functions testable, documented, and easy to distribute.
+The original `Excel-DNA` / `.xll` implementation is now treated as an archived reference and remains in the repository only to help verify feature parity during the migration.
 
-## Add-In Builds
+## Active Product
 
-The repository now contains two language-specific add-in builds for manual testing in Excel:
+The active cross-platform add-in lives in `office-addin/` and is distributed as a single manifest.
 
-- Czech add-in: [`artifacts/main/cs/publish/XLStatUDF-AddIn64-packed.xll`](/c:/Users/pavel/Documents/github/XLStatUDF/artifacts/main/cs/publish/XLStatUDF-AddIn64-packed.xll)
-- English add-in: [`artifacts/main/en/publish/XLStatUDF-AddIn64-packed.xll`](/c:/Users/pavel/Documents/github/XLStatUDF/artifacts/main/en/publish/XLStatUDF-AddIn64-packed.xll)
+Current migration goals:
 
-## Installers
+- preserve the existing statistical function surface where Office.js supports it
+- remove legacy output-formatting behavior
+- keep the documentation and download website in sync with the new add-in
 
-The repository contains two installer variants:
+## Archived Excel-DNA Implementation
 
-- Czech installer: [`artifacts/installer/XLStatUDF_CS_Setup.exe`](/c:/Users/pavel/Documents/github/XLStatUDF/artifacts/installer/XLStatUDF_CS_Setup.exe)
-- English installer: [`artifacts/installer/XLStatUDF_EN_Setup.exe`](/c:/Users/pavel/Documents/github/XLStatUDF/artifacts/installer/XLStatUDF_EN_Setup.exe)
+The archived host implementation is described in `archive/EXCEL-DNA.md`.
+
+Archived reference areas:
+
+- `src/XLStatUDF`
+- `tests/XLStatUDF.Tests`
+- `installer/`
+- `build.ps1`
 
 ## Documentation
 
-Documentation is split by language:
+Documentation remains split by language:
 
-- Czech documentation: [`docs/cs/README.md`](/c:/Users/pavel/Documents/github/XLStatUDF/docs/cs/README.md)
-- English documentation: [`docs/en/README.md`](/c:/Users/pavel/Documents/github/XLStatUDF/docs/en/README.md)
+- Czech documentation: `docs/cs/README.md`
+- English documentation: `docs/en/README.md`
 
-## Build
+## Office.js Build
 
 ```powershell
-.\build.ps1
+Set-Location .\office-addin
+npm run build
 ```
 
-This runs restore, tests, add-in packaging, and installer generation.
+This builds the custom-functions runtime, taskpane assets, and the merged Office.js manifest into `office-addin/dist/`.

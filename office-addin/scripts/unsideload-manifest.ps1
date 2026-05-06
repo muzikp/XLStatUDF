@@ -1,7 +1,9 @@
 $ErrorActionPreference = "Stop"
 
 $targets = @(
+    (Join-Path $env:LOCALAPPDATA "Microsoft\Office\16.0\Wef\Evalytics.StatLab.local.xml"),
     (Join-Path $env:LOCALAPPDATA "Microsoft\Office\16.0\Wef\Evalytics.Office.local.xml"),
+    (Join-Path $env:LOCALAPPDATA "Microsoft\Office\16.0\Wef\Evalytics.Docs.local.xml"),
     (Join-Path $env:LOCALAPPDATA "Microsoft\Office\16.0\Wef\XLStatUDF.Office.local.xml")
 )
 

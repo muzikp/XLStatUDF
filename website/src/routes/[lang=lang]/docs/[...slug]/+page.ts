@@ -7,7 +7,7 @@ export const prerender = true;
 export function entries() {
   return [...docsByLanguage.cs, ...docsByLanguage.en].map((doc) => ({
     lang: doc.lang,
-    slug: doc.slug.split('/')
+    slug: doc.slug
   }));
 }
 
@@ -22,4 +22,3 @@ export function load({ params }) {
 
   return { doc };
 }
-

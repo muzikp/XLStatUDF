@@ -13,8 +13,8 @@ const languageLabels = {
 };
 
 const installerDefinitions = [
-  { lang: 'cs', label: 'XLStatUDF CS Setup', fileName: 'XLStatUDF_CS_Setup.exe' },
-  { lang: 'en', label: 'XLStatUDF EN Setup', fileName: 'XLStatUDF_EN_Setup.exe' }
+  { lang: 'cs', label: 'Evalytics CS Setup', fileName: 'Evalytics_CS_Setup.exe' },
+  { lang: 'en', label: 'Evalytics EN Setup', fileName: 'Evalytics_EN_Setup.exe' }
 ];
 
 async function listMarkdownFiles(root, relative = '') {
@@ -99,12 +99,16 @@ function rewriteHref(href, lang, relativePath) {
     return href;
   }
 
-  const installerMatch = href.match(/XLStatUDF_(CS|EN)_Setup\.exe/i);
+  const installerMatch = href.match(/(?:Evalytics|XLStatUDF)_(CS|EN)_Setup\.exe/i);
   if (installerMatch) {
     return `/downloads/${installerMatch[0]}`;
   }
 
   if (/artifacts\/main\/.+\.xll$/i.test(href) || /\/reference\//i.test(href)) {
+    return '#';
+  }
+
+  if (/^\/?[a-z]:[\\/]/i.test(href)) {
     return '#';
   }
 
@@ -115,11 +119,14 @@ function rewriteHref(href, lang, relativePath) {
     return `/${absoluteLang.toLowerCase()}/docs/${slug}`;
   }
 
-  if (href.endsWith('.md')) {
+  const markdownLinkMatch = href.match(/^(.+?\.md)(#(.+))?$/i);
+  if (markdownLinkMatch) {
+    const [, markdownHref, , anchorText] = markdownLinkMatch;
     const currentDir = path.posix.dirname(toPosix(relativePath));
-    const resolved = path.posix.normalize(path.posix.join(currentDir, href));
+    const resolved = path.posix.normalize(path.posix.join(currentDir, markdownHref));
     const slug = slugFromPath(resolved);
-    return `/${lang}/docs/${slug}`;
+    const anchor = anchorText ? `#${slugify(anchorText)}` : '';
+    return `/${lang}/docs/${slug}${anchor}`;
   }
 
   return href;
@@ -282,7 +289,10 @@ async function buildDocs(lang) {
 function buildFunctionHref(lang, relativeHref) {
   const [filePart, anchorPart] = relativeHref.split('#');
   const normalizedPath = filePart.replace(/^\.\//, '');
-  const slug = slugFromPath(normalizedPath);
+  const resolvedPath = normalizedPath.startsWith('functions/')
+    ? normalizedPath
+    : path.posix.normalize(path.posix.join('functions', normalizedPath));
+  const slug = slugFromPath(resolvedPath);
   const anchor = anchorPart ? `#${slugify(anchorPart)}` : '';
   return `/${lang}/docs/${slug}${anchor}`;
 }

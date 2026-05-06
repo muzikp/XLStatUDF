@@ -42,4 +42,3 @@ await copyFile(join(rootDir, "src", "public", "icon-16.png"), join(distDir, "ico
 await copyFile(join(rootDir, "src", "public", "icon-32.png"), join(distDir, "icon-32.png"));
 await copyFile(join(rootDir, "src", "public", "icon-80.png"), join(distDir, "icon-80.png"));
 await copyFile(join(rootDir, "manifest.xml"), join(distDir, "manifest.xml"));
-await copyFile(join(rootDir, "manifest.docs.xml"), join(distDir, "manifest.docs.xml"));

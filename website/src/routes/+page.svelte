@@ -17,10 +17,10 @@
 </script>
 
 <svelte:head>
-  <title>XLStatUDF</title>
+  <title>Evalytics</title>
   <meta
     name="description"
-    content="Static bilingual documentation and download site for XLStatUDF."
+    content="Static bilingual documentation and download site for Evalytics."
   />
 </svelte:head>
 
@@ -28,7 +28,7 @@
   <div class="frame">
     <div class="content">
       <section class="hero">
-        <div class="eyebrow">XLStatUDF</div>
+        <div class="eyebrow">Evalytics</div>
         <h2>Redirecting to your preferred language</h2>
         <p>
           The site remembers your language choice and sends you directly to the matching version.

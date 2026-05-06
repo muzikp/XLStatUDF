@@ -19,7 +19,6 @@
 </script>
 
 <svelte:head>
-  <html lang={data.lang} />
   <title>{data.locale.siteTitle}</title>
 </svelte:head>
 
