@@ -253,102 +253,89 @@
       ]
     },
     "STACK": {
-      "category": "Obecne",
-      "summary": "P?evede vybran? sloupce do dvousloupcov? tabulky group-value.",
+      "category": "Obecné",
+      "summary": "Převede vybrané sloupce do dvousloupcové tabulky group-value.",
       "parameters": [
         {
           "sourceName": "data",
-          "description": "matice s jedn?m nebo v?ce sloupci; z?hlav? sloupc? se pou?ij? jako group",
-          "enumValues": [],
-          "wizard": {
-            "kind": "range"
-          }
+          "description": "matice s jedním nebo více sloupci; záhlaví sloupců se použijí jako group",
+          "enumValues": []
         },
         {
-          "sourceName": "has_header",
-          "description": "k?d re?imu z?hlav?",
+          "sourceName": "hasHeader",
+          "description": "kód režimu záhlaví",
           "enumValues": [
             {
               "value": "0",
-              "meaning": "autodetekce z?hlav?",
-              "default": true
+              "meaning": "autodetekce záhlaví"
             },
             {
               "value": "1",
-              "meaning": "prvn? ??dek je z?hlav?",
-              "default": false
+              "meaning": "první řádek je záhlaví"
             },
             {
               "value": "2",
-              "meaning": "vstup nem? z?hlav?",
-              "default": false
+              "meaning": "vstup nemá záhlaví"
             }
-          ],
-          "wizard": {
-            "kind": "select"
-          }
+          ]
         }
       ],
       "output": [
         {
+          "section": "STACK",
           "name": "group",
-          "description": "kategorie p?evzat? ze zdrojov?ho sloupce"
+          "description": "kategorie převzatá ze zdrojového sloupce"
         },
         {
+          "section": "STACK",
           "name": "value",
-          "description": "hodnota z p?vodn? matice"
+          "description": "hodnota z původní matice"
         }
       ]
     },
     "UNSTACK": {
-      "category": "Obecne",
-      "summary": "P?evede tabulku group-value zp?t do sloupc? podle kategori?.",
+      "category": "Obecné",
+      "summary": "Převede dvojici sloupců skupina-hodnota do samostatných sloupců podle skupin.",
       "parameters": [
         {
           "sourceName": "groups",
-          "description": "sloupec kategori?",
-          "enumValues": [],
-          "wizard": {
-            "kind": "range"
-          }
+          "description": "sloupec názvů skupin",
+          "enumValues": []
         },
         {
           "sourceName": "values",
-          "description": "sloupec hodnot zarovnan? ke kategori?m",
-          "enumValues": [],
-          "wizard": {
-            "kind": "range"
-          }
+          "description": "sloupec hodnot odpovídající skupinám",
+          "enumValues": []
         },
         {
-          "sourceName": "has_header",
-          "description": "k?d re?imu z?hlav?",
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
           "enumValues": [
             {
               "value": "0",
-              "meaning": "autodetekce z?hlav?",
-              "default": true
+              "meaning": "autodetekce záhlaví"
             },
             {
               "value": "1",
-              "meaning": "prvn? ??dek je z?hlav?",
-              "default": false
+              "meaning": "první řádek je záhlaví"
             },
             {
               "value": "2",
-              "meaning": "vstup nem? z?hlav?",
-              "default": false
+              "meaning": "vstup je bez záhlaví"
             }
-          ],
-          "wizard": {
-            "kind": "select"
-          }
+          ]
         }
       ],
       "output": [
         {
-          "name": "category columns",
-          "description": "ka?d? kategorie jako samostatn? sloupec"
+          "section": "UNSTACK",
+          "name": "header row",
+          "description": "první řádek obsahuje názvy skupin jako záhlaví sloupců"
+        },
+        {
+          "section": "UNSTACK",
+          "name": "data rows",
+          "description": "další řádky obsahují hodnoty seskupené po sloupcích"
         }
       ]
     },
@@ -1524,7 +1511,7 @@
       }
     },
     "NORM.DIST.RANGE": {
-      "category": "Popisne",
+      "category": "Popisné",
       "summary": "Počítá pravděpodobnost intervalu normálního rozdělení.",
       "parameters": [
         {
@@ -1678,7 +1665,7 @@
       }
     },
     "T.TEST.1S": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí jednovýběrový t-test vůči zadané hypotetické střední hodnotě.",
       "parameters": [
         {
@@ -1804,7 +1791,7 @@
       }
     },
     "PROP.TEST.1S": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí jednovýběrový test podílu.",
       "parameters": [
         {
@@ -1929,7 +1916,7 @@
       }
     },
     "WILCOXON.PAIRED": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí Wilcoxonův párový znaménkový test pro závislá měření.",
       "parameters": [
         {
@@ -2057,7 +2044,7 @@
       }
     },
     "WELCH.TEST.2S": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí Welchův dvouvýběrový t-test pro dvě nezávislé skupiny.",
       "parameters": [
         {
@@ -2201,7 +2188,7 @@
       }
     },
     "MANN.WHITNEY": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí Mann-Whitneyho test pro dvě nezávislé skupiny.",
       "parameters": [
         {
@@ -2329,7 +2316,7 @@
       }
     },
     "CHISQ.GOF": {
-      "category": "Testy",
+      "category": "Kvalitativní data",
       "summary": "Provádí chí-kvadrát test dobré shody.",
       "parameters": [
         {
@@ -2433,7 +2420,7 @@
       }
     },
     "ANOVA": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí jednofaktorovou analýzu rozptylu pro porovnání průměrů tří nebo více nezávislých skupin.",
       "parameters": [
         {
@@ -2658,7 +2645,7 @@
       }
     },
     "ANOVA.RM": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí jednofaktorovou ANOVA s opakovaným měřením ve sloupcích.",
       "parameters": [
         {
@@ -2848,7 +2835,7 @@
       }
     },
     "ANCOVA": {
-      "category": "Testy",
+      "category": "Srovnání skupin",
       "summary": "Provádí ANCOVA s jedním faktorem a jednou nebo více kovariátami.",
       "parameters": [
         {
@@ -3055,119 +3042,8 @@
         "required": true
       }
     },
-    "CONTINGENCY.T": {
-      "category": "Testy",
-      "summary": "Analyzuje kontingenční tabulku zadanou přímo jako matici četností.",
-      "parameters": [
-        {
-          "sourceName": "tabulka",
-          "description": "matice pozorovaných četností",
-          "enumValues": [],
-          "wizard": {
-            "kind": "range"
-          }
-        },
-        {
-          "sourceName": "ma_záhlaví",
-          "description": "režim popisků tabulky",
-          "enumValues": [
-            {
-              "value": "0",
-              "meaning": "autodetekce popisků",
-              "default": true
-            },
-            {
-              "value": "1",
-              "meaning": "horní řádek a levý sloupec jsou popisky",
-              "default": false
-            },
-            {
-              "value": "2",
-              "meaning": "tabulka je bez popisků",
-              "default": false
-            }
-          ],
-          "wizard": {
-            "kind": "select"
-          }
-        },
-        {
-          "sourceName": "alpha",
-          "description": "hladina významnosti",
-          "enumValues": [],
-          "wizard": {
-            "kind": "number",
-            "defaultValue": 0.05,
-            "validation": "probability",
-            "min": 0,
-            "max": 1,
-            "step": 0.01
-          }
-        }
-      ],
-      "output": [
-        {
-          "section": "Kontingenční tabulky",
-          "name": "observed",
-          "description": "pozorované četnosti včetně marginálních součtů"
-        },
-        {
-          "section": "Kontingenční tabulky",
-          "name": "expected",
-          "description": "očekávané četnosti při nezávislosti"
-        },
-        {
-          "section": "Souhrn testu",
-          "name": "n",
-          "description": "celková četnost"
-        },
-        {
-          "section": "Souhrn testu",
-          "name": "df",
-          "description": "stupně volnosti chí-kvadrát testu"
-        },
-        {
-          "section": "Souhrn testu",
-          "name": "α",
-          "description": "hladina významnosti"
-        },
-        {
-          "section": "Souhrn testu",
-          "name": "χ²",
-          "description": "testová statistika chí-kvadrát"
-        },
-        {
-          "section": "Souhrn testu",
-          "name": "χ²ᶜʳⁱᵗ(1−α)",
-          "description": "kritická hodnota chí-kvadrát rozdělení"
-        },
-        {
-          "section": "Souhrn testu",
-          "name": "p",
-          "description": "p-hodnota testu nezávislosti"
-        },
-        {
-          "section": "Míry asociace",
-          "name": "Pearson C",
-          "description": "Pearsonův kontingenční koeficient"
-        },
-        {
-          "section": "Míry asociace",
-          "name": "Cramér V",
-          "description": "Cramérovo V"
-        },
-        {
-          "section": "Míry asociace",
-          "name": "phi",
-          "description": "koeficient phi pro tabulku 2 x 2"
-        }
-      ],
-      "auth": {
-        "required": true
-      }
-    },
     "CONTINGENCY": {
-      "category": "Testy",
+      "category": "Kvalitativní data",
       "summary": "Sestavuje a analyzuje kontingenční tabulku z groupovaných dat.",
       "parameters": [
         {
@@ -3294,7 +3170,7 @@
       }
     },
     "CORREL.SPEARMAN": {
-      "category": "Testy",
+      "category": "Regrese",
       "summary": "Počítá Spearmanův korelační koeficient a test jeho významnosti.",
       "parameters": [
         {
@@ -3410,7 +3286,7 @@
       }
     },
     "CORREL.MATRIX": {
-      "category": "Testy",
+      "category": "Regrese",
       "summary": "Sestavuje korelační matici včetně p-hodnot a značek signifikance.",
       "parameters": [
         {
@@ -3528,6 +3404,851 @@
       "auth": {
         "required": true
       }
+    },
+    "REGRESSION": {
+      "category": "Regrese",
+      "summary": "Provede lineární regresi (OLS) a vrátí kompletní report modelu.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "závislá proměnná (sloupec y)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "matice prediktorů (x)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "options",
+          "description": "volby modelu (např. intercept=1 nebo intercept=0)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti pro intervaly a testy",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "MODEL SUMMARY",
+          "description": "souhrn modelu: počty řádků, R², Adj. R², RMSE, AIC, BIC"
+        },
+        {
+          "name": "ANOVA",
+          "description": "ANOVA tabulka modelu (SS, df, MS, F, p)"
+        },
+        {
+          "name": "COEFFICIENTS",
+          "description": "koeficienty modelu včetně SE, t, p a intervalu spolehlivosti"
+        },
+        {
+          "name": "DIAGNOSTICS",
+          "description": "základní diagnostika (Durbin-Watson)"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "REGRESSION.PREDICT": {
+      "category": "Regrese",
+      "summary": "Natrénuje lineární regresi a vrátí predikce pro nové hodnoty x.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "závislá proměnná (sloupec y)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "matice prediktorů pro trénink",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xNewRange",
+          "description": "nové hodnoty x: buď po řádcích, nebo jako sekvence v jednom řádku/sloupci",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "options",
+          "description": "volby modelu (např. intercept=1 nebo intercept=0)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti pro interval spolehlivosti predikce",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "row",
+          "description": "pořadí predikovaného případu"
+        },
+        {
+          "name": "prediction",
+          "description": "bodový odhad y"
+        },
+        {
+          "name": "CI low",
+          "description": "dolní mez intervalu spolehlivosti pro střední predikci"
+        },
+        {
+          "name": "CI high",
+          "description": "horní mez intervalu spolehlivosti pro střední predikci"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "REGRESSION.SELECT": {
+      "category": "Regrese",
+      "summary": "Vybere prediktory pro lineární regresi metodou forward/backward/stepwise.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "závislá proměnná (sloupec y)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "matice kandidátních prediktorů",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "method",
+          "description": "metoda výběru: 0=forward, 1=backward, 2=stepwise",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "forward",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "backward",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "stepwise",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "criterion",
+          "description": "kritérium: 0=adjr2, 1=aic, 2=bic",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "adjusted R²",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "AIC",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "BIC",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti pro intervaly a testy koeficientů",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "options",
+          "description": "volby modelu (např. intercept=1 nebo intercept=0)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "SELECTION SUMMARY",
+          "description": "souhrn zvolené metody a finálního modelu"
+        },
+        {
+          "name": "TRACE",
+          "description": "kroky přidání/odebrání proměnných"
+        },
+        {
+          "name": "COEFFICIENTS",
+          "description": "koeficienty finálního vybraného modelu"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "TREND.FIT": {
+      "category": "Regrese",
+      "summary": "Natrénuje jeden trendový model (linear/log/exp/power) a vrátí metriky.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "závislá proměnná y",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "nezávislá proměnná x",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "modelType",
+          "description": "typ modelu: 0=linear, 1=log, 2=exp, 3=power",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "linear",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "log",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "exp",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "power",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti (rezervováno pro jednotné API)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "TREND FIT",
+          "description": "souhrn modelu a metriky"
+        },
+        {
+          "name": "COEFFICIENTS",
+          "description": "koeficienty trendového modelu"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "TREND.COMPARE": {
+      "category": "Regrese",
+      "summary": "Porovná více trendových modelů na stejných datech.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "závislá proměnná y",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "nezávislá proměnná x",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "modelList",
+          "description": "seznam modelů oddělený ; nebo , (např. linear;log;exp;power)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti (rezervováno pro jednotné API)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "model",
+          "description": "název trendového modelu"
+        },
+        {
+          "name": "equation",
+          "description": "odhadnutá rovnice modelu"
+        },
+        {
+          "name": "R²",
+          "description": "koeficient determinace"
+        },
+        {
+          "name": "Adj. R²",
+          "description": "adjustovaný koeficient determinace"
+        },
+        {
+          "name": "RMSE",
+          "description": "odhad směrodatné chyby modelu"
+        },
+        {
+          "name": "AIC/BIC",
+          "description": "informační kritéria"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "KRUSKAL.WALLIS": {
+      "category": "Srovnání skupin",
+      "summary": "Kruskal-Wallisova ANOVA pro tři a více nezávislých skupin.",
+      "parameters": [
+        {
+          "sourceName": "kategorie",
+          "description": "kategorie skupin (jeden sloupec)",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "měřené hodnoty",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví"
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví"
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví"
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "section": "GROUPS",
+          "name": "group",
+          "description": "název skupiny"
+        },
+        {
+          "section": "GROUPS",
+          "name": "n",
+          "description": "počet pozorování ve skupině"
+        },
+        {
+          "section": "GROUPS",
+          "name": "rank_sum",
+          "description": "součet pořadí ve skupině"
+        },
+        {
+          "section": "GROUPS",
+          "name": "mean_rank",
+          "description": "průměrné pořadí ve skupině"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "H",
+          "description": "testové kritérium Kruskal-Wallis"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "df",
+          "description": "stupně volnosti (k-1)"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "α",
+          "description": "hladina významnosti"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "kritická hodnota chí-kvadrát"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "p",
+          "description": "p-hodnota testu"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "ε²",
+          "description": "odhad velikosti efektu"
+        }
+      ]
+    },
+    "FRIEDMAN.ANOVA": {
+      "category": "Srovnání skupin",
+      "summary": "Friedmanova ANOVA pro opakovaná měření (blokový design).",
+      "parameters": [
+        {
+          "sourceName": "hodnoty",
+          "description": "matice hodnot: řádky jsou bloky/subjekty, sloupce podmínky",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví"
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví"
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví"
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "section": "CONDITIONS",
+          "name": "condition",
+          "description": "název podmínky/sloupce"
+        },
+        {
+          "section": "CONDITIONS",
+          "name": "n",
+          "description": "počet bloků/subjektů"
+        },
+        {
+          "section": "CONDITIONS",
+          "name": "rank_sum",
+          "description": "součet pořadí podmínky"
+        },
+        {
+          "section": "CONDITIONS",
+          "name": "mean_rank",
+          "description": "průměrné pořadí podmínky"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "Q",
+          "description": "Friedmanovo testové kritérium"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "df",
+          "description": "stupně volnosti (k-1)"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "α",
+          "description": "hladina významnosti"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "kritická hodnota chí-kvadrát"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "p",
+          "description": "p-hodnota testu"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "Kendall.W",
+          "description": "koeficient shody Kendall W"
+        }
+      ]
+    },
+    "JONCKHEERE.TERPSTRA": {
+      "category": "Srovnání skupin",
+      "summary": "Jonckheere-Terpstrův test monotónního trendu napříč ordinálními skupinami.",
+      "parameters": [
+        {
+          "sourceName": "kategorie",
+          "description": "ordinální kategorie (pořadí skupin dle vstupu)",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hodnoty",
+          "description": "měřené hodnoty",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "režim záhlaví: 0=auto, 1=první řádek je záhlaví, 2=bez záhlaví",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetekce záhlaví"
+            },
+            {
+              "value": "1",
+              "meaning": "první řádek je záhlaví"
+            },
+            {
+              "value": "2",
+              "meaning": "vstup je bez záhlaví"
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "hladina významnosti",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "směr hypotézy: 0=oboustranná, -1=levostranná, 1=pravostranná",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "oboustranný test"
+            },
+            {
+              "value": "-1",
+              "meaning": "levostranný test"
+            },
+            {
+              "value": "1",
+              "meaning": "pravostranný test"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "section": "GROUPS",
+          "name": "group",
+          "description": "název skupiny"
+        },
+        {
+          "section": "GROUPS",
+          "name": "n",
+          "description": "počet pozorování ve skupině"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "J",
+          "description": "Jonckheere-Terpstrovo kritérium"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "E(J)",
+          "description": "střední hodnota kritéria za H0"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "Var(J)",
+          "description": "rozptyl kritéria za H0"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "z",
+          "description": "normalizované Z-skóre"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "α",
+          "description": "hladina významnosti"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "p",
+          "description": "p-hodnota testu"
+        }
+      ]
+    },
+    "UNSTACK.TABLE": {
+      "category": "Kvalitativní data",
+      "summary": "Převede kontingenční tabulku četností do zdrojového tvaru sloupec-řádek-četnost.",
+      "parameters": [
+        {
+          "sourceName": "table",
+          "description": "tabulka s řádkovými a sloupcovými kategoriemi",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasColumnTotal",
+          "description": "1=předpokládá poslední sloupec součet, 0=bez součtu",
+          "enumValues": [
+            {
+              "value": "1",
+              "meaning": "tabulka má součtový sloupec"
+            },
+            {
+              "value": "0",
+              "meaning": "tabulka je bez součtového sloupce"
+            }
+          ]
+        },
+        {
+          "sourceName": "hasRowTotal",
+          "description": "1=předpokládá poslední řádek součet, 0=bez součtu",
+          "enumValues": [
+            {
+              "value": "1",
+              "meaning": "tabulka má součtový řádek"
+            },
+            {
+              "value": "0",
+              "meaning": "tabulka je bez součtového řádku"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "section": "UNSTACK.TABLE",
+          "name": "column",
+          "description": "název sloupcové kategorie"
+        },
+        {
+          "section": "UNSTACK.TABLE",
+          "name": "row",
+          "description": "název řádkové kategorie"
+        },
+        {
+          "section": "UNSTACK.TABLE",
+          "name": "count",
+          "description": "četnost pro kombinaci row-column"
+        }
+      ]
     }
   },
   "en": {
@@ -3833,53 +4554,47 @@
     },
     "UNSTACK": {
       "category": "General",
-      "summary": "Converts a group-value table back into grouped columns.",
+      "summary": "Converts a group-value pair of columns into separate columns by group.",
       "parameters": [
         {
           "sourceName": "groups",
-          "description": "group/category column",
-          "enumValues": [],
-          "wizard": {
-            "kind": "range"
-          }
+          "description": "group labels column",
+          "enumValues": []
         },
         {
           "sourceName": "values",
           "description": "value column aligned with groups",
-          "enumValues": [],
-          "wizard": {
-            "kind": "range"
-          }
+          "enumValues": []
         },
         {
-          "sourceName": "has_header",
-          "description": "header mode code",
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
           "enumValues": [
             {
               "value": "0",
-              "meaning": "autodetect header",
-              "default": true
+              "meaning": "auto-detect header"
             },
             {
               "value": "1",
-              "meaning": "first row is a header",
-              "default": false
+              "meaning": "first row is header"
             },
             {
               "value": "2",
-              "meaning": "input has no header",
-              "default": false
+              "meaning": "input has no header"
             }
-          ],
-          "wizard": {
-            "kind": "select"
-          }
+          ]
         }
       ],
       "output": [
         {
-          "name": "category columns",
-          "description": "each category rendered as its own output column"
+          "section": "UNSTACK",
+          "name": "header row",
+          "description": "first row contains group names as output column headers"
+        },
+        {
+          "section": "UNSTACK",
+          "name": "data rows",
+          "description": "subsequent rows contain values grouped by columns"
         }
       ]
     },
@@ -5209,7 +5924,7 @@
       }
     },
     "T.TEST.1S": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs a one-sample t-test against a specified hypothetical mean.",
       "parameters": [
         {
@@ -5335,7 +6050,7 @@
       }
     },
     "PROP.TEST.1S": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs a one-sample proportion test.",
       "parameters": [
         {
@@ -5460,7 +6175,7 @@
       }
     },
     "WILCOXON.PAIRED": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs the Wilcoxon signed-rank test for dependent measurements.",
       "parameters": [
         {
@@ -5588,7 +6303,7 @@
       }
     },
     "WELCH.TEST.2S": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs Welch's two-sample t-test for two independent groups.",
       "parameters": [
         {
@@ -5732,7 +6447,7 @@
       }
     },
     "MANN.WHITNEY": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs the Mann-Whitney test for two independent groups.",
       "parameters": [
         {
@@ -5860,7 +6575,7 @@
       }
     },
     "CHISQ.GOF": {
-      "category": "Tests",
+      "category": "Categorical Data",
       "summary": "Performs the chi-square goodness-of-fit test.",
       "parameters": [
         {
@@ -5964,7 +6679,7 @@
       }
     },
     "ANOVA": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs one-way analysis of variance to compare means across three or more independent groups.",
       "parameters": [
         {
@@ -6008,7 +6723,7 @@
           }
         },
         {
-          "sourceName": "?",
+          "sourceName": "α",
           "description": "significance level for tests and post-hoc comparisons",
           "enumValues": [],
           "wizard": {
@@ -6187,7 +6902,7 @@
       }
     },
     "ANOVA.RM": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs one-way repeated-measures ANOVA across columns.",
       "parameters": [
         {
@@ -6377,7 +7092,7 @@
       }
     },
     "ANCOVA": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Performs ANCOVA with one factor and one or more covariates.",
       "parameters": [
         {
@@ -6425,7 +7140,7 @@
             },
             {
               "value": "3",
-              "meaning": "Scheff?",
+              "meaning": "Scheffe",
               "default": false
             },
             {
@@ -6440,7 +7155,7 @@
           }
         },
         {
-          "sourceName": "?",
+          "sourceName": "α",
           "description": "significance level",
           "enumValues": [],
           "wizard": {
@@ -6584,119 +7299,8 @@
         "required": true
       }
     },
-    "CONTINGENCY.T": {
-      "category": "Tests",
-      "summary": "Analyzes a contingency table entered directly as a frequency matrix.",
-      "parameters": [
-        {
-          "sourceName": "table",
-          "description": "matrix of observed frequencies",
-          "enumValues": [],
-          "wizard": {
-            "kind": "range"
-          }
-        },
-        {
-          "sourceName": "has_header",
-          "description": "table label mode",
-          "enumValues": [
-            {
-              "value": "0",
-              "meaning": "autodetect labels",
-              "default": true
-            },
-            {
-              "value": "1",
-              "meaning": "top row and left column are labels",
-              "default": false
-            },
-            {
-              "value": "2",
-              "meaning": "table has no labels",
-              "default": false
-            }
-          ],
-          "wizard": {
-            "kind": "select"
-          }
-        },
-        {
-          "sourceName": "alpha",
-          "description": "significance level",
-          "enumValues": [],
-          "wizard": {
-            "kind": "number",
-            "defaultValue": 0.05,
-            "validation": "probability",
-            "min": 0,
-            "max": 1,
-            "step": 0.01
-          }
-        }
-      ],
-      "output": [
-        {
-          "section": "Contingency tables",
-          "name": "observed",
-          "description": "observed frequencies including marginal totals"
-        },
-        {
-          "section": "Contingency tables",
-          "name": "expected",
-          "description": "expected frequencies under independence"
-        },
-        {
-          "section": "Test summary",
-          "name": "n",
-          "description": "total frequency"
-        },
-        {
-          "section": "Test summary",
-          "name": "df",
-          "description": "chi-square test degrees of freedom"
-        },
-        {
-          "section": "Test summary",
-          "name": "α",
-          "description": "significance level"
-        },
-        {
-          "section": "Test summary",
-          "name": "χ²",
-          "description": "chi-square test statistic"
-        },
-        {
-          "section": "Test summary",
-          "name": "χ²ᶜʳⁱᵗ(1−α)",
-          "description": "critical value of the chi-square distribution"
-        },
-        {
-          "section": "Test summary",
-          "name": "p",
-          "description": "p-value for the independence test"
-        },
-        {
-          "section": "Association measures",
-          "name": "Pearson C",
-          "description": "Pearson contingency coefficient"
-        },
-        {
-          "section": "Association measures",
-          "name": "Cramér V",
-          "description": "Cramer V, association strength adjusted for contingency-table dimensions"
-        },
-        {
-          "section": "Association measures",
-          "name": "phi",
-          "description": "phi coefficient for 2 x 2 tables"
-        }
-      ],
-      "auth": {
-        "required": true
-      }
-    },
     "CONTINGENCY": {
-      "category": "Tests",
+      "category": "Categorical Data",
       "summary": "Builds and analyzes a contingency table from grouped data.",
       "parameters": [
         {
@@ -6823,7 +7427,7 @@
       }
     },
     "CORREL.SPEARMAN": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Computes Spearman correlation and its significance test.",
       "parameters": [
         {
@@ -6939,7 +7543,7 @@
       }
     },
     "CORREL.MATRIX": {
-      "category": "Tests",
+      "category": "Group Comparisons",
       "summary": "Builds a correlation matrix including p-values and significance markers.",
       "parameters": [
         {
@@ -7057,6 +7661,851 @@
       "auth": {
         "required": true
       }
+    },
+    "REGRESSION": {
+      "category": "Regression",
+      "summary": "Fits a linear regression model (OLS) and returns a full model report.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "dependent variable range (y column)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "predictor matrix (x)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "options",
+          "description": "model options (e.g. intercept=1 or intercept=0)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level for intervals and tests",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "MODEL SUMMARY",
+          "description": "model summary including counts, R², Adj. R², RMSE, AIC, BIC"
+        },
+        {
+          "name": "ANOVA",
+          "description": "model ANOVA block (SS, df, MS, F, p)"
+        },
+        {
+          "name": "COEFFICIENTS",
+          "description": "model coefficients with SE, t, p and confidence interval"
+        },
+        {
+          "name": "DIAGNOSTICS",
+          "description": "basic diagnostics (Durbin-Watson)"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "REGRESSION.PREDICT": {
+      "category": "Regression",
+      "summary": "Fits linear regression and returns predictions for new x values.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "dependent variable range (y column)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "predictor matrix for fitting",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xNewRange",
+          "description": "new x values: either by rows or as one row/column sequence",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "options",
+          "description": "model options (e.g. intercept=1 or intercept=0)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level for confidence interval",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "row",
+          "description": "predicted case index"
+        },
+        {
+          "name": "prediction",
+          "description": "point estimate of y"
+        },
+        {
+          "name": "CI low",
+          "description": "lower confidence bound for mean prediction"
+        },
+        {
+          "name": "CI high",
+          "description": "upper confidence bound for mean prediction"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "REGRESSION.SELECT": {
+      "category": "Regression",
+      "summary": "Selects predictors for linear regression using forward/backward/stepwise strategy.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "dependent variable range (y column)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "candidate predictor matrix",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "method",
+          "description": "selection method: 0=forward, 1=backward, 2=stepwise",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "forward",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "backward",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "stepwise",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "criterion",
+          "description": "criterion: 0=adjr2, 1=aic, 2=bic",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "adjusted R²",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "AIC",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "BIC",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level for coefficient intervals and tests",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "options",
+          "description": "model options (e.g. intercept=1 or intercept=0)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "SELECTION SUMMARY",
+          "description": "summary of method and final selected model"
+        },
+        {
+          "name": "TRACE",
+          "description": "add/remove variable trace across selection steps"
+        },
+        {
+          "name": "COEFFICIENTS",
+          "description": "coefficients of the final selected model"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "TREND.FIT": {
+      "category": "Regression",
+      "summary": "Fits one trend model (linear/log/exp/power) and returns metrics.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "dependent variable y",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "independent variable x",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "modelType",
+          "description": "model type: 0=linear, 1=log, 2=exp, 3=power",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "linear",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "log",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "exp",
+              "default": false
+            },
+            {
+              "value": "3",
+              "meaning": "power",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level (reserved for unified API)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "TREND FIT",
+          "description": "model summary and metrics"
+        },
+        {
+          "name": "COEFFICIENTS",
+          "description": "trend model coefficients"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "TREND.COMPARE": {
+      "category": "Regression",
+      "summary": "Compares multiple trend models on the same dataset.",
+      "parameters": [
+        {
+          "sourceName": "yRange",
+          "description": "dependent variable y",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "xRange",
+          "description": "independent variable x",
+          "enumValues": [],
+          "wizard": {
+            "kind": "range"
+          }
+        },
+        {
+          "sourceName": "modelList",
+          "description": "model list separated by ; or , (e.g. linear;log;exp;power)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "text"
+          }
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level (reserved for unified API)",
+          "enumValues": [],
+          "wizard": {
+            "kind": "number",
+            "defaultValue": 0.05,
+            "validation": "probability",
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "autodetect header",
+              "default": true
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header",
+              "default": false
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header",
+              "default": false
+            }
+          ],
+          "wizard": {
+            "kind": "select"
+          }
+        }
+      ],
+      "output": [
+        {
+          "name": "model",
+          "description": "trend model name"
+        },
+        {
+          "name": "equation",
+          "description": "estimated model equation"
+        },
+        {
+          "name": "R²",
+          "description": "coefficient of determination"
+        },
+        {
+          "name": "Adj. R²",
+          "description": "adjusted coefficient of determination"
+        },
+        {
+          "name": "RMSE",
+          "description": "model standard error estimate"
+        },
+        {
+          "name": "AIC/BIC",
+          "description": "information criteria"
+        }
+      ],
+      "auth": {
+        "required": true
+      }
+    },
+    "KRUSKAL.WALLIS": {
+      "category": "Group Comparisons",
+      "summary": "Kruskal-Wallis ANOVA for three or more independent groups.",
+      "parameters": [
+        {
+          "sourceName": "categories",
+          "description": "group categories (single column)",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "measured values",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "auto-detect header"
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header"
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header"
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "section": "GROUPS",
+          "name": "group",
+          "description": "group name"
+        },
+        {
+          "section": "GROUPS",
+          "name": "n",
+          "description": "group sample size"
+        },
+        {
+          "section": "GROUPS",
+          "name": "rank_sum",
+          "description": "sum of ranks for the group"
+        },
+        {
+          "section": "GROUPS",
+          "name": "mean_rank",
+          "description": "mean rank for the group"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "H",
+          "description": "Kruskal-Wallis statistic"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "df",
+          "description": "degrees of freedom (k-1)"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "α",
+          "description": "significance level"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "chi-square critical value"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "p",
+          "description": "test p-value"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "α",
+          "description": "effect-size estimate"
+        }
+      ]
+    },
+    "FRIEDMAN.ANOVA": {
+      "category": "Group Comparisons",
+      "summary": "Friedman ANOVA for repeated measures (blocked design).",
+      "parameters": [
+        {
+          "sourceName": "values",
+          "description": "value matrix: rows are blocks/subjects, columns are conditions",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "auto-detect header"
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header"
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header"
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        }
+      ],
+      "output": [
+        {
+          "section": "CONDITIONS",
+          "name": "condition",
+          "description": "condition/column name"
+        },
+        {
+          "section": "CONDITIONS",
+          "name": "n",
+          "description": "number of blocks/subjects"
+        },
+        {
+          "section": "CONDITIONS",
+          "name": "rank_sum",
+          "description": "sum of condition ranks"
+        },
+        {
+          "section": "CONDITIONS",
+          "name": "mean_rank",
+          "description": "mean condition rank"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "Q",
+          "description": "Friedman statistic"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "df",
+          "description": "degrees of freedom (k-1)"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "α",
+          "description": "significance level"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "χ²ᶜʳⁱᵗ(1−α)",
+          "description": "chi-square critical value"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "p",
+          "description": "test p-value"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "Kendall.W",
+          "description": "Kendall W concordance coefficient"
+        }
+      ]
+    },
+    "JONCKHEERE.TERPSTRA": {
+      "category": "Group Comparisons",
+      "summary": "Jonckheere-Terpstra test of monotonic trend across ordered groups.",
+      "parameters": [
+        {
+          "sourceName": "categories",
+          "description": "ordinal categories (group order follows input)",
+          "enumValues": []
+        },
+        {
+          "sourceName": "values",
+          "description": "measured values",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasHeader",
+          "description": "header mode: 0=auto, 1=first row is header, 2=no header",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "auto-detect header"
+            },
+            {
+              "value": "1",
+              "meaning": "first row is header"
+            },
+            {
+              "value": "2",
+              "meaning": "input has no header"
+            }
+          ]
+        },
+        {
+          "sourceName": "alpha",
+          "description": "significance level",
+          "enumValues": []
+        },
+        {
+          "sourceName": "direction",
+          "description": "hypothesis tail: 0=two-sided, -1=left, 1=right",
+          "enumValues": [
+            {
+              "value": "0",
+              "meaning": "two-sided test"
+            },
+            {
+              "value": "-1",
+              "meaning": "left-tailed test"
+            },
+            {
+              "value": "1",
+              "meaning": "right-tailed test"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "section": "GROUPS",
+          "name": "group",
+          "description": "group name"
+        },
+        {
+          "section": "GROUPS",
+          "name": "n",
+          "description": "group sample size"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "J",
+          "description": "Jonckheere-Terpstra statistic"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "E(J)",
+          "description": "expected statistic under H0"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "Var(J)",
+          "description": "variance under H0"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "z",
+          "description": "standardized Z score"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "α",
+          "description": "significance level"
+        },
+        {
+          "section": "SUMMARY",
+          "name": "p",
+          "description": "test p-value"
+        }
+      ]
+    },
+    "UNSTACK.TABLE": {
+      "category": "Categorical Data",
+      "summary": "Converts a contingency-style frequency table into source rows (column-row-count).",
+      "parameters": [
+        {
+          "sourceName": "table",
+          "description": "table with row and column categories",
+          "enumValues": []
+        },
+        {
+          "sourceName": "hasColumnTotal",
+          "description": "1=last column is total, 0=no total column",
+          "enumValues": [
+            {
+              "value": "1",
+              "meaning": "table includes total column"
+            },
+            {
+              "value": "0",
+              "meaning": "table has no total column"
+            }
+          ]
+        },
+        {
+          "sourceName": "hasRowTotal",
+          "description": "1=last row is total, 0=no total row",
+          "enumValues": [
+            {
+              "value": "1",
+              "meaning": "table includes total row"
+            },
+            {
+              "value": "0",
+              "meaning": "table has no total row"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "section": "UNSTACK.TABLE",
+          "name": "column",
+          "description": "column category name"
+        },
+        {
+          "section": "UNSTACK.TABLE",
+          "name": "row",
+          "description": "row category name"
+        },
+        {
+          "section": "UNSTACK.TABLE",
+          "name": "count",
+          "description": "frequency for the row-column combination"
+        }
+      ]
     }
   }
 }

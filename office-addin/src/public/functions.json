@@ -193,6 +193,32 @@
       }
     },
     {
+      "id": "UNSTACK_TABLE",
+      "name": "UNSTACK.TABLE",
+      "description": "Converts a contingency-style table into column/row/count source rows.",
+      "parameters": [
+        {
+          "name": "table",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "hasColumnTotal",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "hasRowTotal",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
       "id": "PARSE_NUMBER",
       "name": "PARSE.NUMBER",
       "description": "Converts numeric text with locale-aware decimal and thousands separators into a number.",
@@ -673,6 +699,99 @@
       }
     },
     {
+      "id": "KRUSKAL_WALLIS",
+      "name": "KRUSKAL.WALLIS",
+      "description": "Performs the Kruskal-Wallis ANOVA for grouped data.",
+      "parameters": [
+        {
+          "name": "categories",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "values",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
+      "id": "FRIEDMAN_ANOVA",
+      "name": "FRIEDMAN.ANOVA",
+      "description": "Performs the Friedman ANOVA for repeated blocks.",
+      "parameters": [
+        {
+          "name": "values",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
+      "id": "JONCKHEERE_TERPSTRA",
+      "name": "JONCKHEERE.TERPSTRA",
+      "description": "Performs the Jonckheere-Terpstra ordered-trend test.",
+      "parameters": [
+        {
+          "name": "categories",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "values",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "direction",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
       "id": "CHISQ_GOF",
       "name": "CHISQ.GOF",
       "description": "Performs the chi-square goodness-of-fit test.",
@@ -782,6 +901,201 @@
       }
     },
     {
+      "id": "REGRESSION",
+      "name": "REGRESSION",
+      "description": "Fits a linear regression model and returns a full report.",
+      "parameters": [
+        {
+          "name": "yRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "xRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "options",
+          "type": "any",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
+      "id": "REGRESSION_PREDICT",
+      "name": "REGRESSION.PREDICT",
+      "description": "Fits a linear regression model and predicts values for new rows.",
+      "parameters": [
+        {
+          "name": "yRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "xRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "xNewRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "options",
+          "type": "any",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
+      "id": "REGRESSION_SELECT",
+      "name": "REGRESSION.SELECT",
+      "description": "Selects predictors for linear regression using forward/backward/stepwise strategy.",
+      "parameters": [
+        {
+          "name": "yRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "xRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "method",
+          "type": "any",
+          "optional": true
+        },
+        {
+          "name": "criterion",
+          "type": "any",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "options",
+          "type": "any",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
+      "id": "TREND_FIT",
+      "name": "TREND.FIT",
+      "description": "Fits one trend model (linear/log/exp/power) and returns fit metrics.",
+      "parameters": [
+        {
+          "name": "yRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "xRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "modelType",
+          "type": "any",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
+      "id": "TREND_COMPARE",
+      "name": "TREND.COMPARE",
+      "description": "Compares multiple trend models on the same data.",
+      "parameters": [
+        {
+          "name": "yRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "xRange",
+          "type": "any",
+          "dimensionality": "matrix"
+        },
+        {
+          "name": "modelList",
+          "type": "any",
+          "optional": true
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "hasHeader",
+          "type": "number",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      }
+    },
+    {
       "id": "ANOVA_RM",
       "name": "ANOVA.RM",
       "description": "Performs one-way repeated-measures ANOVA across columns.",
@@ -844,32 +1158,6 @@
         },
         {
           "name": "hasHeader",
-          "type": "number",
-          "optional": true
-        }
-      ],
-      "result": {
-        "type": "any",
-        "dimensionality": "matrix"
-      }
-    },
-    {
-      "id": "CONTINGENCY_T",
-      "name": "CONTINGENCY.T",
-      "description": "Analyzes a contingency table entered directly as a frequency matrix.",
-      "parameters": [
-        {
-          "name": "table",
-          "type": "any",
-          "dimensionality": "matrix"
-        },
-        {
-          "name": "hasHeader",
-          "type": "number",
-          "optional": true
-        },
-        {
-          "name": "alpha",
           "type": "number",
           "optional": true
         }

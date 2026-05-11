@@ -448,16 +448,28 @@ select:focus {
   gap: 8px;
 }
 
-.wizard-control:has(.wizard-variable-select) {
-  grid-template-columns: minmax(130px, 0.45fr) minmax(0, 1fr) auto;
-}
-
 .wizard-control:not(:has(.wizard-small-button)) {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.wizard-control:has(.wizard-variable-select):not(:has(.wizard-small-button)) {
-  grid-template-columns: minmax(130px, 0.45fr) minmax(0, 1fr);
+.wizard-control.has-variable-select {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "range button"
+    "dataset dataset";
+}
+
+.wizard-control.has-variable-select input,
+.wizard-control.has-variable-select select:not(.wizard-variable-select) {
+  grid-area: range;
+}
+
+.wizard-control.has-variable-select .wizard-small-button {
+  grid-area: button;
+}
+
+.wizard-control.has-variable-select .wizard-variable-select {
+  grid-area: dataset;
 }
 
 .wizard-actions {

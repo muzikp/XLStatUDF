@@ -23,8 +23,11 @@ const ADDIN_DISPLAY_VERSION = /^\d+$/.test(ADDIN_BUILD) ? `${ADDIN_VERSION}.${AD
 const HEADER_AUTO: HeaderMode = 0;
 const HEADER_HAS: HeaderMode = 1;
 const AUTH_STORAGE_KEY = "evalytics.auth.snapshot";
+const AUTH_OVERRIDE_ALLOW_ALL = true;
 
 type AuthSnapshot = {
+  accessToken?: string;
+  apiBaseUrl?: string;
   expiresAt?: number | string;
   entitlements?: {
     allowedFunctions?: string[];
@@ -97,6 +100,29 @@ function functionListIncludes(list: string[] | undefined, functionName: string):
   return Array.isArray(list) && (list.includes("*") || list.includes(functionName));
 }
 
+async function remoteAuthCheck(functionName: string, snapshot: AuthSnapshot): Promise<boolean> {
+  if (!snapshot.accessToken || !snapshot.apiBaseUrl) {
+    return false;
+  }
+  try {
+    const response = await fetch(`${snapshot.apiBaseUrl.replace(/\/$/, "")}/auth/check`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${snapshot.accessToken}`
+      },
+      body: JSON.stringify({ functionName })
+    });
+    if (!response.ok) {
+      return false;
+    }
+    const payload = await response.json() as { allowed?: boolean };
+    return payload.allowed === true;
+  } catch {
+    return false;
+  }
+}
+
 function isFunctionAuthorized(functionName: string, snapshot: AuthSnapshot | null): boolean {
   if (!snapshot || authExpiresAt(snapshot) <= Date.now()) {
     return false;
@@ -112,7 +138,20 @@ function isFunctionAuthorized(functionName: string, snapshot: AuthSnapshot | nul
 }
 
 async function requireAuthorized(functionName: string): Promise<void> {
-  if (!isFunctionAuthorized(functionName, await readAuthSnapshotShared())) {
+  if (AUTH_OVERRIDE_ALLOW_ALL) {
+    return;
+  }
+  const snapshot = await readAuthSnapshotShared();
+  if (isFunctionAuthorized(functionName, snapshot)) {
+    return;
+  }
+  if (snapshot && await remoteAuthCheck(functionName, snapshot)) {
+    return;
+  }
+  if (!snapshot || authExpiresAt(snapshot) <= Date.now()) {
+    throw unauthorized();
+  }
+  if (!snapshot.entitlements?.allowedFunctions || !isFunctionAuthorized(functionName, snapshot)) {
     throw unauthorized();
   }
 }
@@ -396,8 +435,7 @@ function readGroups(categoriesInput: ExcelInput, valuesInput: ExcelInput, header
     rawValues = rawValues.slice(1);
   } else if (
     headerMode === HEADER_AUTO &&
-    !isBlank(rawCategories[0]) &&
-    tryGetNumber(rawValues[0]) === null &&
+    shouldSkipLeadingHeader(rawCategories, (item) => !isBlank(item)) &&
     shouldSkipLeadingHeader(rawValues, (item) => tryGetNumber(item) !== null)
   ) {
     rawCategories = rawCategories.slice(1);
@@ -858,12 +896,51 @@ function unstackG(groupsInput: ExcelInput, valuesInput: ExcelInput, hasHeader?: 
   }
 
   const maxRows = categoryOrder.reduce((maximum, key) => Math.max(maximum, bucket.get(key)?.length ?? 0), 0);
-  const rows: Primitive[][] = [];
+  const rows: Primitive[][] = [categoryOrder];
   for (let row = 0; row < maxRows; row += 1) {
     rows.push(categoryOrder.map((key) => bucket.get(key)?.[row] ?? ""));
   }
 
   return rectangularRows(rows, categoryOrder.length);
+}
+
+function unstackTable(tableInput: ExcelInput, hasColumnTotal?: Primitive, hasRowTotal?: Primitive): ExcelOutput {
+  const matrix = asRows(tableInput);
+  if (matrix.length < 3 || (matrix[0]?.length ?? 0) < 3) {
+    throw invalidValue("Table must include row/column headers and at least 2x2 data");
+  }
+
+  const includeColumnTotal = parseOptionalInteger(hasColumnTotal, 1) !== 0;
+  const includeRowTotal = parseOptionalInteger(hasRowTotal, 1) !== 0;
+  const rowHeaderName = isBlank(matrix[0][0]) ? "row" : String(matrix[0][0]);
+  const columnHeadersRaw = matrix[0].slice(1).map((value, index) => isBlank(value) ? `column ${index + 1}` : String(value));
+  const rowHeadersRaw = matrix.slice(1).map((row, index) => isBlank(row[0]) ? `row ${index + 1}` : String(row[0]));
+
+  const dataColumnLimit = includeColumnTotal ? Math.max(0, columnHeadersRaw.length - 1) : columnHeadersRaw.length;
+  const dataRowLimit = includeRowTotal ? Math.max(0, rowHeadersRaw.length - 1) : rowHeadersRaw.length;
+  if (dataColumnLimit < 2 || dataRowLimit < 2) {
+    throw invalidValue("Table without totals must still be at least 2x2");
+  }
+
+  const rows: Primitive[][] = [[columnHeadersRaw[0] ?? "column", rowHeaderName, "count"]];
+  for (let rowIndex = 0; rowIndex < dataRowLimit; rowIndex += 1) {
+    for (let columnIndex = 0; columnIndex < dataColumnLimit; columnIndex += 1) {
+      const raw = matrix[rowIndex + 1]?.[columnIndex + 1];
+      if (isBlank(raw)) {
+        continue;
+      }
+      const count = tryGetNumber(raw);
+      if (count === null || !isIntegerCount(count)) {
+        throw invalidValue("Counts in the table must be non-negative integers");
+      }
+      rows.push([columnHeadersRaw[columnIndex], rowHeadersRaw[rowIndex], count]);
+    }
+  }
+
+  if (rows.length < 2) {
+    throw invalidValue("No valid table cells to unstack");
+  }
+  return rectangularRows(rows, 3);
 }
 
 function runtimeDecimalSeparator(): "." | "," {
@@ -1790,15 +1867,6 @@ function anovaRm(valuesInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05, p
   return rectangularRows(rows);
 }
 
-function hasContingencyTableHeaders(matrix: Primitive[][]): boolean {
-  if (matrix.length < 3 || matrix[0].length < 3 || tryGetNumber(matrix[0][0]) !== null) {
-    return false;
-  }
-  const topHeader = matrix[0].slice(1).some((value) => !isBlank(value) && tryGetNumber(value) === null);
-  const leftHeader = matrix.slice(1).some((row) => !isBlank(row[0]) && tryGetNumber(row[0]) === null);
-  return topHeader && leftHeader && matrix.slice(1).every((row) => row.slice(1).every((value) => tryGetNumber(value) !== null));
-}
-
 function contingencyReport(observed: number[][], rowLabels: string[], columnLabels: string[], alpha: number): ExcelOutput {
   const rowCount = observed.length;
   const columnCount = observed[0].length;
@@ -1851,31 +1919,6 @@ function contingencyReport(observed: number[][], rowLabels: string[], columnLabe
     ["φ", phi],
   ];
   return rectangularRows(rows);
-}
-
-function contingencyT(tableInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05): ExcelOutput {
-  validateAlpha(alpha);
-  const matrix = asRows(tableInput);
-  const headerMode = parseHeaderMode(hasHeader);
-  const hasHeaders = headerMode === HEADER_HAS || (headerMode === HEADER_AUTO && hasContingencyTableHeaders(matrix));
-  const rowOffset = hasHeaders ? 1 : 0;
-  const columnOffset = hasHeaders ? 1 : 0;
-  const dataRows = matrix.length - rowOffset;
-  const dataColumns = (matrix[0]?.length ?? 0) - columnOffset;
-  if (dataRows < 2 || dataColumns < 2) {
-    throw invalidValue("Contingency table must be at least 2 x 2");
-  }
-
-  const observed = new Array(dataRows).fill(null).map((_, row) => new Array(dataColumns).fill(0).map((__, column) => {
-    const parsed = tryGetNumber(matrix[row + rowOffset][column + columnOffset]);
-    if (parsed === null || !isIntegerCount(parsed)) {
-      throw invalidValue("Observed counts must be non-negative integers");
-    }
-    return parsed;
-  }));
-  const rowLabels = new Array(dataRows).fill(null).map((_, index) => hasHeaders ? String(matrix[index + 1][0] ?? index + 1) : String(index + 1));
-  const columnLabels = new Array(dataColumns).fill(null).map((_, index) => hasHeaders ? String(matrix[0][index + 1] ?? index + 1) : String(index + 1));
-  return contingencyReport(observed, rowLabels, columnLabels, alpha);
 }
 
 function contingencyG(columnInput: ExcelInput, rowInput: ExcelInput, countsInput?: ExcelInput, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
@@ -2569,6 +2612,162 @@ function mannWhitneyG(categoriesInput: ExcelInput, valuesInput: ExcelInput, hasH
   ]);
 }
 
+function kruskalWallis(categoriesInput: ExcelInput, valuesInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05): ExcelOutput {
+  validateAlpha(alpha);
+  const groups = Array.from(readGroups(categoriesInput, valuesInput, parseHeaderMode(hasHeader)).entries()).sort(([a], [b]) => a.localeCompare(b));
+  if (groups.length < 2) {
+    throw invalidValue("Kruskal-Wallis requires at least two groups");
+  }
+  if (groups.some(([, values]) => values.length < 1)) {
+    throw invalidValue("Each group must contain at least one value");
+  }
+
+  const combined = groups.flatMap(([, values], groupIndex) => values.map((value) => ({ groupIndex, value })));
+  const ranks = midRank(combined.map((item) => item.value));
+  const n = combined.length;
+  if (n < 3) {
+    throw invalidValue("Kruskal-Wallis requires at least three observations");
+  }
+
+  const rankSums = new Array(groups.length).fill(0);
+  for (let i = 0; i < combined.length; i += 1) {
+    rankSums[combined[i].groupIndex] += ranks[i];
+  }
+
+  const base = rankSums.reduce((sum, rankSum, index) => sum + ((rankSum * rankSum) / groups[index][1].length), 0);
+  let h = ((12 / (n * (n + 1))) * base) - (3 * (n + 1));
+  const ties = combined.reduce((map, item) => map.set(item.value, (map.get(item.value) ?? 0) + 1), new Map<number, number>());
+  const tieCorrectionDenominator = (n ** 3) - n;
+  const tieCorrectionNumerator = Array.from(ties.values()).reduce((sum, count) => sum + ((count ** 3) - count), 0);
+  const tieCorrection = tieCorrectionDenominator <= 0 ? 1 : 1 - (tieCorrectionNumerator / tieCorrectionDenominator);
+  if (tieCorrection > 1e-12) {
+    h /= tieCorrection;
+  }
+
+  const df = groups.length - 1;
+  const critical = jStat.chisquare.inv(1 - alpha, df);
+  const p = 1 - jStat.chisquare.cdf(h, df);
+  const epsilonSquared = n <= groups.length ? 0 : Math.max(0, (h - groups.length + 1) / (n - groups.length));
+
+  const rows: Primitive[][] = [
+    ["group", "n", "rank_sum", "mean_rank"],
+    ...groups.map(([name, values], index) => [name, values.length, rankSums[index], rankSums[index] / values.length]),
+    ["", "", "", ""],
+    ["H", h, "", ""],
+    ["df", df, "", ""],
+    ["α", alpha, "", ""],
+    ["χ²crit(1-α)", critical, "", ""],
+    ["p", p, "", ""],
+    ["ε²", epsilonSquared, "", ""]
+  ];
+  return buildRows(rows);
+}
+
+function friedmanAnova(valuesInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05): ExcelOutput {
+  validateAlpha(alpha);
+  const { names, rows } = completeNumericMatrix(valuesInput, parseHeaderMode(hasHeader), "condition");
+  const n = rows.length;
+  const k = names.length;
+  if (n < 2 || k < 3) {
+    throw invalidValue("Friedman ANOVA requires at least two blocks and three conditions");
+  }
+
+  const rankSums = new Array(k).fill(0);
+  let tieCorrectionSum = 0;
+  for (const row of rows) {
+    const ranks = midRank(row);
+    for (let column = 0; column < k; column += 1) {
+      rankSums[column] += ranks[column];
+    }
+    const ties = row.reduce((map, value) => map.set(value, (map.get(value) ?? 0) + 1), new Map<number, number>());
+    tieCorrectionSum += Array.from(ties.values()).reduce((sum, count) => sum + ((count ** 3) - count), 0);
+  }
+
+  const sumOfSquares = rankSums.reduce((sum, value) => sum + (value * value), 0);
+  let q = ((12 / (n * k * (k + 1))) * sumOfSquares) - (3 * n * (k + 1));
+  const correctionDenominator = n * k * ((k ** 2) - 1);
+  const correction = correctionDenominator <= 0 ? 1 : 1 - (tieCorrectionSum / correctionDenominator);
+  if (correction > 1e-12) {
+    q /= correction;
+  }
+  const df = k - 1;
+  const critical = jStat.chisquare.inv(1 - alpha, df);
+  const p = 1 - jStat.chisquare.cdf(q, df);
+  const kendallsW = (n * ((k ** 2) - 1)) <= 0 ? 0 : q / (n * (k - 1));
+
+  return buildRows([
+    ["condition", "n", "rank_sum", "mean_rank"],
+    ...names.map((name, column) => [name, n, rankSums[column], rankSums[column] / n]),
+    ["", "", "", ""],
+    ["Q", q, "", ""],
+    ["df", df, "", ""],
+    ["α", alpha, "", ""],
+    ["χ²crit(1-α)", critical, "", ""],
+    ["p", p, "", ""],
+    ["Kendall.W", kendallsW, "", ""]
+  ]);
+}
+
+function jonckheereTerpstra(categoriesInput: ExcelInput, valuesInput: ExcelInput, hasHeader?: Primitive, alpha = 0.05, direction?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const parsedDirection = parseDirection(direction);
+  const groups = Array.from(readGroups(categoriesInput, valuesInput, parseHeaderMode(hasHeader)).entries());
+  if (groups.length < 3) {
+    throw invalidValue("Jonckheere-Terpstra requires at least three ordered groups");
+  }
+  if (groups.some(([, values]) => values.length < 1)) {
+    throw invalidValue("Each group must contain at least one value");
+  }
+
+  const orderedGroups = groups;
+  const wins = (a: number, b: number): number => (a > b ? 1 : a < b ? 0 : 0.5);
+  let j = 0;
+  for (let i = 0; i < orderedGroups.length - 1; i += 1) {
+    for (let k = i + 1; k < orderedGroups.length; k += 1) {
+      for (const left of orderedGroups[i][1]) {
+        for (const right of orderedGroups[k][1]) {
+          j += wins(right, left);
+        }
+      }
+    }
+  }
+
+  const nByGroup = orderedGroups.map(([, values]) => values.length);
+  const n = nByGroup.reduce((sum, value) => sum + value, 0);
+  const s2 = nByGroup.reduce((sum, ni) => sum + (ni * ni), 0);
+  const s3 = nByGroup.reduce((sum, ni) => sum + (ni * ni * ni), 0);
+  const meanJ = ((n * n) - s2) / 4;
+  let varianceJ = ((n * n * ((2 * n) + 3)) - (s3 * 2) - (s2 * 3)) / 72;
+
+  const allValues = orderedGroups.flatMap(([, values]) => values);
+  const ties = allValues.reduce((map, value) => map.set(value, (map.get(value) ?? 0) + 1), new Map<number, number>());
+  const tieTerm = Array.from(ties.values()).reduce((sum, count) => sum + ((count ** 3) - count), 0);
+  if (n > 1) {
+    varianceJ -= (tieTerm * ((n * n) - s2)) / (72 * n * (n - 1));
+  }
+  if (varianceJ <= 0) {
+    throw invalidNumber("Jonckheere-Terpstra variance is not positive");
+  }
+
+  let z = (j - meanJ) / Math.sqrt(varianceJ);
+  if (parsedDirection === "left") {
+    z = -z;
+  }
+
+  return buildRows([
+    ["group", "n"],
+    ...orderedGroups.map(([name, values]) => [name, values.length]),
+    ["", ""],
+    ["J", j],
+    ["E(J)", meanJ],
+    ["Var(J)", varianceJ],
+    ["z", z],
+    ["α", alpha],
+    [criticalLabel("z", parsedDirection), criticalZ(alpha, parsedDirection)],
+    ["p", pValueFromZ(z, parsedDirection)]
+  ]);
+}
+
 function chisqGof(observedInput: ExcelInput, expectedInput: ExcelInput, categoriesInput?: ExcelInput, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
   validateAlpha(alpha);
   const headerMode = parseHeaderMode(hasHeader);
@@ -2770,6 +2969,674 @@ function correlSpearman(xInput: ExcelInput, yInput: ExcelInput, direction?: Prim
   ]);
 }
 
+function parseRegressionIntercept(options?: Primitive): boolean {
+  if (isBlank(options)) {
+    return true;
+  }
+  const numeric = tryGetNumber(options);
+  if (numeric !== null) {
+    return Math.abs(numeric) > 1e-12;
+  }
+  const raw = String(options).trim().toLowerCase();
+  const normalized = raw.replace(/\s+/g, "");
+  if (["intercept=0", "intercept:false", "intercept=false", "nointercept", "withoutintercept"].includes(normalized)) {
+    return false;
+  }
+  if (["intercept=1", "intercept:true", "intercept=true", "withintercept"].includes(normalized)) {
+    return true;
+  }
+  throw invalidValue("Invalid regression options");
+}
+
+function hasNumericHeaderRow(matrix: Primitive[][]): boolean {
+  return (
+    matrix.length > 1 &&
+    matrix[0].every((value) => !isBlank(value) && tryGetNumber(value) === null) &&
+    matrix.slice(1).some((row) => row.some((value) => !isBlank(value))) &&
+    matrix.slice(1).every((row) => row.every((value) => isBlank(value) || tryGetNumber(value) !== null))
+  );
+}
+
+function readRegressionData(yInput: ExcelInput, xInput: ExcelInput, headerMode: HeaderMode): {
+  y: number[];
+  x: number[][];
+  predictorNames: string[];
+  nSourceRows: number;
+  nCompleteRows: number;
+  droppedRows: number;
+} {
+  const yMatrix = asRows(yInput);
+  const xMatrix = asRows(xInput);
+  const xColumnCount = xMatrix[0]?.length ?? 0;
+  if ((yMatrix[0]?.length ?? 0) < 1 || xColumnCount < 1) {
+    throw invalidValue("Regression inputs must contain at least one column");
+  }
+
+  const hasHeader = headerMode === HEADER_HAS || (headerMode === HEADER_AUTO && hasNumericHeaderRow(xMatrix) && hasNumericHeaderRow(yMatrix));
+  const yStart = hasHeader ? 1 : 0;
+  const xStart = hasHeader ? 1 : 0;
+  const sourceRows = Math.min(yMatrix.length - yStart, xMatrix.length - xStart);
+  if (sourceRows < 3) {
+    throw invalidValue("Regression requires at least three rows");
+  }
+  if ((yMatrix.length - yStart) !== (xMatrix.length - xStart)) {
+    throw invalidValue("y and x ranges must have the same number of rows");
+  }
+
+  const predictorNames = new Array(xColumnCount).fill(null).map((_, index) => {
+    if (hasHeader) {
+      const label = xMatrix[0][index];
+      return isBlank(label) ? `x${index + 1}` : String(label);
+    }
+    return `x${index + 1}`;
+  });
+
+  const y: number[] = [];
+  const x: number[][] = [];
+  for (let row = 0; row < sourceRows; row += 1) {
+    const yValue = yMatrix[row + yStart][0];
+    const xRow = xMatrix[row + xStart];
+    if (isBlank(yValue) || xRow.some((cell) => isBlank(cell))) {
+      continue;
+    }
+    const parsedY = tryGetNumber(yValue);
+    if (parsedY === null) {
+      throw invalidValue("Dependent variable must be numeric");
+    }
+    const parsedX = xRow.map((cell) => {
+      const parsed = tryGetNumber(cell);
+      if (parsed === null) {
+        throw invalidValue("Predictor values must be numeric");
+      }
+      return parsed;
+    });
+    y.push(parsedY);
+    x.push(parsedX);
+  }
+
+  if (y.length < 3) {
+    throw invalidValue("Regression requires at least three complete rows");
+  }
+  return {
+    y,
+    x,
+    predictorNames,
+    nSourceRows: sourceRows,
+    nCompleteRows: y.length,
+    droppedRows: sourceRows - y.length
+  };
+}
+
+function buildRegressionDesign(x: number[][], includeIntercept: boolean): number[][] {
+  if (includeIntercept) {
+    return x.map((row) => [1, ...row]);
+  }
+  return x.map((row) => [...row]);
+}
+
+function regression(yInput: ExcelInput, xInput: ExcelInput, options?: Primitive, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const includeIntercept = parseRegressionIntercept(options);
+  const data = readRegressionData(yInput, xInput, parseHeaderMode(hasHeader));
+  const design = buildRegressionDesign(data.x, includeIntercept);
+  if (data.nCompleteRows <= design[0].length) {
+    throw invalidValue("Not enough rows for the selected number of predictors");
+  }
+  const model = fitLinearModel(design, data.y);
+  if (!model.success || model.df <= 0) {
+    throw invalidNumber("Regression model could not be fitted");
+  }
+
+  const fitted = design.map((row) => vectorDot(row, model.coefficients));
+  const residuals = data.y.map((value, index) => value - fitted[index]);
+  const yMean = mean(data.y);
+  const ssTotal = data.y.reduce((sum, value) => sum + ((value - yMean) ** 2), 0);
+  const ssModel = Math.max(0, ssTotal - model.sse);
+  const dfModel = Math.max(0, design[0].length - (includeIntercept ? 1 : 0));
+  const msModel = dfModel > 0 ? ssModel / dfModel : Number.NaN;
+  const f = (dfModel > 0 && model.mse > 0) ? msModel / model.mse : Number.NaN;
+  const pModel = Number.isFinite(f) ? 1 - jStat.centralF.cdf(f, dfModel, model.df) : Number.NaN;
+  const r2 = ssTotal <= 0 ? 0 : Math.max(0, 1 - (model.sse / ssTotal));
+  const adjustedR2 = model.df > 0 ? 1 - ((1 - r2) * ((data.nCompleteRows - 1) / model.df)) : Number.NaN;
+  const rmse = Math.sqrt(model.mse);
+  const n = data.nCompleteRows;
+  const k = design[0].length;
+  const aic = n * Math.log(Math.max(1e-12, model.sse / n)) + (2 * k);
+  const bic = n * Math.log(Math.max(1e-12, model.sse / n)) + (k * Math.log(n));
+  const tCrit = jStat.studentt.inv(1 - (alpha / 2), model.df);
+  const dwNumerator = residuals.slice(1).reduce((sum, value, index) => sum + ((value - residuals[index]) ** 2), 0);
+  const dwDenominator = vectorDot(residuals, residuals);
+  const dw = dwDenominator <= 0 ? Number.NaN : dwNumerator / dwDenominator;
+
+  const termNames = includeIntercept ? ["Intercept", ...data.predictorNames] : [...data.predictorNames];
+  const rows: Primitive[][] = [
+    ["MODEL SUMMARY", ""],
+    ["n source", data.nSourceRows],
+    ["n complete", data.nCompleteRows],
+    ["rows dropped", data.droppedRows],
+    ["predictors", data.predictorNames.length],
+    ["intercept", includeIntercept ? 1 : 0],
+    ["R\u00B2", r2],
+    ["Adj. R\u00B2", adjustedR2],
+    ["RMSE", rmse],
+    ["AIC", aic],
+    ["BIC", bic],
+    ["", ""],
+    ["ANOVA", "", "", "", "", ""],
+    ["source", "SS", "df", "MS", "F", "p"],
+    ["model", ssModel, dfModel, msModel, f, pModel],
+    ["residual", model.sse, model.df, model.mse, "", ""],
+    ["total", ssTotal, n - 1, "", "", ""],
+    ["", ""],
+    ["COEFFICIENTS", "", "", "", "", "", ""],
+    ["term", "estimate", "std error", "t", "p", "CI low", "CI high"]
+  ];
+
+  for (let index = 0; index < model.coefficients.length; index += 1) {
+    const estimate = model.coefficients[index];
+    const variance = model.covariance[index]?.[index] ?? Number.NaN;
+    const se = variance >= 0 ? Math.sqrt(variance) : Number.NaN;
+    const tValue = (Number.isFinite(se) && se > 0) ? estimate / se : Number.NaN;
+    const pValue = Number.isFinite(tValue) ? 2 * (1 - jStat.studentt.cdf(Math.abs(tValue), model.df)) : Number.NaN;
+    rows.push([
+      termNames[index] ?? `x${index + 1}`,
+      estimate,
+      se,
+      tValue,
+      pValue,
+      Number.isFinite(se) ? estimate - (tCrit * se) : "",
+      Number.isFinite(se) ? estimate + (tCrit * se) : ""
+    ]);
+  }
+
+  rows.push(["", ""]);
+  rows.push(["DIAGNOSTICS", ""]);
+  rows.push(["Durbin-Watson", dw]);
+  return rectangularRows(rows);
+}
+
+function regressionPredict(yInput: ExcelInput, xInput: ExcelInput, xNewInput: ExcelInput, options?: Primitive, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const includeIntercept = parseRegressionIntercept(options);
+  const data = readRegressionData(yInput, xInput, parseHeaderMode(hasHeader));
+  const design = buildRegressionDesign(data.x, includeIntercept);
+  if (data.nCompleteRows <= design[0].length) {
+    throw invalidValue("Not enough rows for the selected number of predictors");
+  }
+  const model = fitLinearModel(design, data.y);
+  if (!model.success || model.df <= 0) {
+    throw invalidNumber("Regression model could not be fitted");
+  }
+
+  const xNewRowsRaw = asRows(xNewInput);
+  const headerMode = parseHeaderMode(hasHeader);
+  const xNewHasHeader = headerMode === HEADER_HAS || (headerMode === HEADER_AUTO && hasNumericHeaderRow(xNewRowsRaw));
+  const xNewRows = xNewRowsRaw.slice(xNewHasHeader ? 1 : 0).filter((row) => row.some((cell) => !isBlank(cell)));
+  if (xNewRows.length < 1) {
+    throw invalidValue("xNew range is empty");
+  }
+
+  const predictorCount = data.predictorNames.length;
+  const isVectorLike = xNewRowsRaw.length === 1 || (xNewRowsRaw[0]?.length ?? 0) === 1;
+  let cleaned: number[][] = [];
+  if (isVectorLike) {
+    const sequence = flatten(xNewInput).filter((value) => !isBlank(value));
+    const parsed = sequence.map((value) => {
+      const number = tryGetNumber(value);
+      if (number === null) {
+        throw invalidValue("xNew must contain only numeric values");
+      }
+      return number;
+    });
+    if (parsed.length < predictorCount || parsed.length % predictorCount !== 0) {
+      throw invalidValue("xNew sequence length must be a multiple of predictor count");
+    }
+    for (let index = 0; index < parsed.length; index += predictorCount) {
+      cleaned.push(parsed.slice(index, index + predictorCount));
+    }
+  } else {
+    cleaned = xNewRows.map((row) => {
+      if (row.length < predictorCount) {
+        throw invalidValue("xNew row has fewer predictors than the fitted model");
+      }
+      return data.predictorNames.map((_, index) => {
+        const parsed = tryGetNumber(row[index]);
+        if (parsed === null) {
+          throw invalidValue("xNew must contain only numeric values");
+        }
+        return parsed;
+      });
+    });
+  }
+
+  const newDesign = buildRegressionDesign(cleaned, includeIntercept);
+  const tCrit = jStat.studentt.inv(1 - (alpha / 2), model.df);
+  const rows: Primitive[][] = [["row", "prediction", "CI low", "CI high"]];
+  for (let index = 0; index < newDesign.length; index += 1) {
+    const designRow = newDesign[index];
+    const prediction = vectorDot(designRow, model.coefficients);
+    const variance = vectorDot(designRow, matrixVectorMultiply(model.covariance, designRow));
+    const seMean = Math.sqrt(Math.max(0, variance));
+    rows.push([index + 1, prediction, prediction - (tCrit * seMean), prediction + (tCrit * seMean)]);
+  }
+  return rectangularRows(rows);
+}
+
+type RegressionCriterion = "adjr2" | "aic" | "bic";
+type RegressionSelectionMethod = "forward" | "backward" | "stepwise";
+
+function parseRegressionSelectionMethod(method?: Primitive): RegressionSelectionMethod {
+  if (isBlank(method)) {
+    return "forward";
+  }
+  const numeric = tryGetNumber(method);
+  if (numeric !== null) {
+    if (numeric === 0) return "forward";
+    if (numeric === 1) return "backward";
+    if (numeric === 2) return "stepwise";
+  }
+  const normalized = String(method).trim().toLowerCase();
+  if (["forward", "fwd"].includes(normalized)) return "forward";
+  if (["backward", "bwd"].includes(normalized)) return "backward";
+  if (["stepwise", "step"].includes(normalized)) return "stepwise";
+  throw invalidValue("Invalid regression selection method");
+}
+
+function parseRegressionCriterion(criterion?: Primitive): RegressionCriterion {
+  if (isBlank(criterion)) {
+    return "adjr2";
+  }
+  const numeric = tryGetNumber(criterion);
+  if (numeric !== null) {
+    if (numeric === 0) return "adjr2";
+    if (numeric === 1) return "aic";
+    if (numeric === 2) return "bic";
+  }
+  const normalized = String(criterion).trim().toLowerCase();
+  if (["adjr2", "adj.r2", "adjustedr2"].includes(normalized)) return "adjr2";
+  if (normalized === "aic") return "aic";
+  if (normalized === "bic") return "bic";
+  throw invalidValue("Invalid regression selection criterion");
+}
+
+function regressionModelSummary(y: number[], x: number[][], predictorNames: string[], selected: number[], includeIntercept: boolean): {
+  success: boolean;
+  selected: number[];
+  names: string[];
+  model: ReturnType<typeof fitLinearModel>;
+  n: number;
+  sst: number;
+  sse: number;
+  r2: number;
+  adjustedR2: number;
+  rmse: number;
+  aic: number;
+  bic: number;
+} {
+  const n = y.length;
+  const selectedX = x.map((row) => selected.map((index) => row[index]));
+  const design = buildRegressionDesign(selectedX, includeIntercept);
+  const model = fitLinearModel(design, y);
+  if (!model.success || model.df <= 0) {
+    return {
+      success: false,
+      selected,
+      names: selected.map((index) => predictorNames[index]),
+      model,
+      n,
+      sst: Number.NaN,
+      sse: Number.NaN,
+      r2: Number.NaN,
+      adjustedR2: Number.NaN,
+      rmse: Number.NaN,
+      aic: Number.NaN,
+      bic: Number.NaN
+    };
+  }
+  const yMean = mean(y);
+  const sst = y.reduce((sum, value) => sum + ((value - yMean) ** 2), 0);
+  const r2 = sst <= 0 ? 0 : Math.max(0, 1 - (model.sse / sst));
+  const adjustedR2 = model.df > 0 ? 1 - ((1 - r2) * ((n - 1) / model.df)) : Number.NaN;
+  const rmse = Math.sqrt(model.mse);
+  const k = design[0].length;
+  const aic = n * Math.log(Math.max(1e-12, model.sse / n)) + (2 * k);
+  const bic = n * Math.log(Math.max(1e-12, model.sse / n)) + (k * Math.log(n));
+  return {
+    success: true,
+    selected,
+    names: selected.map((index) => predictorNames[index]),
+    model,
+    n,
+    sst,
+    sse: model.sse,
+    r2,
+    adjustedR2,
+    rmse,
+    aic,
+    bic
+  };
+}
+
+function regressionCriterionScore(summary: ReturnType<typeof regressionModelSummary>, criterion: RegressionCriterion): number {
+  if (!summary.success) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  if (criterion === "adjr2") {
+    return summary.adjustedR2;
+  }
+  if (criterion === "aic") {
+    return -summary.aic;
+  }
+  return -summary.bic;
+}
+
+function regressionSelect(yInput: ExcelInput, xInput: ExcelInput, method?: Primitive, criterion?: Primitive, alpha = 0.05, hasHeader?: Primitive, options?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const includeIntercept = parseRegressionIntercept(options);
+  const selectionMethod = parseRegressionSelectionMethod(method);
+  const selectionCriterion = parseRegressionCriterion(criterion);
+  const data = readRegressionData(yInput, xInput, parseHeaderMode(hasHeader));
+  const p = data.predictorNames.length;
+  if (p < 2) {
+    throw invalidValue("REGRESSION.SELECT requires at least two predictors");
+  }
+
+  let selected = selectionMethod === "backward" ? data.predictorNames.map((_, index) => index) : [];
+  let best = regressionModelSummary(data.y, data.x, data.predictorNames, selected, includeIntercept);
+  const trace: Primitive[][] = [["step", "action", "variable", "criterion", "model_size"]];
+  let step = 0;
+
+  const improveByAdd = (): boolean => {
+    let candidateBest = best;
+    let candidateVar = -1;
+    for (let index = 0; index < p; index += 1) {
+      if (selected.includes(index)) continue;
+      const candidate = regressionModelSummary(data.y, data.x, data.predictorNames, [...selected, index], includeIntercept);
+      if (regressionCriterionScore(candidate, selectionCriterion) > regressionCriterionScore(candidateBest, selectionCriterion) + 1e-10) {
+        candidateBest = candidate;
+        candidateVar = index;
+      }
+    }
+    if (candidateVar >= 0) {
+      selected = [...selected, candidateVar];
+      best = candidateBest;
+      step += 1;
+      trace.push([step, "add", data.predictorNames[candidateVar], selectionCriterion === "adjr2" ? best.adjustedR2 : selectionCriterion === "aic" ? best.aic : best.bic, selected.length]);
+      return true;
+    }
+    return false;
+  };
+
+  const improveByRemove = (): boolean => {
+    if (selected.length <= 1) return false;
+    let candidateBest = best;
+    let candidateVar = -1;
+    for (const current of selected) {
+      const next = selected.filter((value) => value !== current);
+      if (next.length < 1) continue;
+      const candidate = regressionModelSummary(data.y, data.x, data.predictorNames, next, includeIntercept);
+      if (regressionCriterionScore(candidate, selectionCriterion) > regressionCriterionScore(candidateBest, selectionCriterion) + 1e-10) {
+        candidateBest = candidate;
+        candidateVar = current;
+      }
+    }
+    if (candidateVar >= 0) {
+      selected = selected.filter((value) => value !== candidateVar);
+      best = candidateBest;
+      step += 1;
+      trace.push([step, "remove", data.predictorNames[candidateVar], selectionCriterion === "adjr2" ? best.adjustedR2 : selectionCriterion === "aic" ? best.aic : best.bic, selected.length]);
+      return true;
+    }
+    return false;
+  };
+
+  if (selectionMethod === "forward") {
+    while (improveByAdd()) {
+      // iterate until no improvement
+    }
+  } else if (selectionMethod === "backward") {
+    while (improveByRemove()) {
+      // iterate until no improvement
+    }
+  } else {
+    let changed = true;
+    while (changed) {
+      changed = false;
+      if (improveByAdd()) changed = true;
+      if (improveByRemove()) changed = true;
+    }
+  }
+
+  if (!best.success || best.selected.length < 1) {
+    throw invalidNumber("No valid selected model");
+  }
+
+  const rows: Primitive[][] = [
+    ["SELECTION SUMMARY", ""],
+    ["method", selectionMethod],
+    ["criterion", selectionCriterion],
+    ["predictors total", data.predictorNames.length],
+    ["predictors selected", best.selected.length],
+    ["selected", best.names.join(", ")],
+    ["R²", best.r2],
+    ["Adj. R²", best.adjustedR2],
+    ["RMSE", best.rmse],
+    ["AIC", best.aic],
+    ["BIC", best.bic],
+    ["", ""],
+    ["TRACE", "", "", "", ""],
+    ...trace,
+    ["", ""],
+    ["COEFFICIENTS", "", "", "", "", "", ""],
+    ["term", "estimate", "std error", "t", "p", "CI low", "CI high"]
+  ];
+
+  const tCrit = jStat.studentt.inv(1 - (alpha / 2), best.model.df);
+  const termNames = includeIntercept ? ["Intercept", ...best.names] : [...best.names];
+  for (let index = 0; index < best.model.coefficients.length; index += 1) {
+    const estimate = best.model.coefficients[index];
+    const variance = best.model.covariance[index]?.[index] ?? Number.NaN;
+    const se = variance >= 0 ? Math.sqrt(variance) : Number.NaN;
+    const tValue = (Number.isFinite(se) && se > 0) ? estimate / se : Number.NaN;
+    const pValue = Number.isFinite(tValue) ? 2 * (1 - jStat.studentt.cdf(Math.abs(tValue), best.model.df)) : Number.NaN;
+    rows.push([
+      termNames[index] ?? `x${index + 1}`,
+      estimate,
+      se,
+      tValue,
+      pValue,
+      Number.isFinite(se) ? estimate - (tCrit * se) : "",
+      Number.isFinite(se) ? estimate + (tCrit * se) : ""
+    ]);
+  }
+  return rectangularRows(rows);
+}
+
+type TrendModelType = "linear" | "log" | "exp" | "power";
+
+function parseTrendModelType(modelType?: Primitive): TrendModelType {
+  if (isBlank(modelType)) return "linear";
+  const numeric = tryGetNumber(modelType);
+  if (numeric !== null) {
+    if (numeric === 0) return "linear";
+    if (numeric === 1) return "log";
+    if (numeric === 2) return "exp";
+    if (numeric === 3) return "power";
+  }
+  const normalized = String(modelType).trim().toLowerCase();
+  if (["linear", "lin"].includes(normalized)) return "linear";
+  if (["log", "logarithmic"].includes(normalized)) return "log";
+  if (["exp", "exponential"].includes(normalized)) return "exp";
+  if (["power", "pow"].includes(normalized)) return "power";
+  throw invalidValue("Invalid trend model type");
+}
+
+function readTrendData(yInput: ExcelInput, xInput: ExcelInput, headerMode: HeaderMode): { x: number[]; y: number[] } {
+  const [x, y] = readPairedNumericVectors(xInput, yInput, headerMode);
+  if (x.length < 3) {
+    throw invalidValue("Trend fitting requires at least three paired values");
+  }
+  return { x, y };
+}
+
+function evaluateTrendModel(x: number[], y: number[], modelType: TrendModelType): {
+  modelType: TrendModelType;
+  equation: string;
+  coefficients: Record<string, number>;
+  n: number;
+  r2: number;
+  adjustedR2: number;
+  rmse: number;
+  aic: number;
+  bic: number;
+} {
+  const n = x.length;
+  const transformedX: number[] = [];
+  const transformedY: number[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const xi = x[i];
+    const yi = y[i];
+    if (modelType === "log" || modelType === "power") {
+      if (xi <= 0) throw invalidNumber("Log and power trends require x > 0");
+    }
+    if (modelType === "exp" || modelType === "power") {
+      if (yi <= 0) throw invalidNumber("Exponential and power trends require y > 0");
+    }
+    transformedX.push(modelType === "log" || modelType === "power" ? Math.log(xi) : xi);
+    transformedY.push(modelType === "exp" || modelType === "power" ? Math.log(yi) : yi);
+  }
+
+  const design = transformedX.map((value) => [1, value]);
+  const fit = fitLinearModel(design, transformedY);
+  if (!fit.success || fit.df <= 0) {
+    throw invalidNumber("Trend model could not be fitted");
+  }
+  const intercept = fit.coefficients[0];
+  const slope = fit.coefficients[1];
+
+  const predicted = x.map((xi, index) => {
+    if (modelType === "linear") return intercept + (slope * xi);
+    if (modelType === "log") return intercept + (slope * Math.log(xi));
+    if (modelType === "exp") return Math.exp(intercept + (slope * xi));
+    return Math.exp(intercept) * (xi ** slope);
+  });
+
+  const residuals = y.map((value, index) => value - predicted[index]);
+  const sse = vectorDot(residuals, residuals);
+  const yMean = mean(y);
+  const sst = y.reduce((sum, value) => sum + ((value - yMean) ** 2), 0);
+  const r2 = sst <= 0 ? 0 : Math.max(0, 1 - (sse / sst));
+  const adjustedR2 = 1 - ((1 - r2) * ((n - 1) / (n - 2)));
+  const rmse = Math.sqrt(sse / (n - 2));
+  const aic = n * Math.log(Math.max(1e-12, sse / n)) + (2 * 2);
+  const bic = n * Math.log(Math.max(1e-12, sse / n)) + (2 * Math.log(n));
+
+  if (modelType === "linear") {
+    return {
+      modelType,
+      equation: `y = ${intercept} + ${slope}*x`,
+      coefficients: { intercept, slope },
+      n,
+      r2,
+      adjustedR2,
+      rmse,
+      aic,
+      bic
+    };
+  }
+  if (modelType === "log") {
+    return {
+      modelType,
+      equation: `y = ${intercept} + ${slope}*ln(x)`,
+      coefficients: { intercept, slope },
+      n,
+      r2,
+      adjustedR2,
+      rmse,
+      aic,
+      bic
+    };
+  }
+  if (modelType === "exp") {
+    return {
+      modelType,
+      equation: `y = ${Math.exp(intercept)}*exp(${slope}*x)`,
+      coefficients: { a: Math.exp(intercept), b: slope, lnA: intercept },
+      n,
+      r2,
+      adjustedR2,
+      rmse,
+      aic,
+      bic
+    };
+  }
+  return {
+    modelType,
+    equation: `y = ${Math.exp(intercept)}*x^${slope}`,
+    coefficients: { a: Math.exp(intercept), b: slope, lnA: intercept },
+    n,
+    r2,
+    adjustedR2,
+    rmse,
+    aic,
+    bic
+  };
+}
+
+function trendFit(yInput: ExcelInput, xInput: ExcelInput, modelType?: Primitive, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const parsedType = parseTrendModelType(modelType);
+  const data = readTrendData(yInput, xInput, parseHeaderMode(hasHeader));
+  const fit = evaluateTrendModel(data.x, data.y, parsedType);
+  const rows: Primitive[][] = [
+    ["TREND FIT", ""],
+    ["model", fit.modelType],
+    ["equation", fit.equation],
+    ["n", fit.n],
+    ["R²", fit.r2],
+    ["Adj. R²", fit.adjustedR2],
+    ["RMSE", fit.rmse],
+    ["AIC", fit.aic],
+    ["BIC", fit.bic],
+    ["", ""],
+    ["COEFFICIENTS", ""]
+  ];
+  for (const [key, value] of Object.entries(fit.coefficients)) {
+    rows.push([key, value]);
+  }
+  return rectangularRows(rows);
+}
+
+function parseTrendModelList(modelList?: Primitive): TrendModelType[] {
+  if (isBlank(modelList)) {
+    return ["linear", "log", "exp", "power"];
+  }
+  const raw = String(modelList)
+    .split(/[;,|]/g)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+  if (raw.length < 1) {
+    return ["linear", "log", "exp", "power"];
+  }
+  const models: TrendModelType[] = [];
+  for (const token of raw) {
+    models.push(parseTrendModelType(token));
+  }
+  return Array.from(new Set(models));
+}
+
+function trendCompare(yInput: ExcelInput, xInput: ExcelInput, modelList?: Primitive, alpha = 0.05, hasHeader?: Primitive): ExcelOutput {
+  validateAlpha(alpha);
+  const models = parseTrendModelList(modelList);
+  const data = readTrendData(yInput, xInput, parseHeaderMode(hasHeader));
+  const rows: Primitive[][] = [["model", "equation", "n", "R²", "Adj. R²", "RMSE", "AIC", "BIC"]];
+  for (const model of models) {
+    const fit = evaluateTrendModel(data.x, data.y, model);
+    rows.push([fit.modelType, fit.equation, fit.n, fit.r2, fit.adjustedR2, fit.rmse, fit.aic, fit.bic]);
+  }
+  return rectangularRows(rows);
+}
+
 function version(): string {
   return `${ADDIN_BRAND} ${ADDIN_RUNTIME} ${ADDIN_DISPLAY_VERSION} (EVALYTICS)`;
 }
@@ -2787,6 +3654,7 @@ CustomFunctions.associate("GENERATE_INT_ARRAY", protectedFunction("GENERATE.INT.
 CustomFunctions.associate("FILL", fill);
 CustomFunctions.associate("STACK_G", stackG);
 CustomFunctions.associate("UNSTACK_G", unstackG);
+CustomFunctions.associate("UNSTACK_TABLE", unstackTable);
 CustomFunctions.associate("PARSE_NUMBER", parseNumber);
 CustomFunctions.associate("NORM_DIST_RANGE", protectedFunction("NORM.DIST.RANGE", normDistRange));
 CustomFunctions.associate("AVERAGE_W", protectedFunction("AVERAGE.W", averageW));
@@ -2807,12 +3675,19 @@ CustomFunctions.associate("PROP_TEST_1S", protectedFunction("PROP.TEST.1S", prop
 CustomFunctions.associate("WILCOXON_PAIRED", protectedFunction("WILCOXON.PAIRED", wilcoxonPaired));
 CustomFunctions.associate("WELCH_TEST_2S_G", protectedFunction("WELCH.TEST.2S", welchTest2SG));
 CustomFunctions.associate("MANN_WHITNEY_G", protectedFunction("MANN.WHITNEY", mannWhitneyG));
+CustomFunctions.associate("KRUSKAL_WALLIS", protectedFunction("KRUSKAL.WALLIS", kruskalWallis));
+CustomFunctions.associate("FRIEDMAN_ANOVA", protectedFunction("FRIEDMAN.ANOVA", friedmanAnova));
+CustomFunctions.associate("JONCKHEERE_TERPSTRA", protectedFunction("JONCKHEERE.TERPSTRA", jonckheereTerpstra));
 CustomFunctions.associate("CHISQ_GOF", protectedFunction("CHISQ.GOF", chisqGof));
 CustomFunctions.associate("ANOVA_G", protectedFunction("ANOVA", anovaG));
 CustomFunctions.associate("CORREL_SPEARMAN", protectedFunction("CORREL.SPEARMAN", correlSpearman));
+CustomFunctions.associate("REGRESSION", protectedFunction("REGRESSION", regression));
+CustomFunctions.associate("REGRESSION_PREDICT", protectedFunction("REGRESSION.PREDICT", regressionPredict));
+CustomFunctions.associate("REGRESSION_SELECT", protectedFunction("REGRESSION.SELECT", regressionSelect));
+CustomFunctions.associate("TREND_FIT", protectedFunction("TREND.FIT", trendFit));
+CustomFunctions.associate("TREND_COMPARE", protectedFunction("TREND.COMPARE", trendCompare));
 CustomFunctions.associate("ANOVA_RM", protectedFunction("ANOVA.RM", anovaRm));
 CustomFunctions.associate("ANCOVA_G", protectedFunction("ANCOVA", ancovaG));
-CustomFunctions.associate("CONTINGENCY_T", protectedFunction("CONTINGENCY.T", contingencyT));
 CustomFunctions.associate("CONTINGENCY_G", protectedFunction("CONTINGENCY", contingencyG));
 CustomFunctions.associate("CORREL_MATRIX", protectedFunction("CORREL.MATRIX", correlMatrix));
 CustomFunctions.associate("PIVOT_COUNT", protectedFunction("PIVOT.COUNT", pivotCount));

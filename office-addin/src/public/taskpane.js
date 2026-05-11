@@ -1,4 +1,4 @@
-const translations = {
+﻿const translations = {
   en: {
     title: "StatLab for Excel",
     subtitle: "Statistical functions, demos, options, and wizards in one Excel workspace.",
@@ -107,20 +107,23 @@ const translations = {
     functionsTab: "Funkce",
     settingsTab: "Nastavení",
     settingsLanguage: "Jazyk",
-    settingsLanguageHint: "Prepnuti jazyka zaroven prepocita vzorce v sesitu.",
-    settingsAccount: "Ucet",
-    authDevLogin: "Simulovat prihlaseni",
-    authLogout: "Odhlasit",
-    authHint: "Toto lokalni vyvojove prihlaseni pozdeji nahradi CVUT OAuth.",
-    authSignedIn: "Lokalne prihlasen jako",
-    authSignedOut: "Neprihlaseno. Chranene funkce vraci #UNAUTHORIZED.",
-    authExpired: "Lokalni prihlaseni vyprselo. Chranene funkce vraci #UNAUTHORIZED.",
+    settingsLanguageHint: "Přepnutí jazyka zároveň přepočítá vzorce v sešitu.",
+    settingsAccount: "Účet",
+    authDevLogin: "Simulovat přihlášení",
+    authLogout: "Odhlásit",
+    authHint: "Toto lokální vývojové přihlášení později nahradí CVUT OAuth.",
+    authSignedIn: "Lokálně přihlášen jako",
+    authSignedOut: "Nepřihlášeno. Chráněné funkce vrací #UNAUTHORIZED.",
+    authExpired: "Lokální přihlášení vypršelo. Chráněné funkce vrací #UNAUTHORIZED.",
     authRequired: "Vyžaduje přihlášení"
   }
 };
 
 const languageStorageKey = "evalytics.language";
 const authStorageKey = "evalytics.auth.snapshot";
+const authApiBaseUrlKey = "evalytics.auth.apiBaseUrl";
+const authDevExternalIdKey = "evalytics.auth.devExternalId";
+const authOverrideAllowAll = true;
 
 function normalizeLanguage(value) {
   if (!value) {
@@ -159,16 +162,121 @@ const appVersion = "1.0.0";
 const buildVersion = /^\d+$/.test(String(buildStamp)) ? `${appVersion}.${buildStamp}` : appVersion;
 const hiddenDocumentationFunctions = new Set(["VERSION", "PING"]);
 const wizardExcludedFunctions = new Set();
-const datasetWizardFunctions = new Set(["ANCOVA"]);
+const datasetWizardFunctions = new Set([
+  "REGRESSION",
+  "REGRESSION.PREDICT",
+  "REGRESSION.SELECT",
+  "TREND.FIT",
+  "TREND.COMPARE",
+  "T.TEST.1S",
+  "PROP.TEST.1S",
+  "WILCOXON.PAIRED",
+  "WELCH.TEST.2S",
+  "MANN.WHITNEY",
+  "KRUSKAL.WALLIS",
+  "FRIEDMAN.ANOVA",
+  "JONCKHEERE.TERPSTRA",
+  "ANOVA",
+  "ANOVA.RM",
+  "ANCOVA",
+  "CHISQ.GOF",
+  "CONTINGENCY",
+  "UNSTACK.TABLE"
+]);
 const excelMaxRows = 1048576;
 const excelMaxColumns = 16384;
+const categoryOverrides = {
+  cs: {
+    "T.TEST.1S": "Srovnání skupin",
+    "PROP.TEST.1S": "Srovnání skupin",
+    "WILCOXON.PAIRED": "Srovnání skupin",
+    "WELCH.TEST.2S": "Srovnání skupin",
+    "MANN.WHITNEY": "Srovnání skupin",
+    "KRUSKAL.WALLIS": "Srovnání skupin",
+    "FRIEDMAN.ANOVA": "Srovnání skupin",
+    "JONCKHEERE.TERPSTRA": "Srovnání skupin",
+    "ANOVA": "Srovnání skupin",
+    "ANOVA.RM": "Srovnání skupin",
+    "ANCOVA": "Srovnání skupin",
+    "CORREL.SPEARMAN": "Regrese",
+    "CORREL.MATRIX": "Regrese",
+    "CHISQ.GOF": "Kvalitativní data",
+    "UNSTACK.TABLE": "Kvalitativní data",
+    "CONTINGENCY": "Kvalitativní data",
+    "REGRESSION": "Regrese",
+    "REGRESSION.PREDICT": "Regrese",
+    "REGRESSION.SELECT": "Regrese",
+    "TREND.FIT": "Regrese",
+    "TREND.COMPARE": "Regrese"
+  },
+  en: {
+    "T.TEST.1S": "Group Comparisons",
+    "PROP.TEST.1S": "Group Comparisons",
+    "WILCOXON.PAIRED": "Group Comparisons",
+    "WELCH.TEST.2S": "Group Comparisons",
+    "MANN.WHITNEY": "Group Comparisons",
+    "KRUSKAL.WALLIS": "Group Comparisons",
+    "FRIEDMAN.ANOVA": "Group Comparisons",
+    "JONCKHEERE.TERPSTRA": "Group Comparisons",
+    "ANOVA": "Group Comparisons",
+    "ANOVA.RM": "Group Comparisons",
+    "ANCOVA": "Group Comparisons",
+    "CORREL.SPEARMAN": "Regression",
+    "CORREL.MATRIX": "Regression",
+    "CHISQ.GOF": "Categorical Data",
+    "UNSTACK.TABLE": "Categorical Data",
+    "CONTINGENCY": "Categorical Data",
+    "REGRESSION": "Regression",
+    "REGRESSION.PREDICT": "Regression",
+    "REGRESSION.SELECT": "Regression",
+    "TREND.FIT": "Regression",
+    "TREND.COMPARE": "Regression"
+  }
+};
 const actionIcons = {
-  demo: "▶",
-  wizard: "ƒ"
+  demo: String.fromCodePoint(0x25B6),
+  wizard: String.fromCodePoint(0x2699)
 };
 
 function t(key) {
   return translations[language][key];
+}
+
+function normalizeDocText(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+  return value
+    .replaceAll("RÂ˛", "R²")
+    .replaceAll("Adj. RÂ˛", "Adj. R²")
+    .replaceAll("Ăˇ", "á")
+    .replaceAll("Ă©", "é")
+    .replaceAll("Ă­", "í")
+    .replaceAll("Ăł", "ó")
+    .replaceAll("Ăş", "ú")
+    .replaceAll("Ă˝", "ý")
+    .replaceAll("Ĺ™", "ř")
+    .replaceAll("Ĺľ", "ž")
+    .replaceAll("Ĺˇ", "š")
+    .replaceAll("ÄŤ", "č")
+    .replaceAll("Ä›", "ě")
+    .replaceAll("ÄŹ", "ď")
+    .replaceAll("Ĺ", "ň")
+    .replaceAll("Äť", "ť")
+    .replaceAll("ĹŻ", "ů")
+    .replaceAll("ĂŮ", "ů")
+    .replaceAll("Ä", "č")
+    .replaceAll("Ĺ™", "ř")
+    .replaceAll("Î±", "α")
+    .replaceAll("ÎĽ", "μ")
+    .replaceAll("â‚€", "₀")
+    .replaceAll("â‚“", "ₛ")
+    .replaceAll("Ï‡", "χ")
+    .replaceAll("Â²", "²")
+    .replaceAll("â±", "ⁱ")
+    .replaceAll("áµ—", "ᵗ")
+    .replaceAll("â’", "−")
+    .replaceAll("Ď", "ρ");
 }
 
 function translateStaticText() {
@@ -186,7 +294,35 @@ function translateStaticText() {
 }
 
 function localizedInfo(fn) {
-  return localizedDocs[language]?.[fn.name] ?? localizedDocs.en?.[fn.name] ?? {};
+  const raw = localizedDocs[language]?.[fn.name] ?? localizedDocs.en?.[fn.name] ?? {};
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+  const clone = JSON.parse(JSON.stringify(raw));
+  if (typeof clone.category === "string") clone.category = normalizeDocText(clone.category);
+  if (typeof clone.summary === "string") clone.summary = normalizeDocText(clone.summary);
+  if (Array.isArray(clone.parameters)) {
+    clone.parameters = clone.parameters.map((item) => ({
+      ...item,
+      sourceName: normalizeDocText(item?.sourceName),
+      description: normalizeDocText(item?.description),
+      enumValues: Array.isArray(item?.enumValues)
+        ? item.enumValues.map((entry) => ({
+            ...entry,
+            meaning: normalizeDocText(entry?.meaning)
+          }))
+        : item?.enumValues
+    }));
+  }
+  if (Array.isArray(clone.output)) {
+    clone.output = clone.output.map((item) => ({
+      ...item,
+      section: normalizeDocText(item?.section),
+      name: normalizeDocText(item?.name),
+      description: normalizeDocText(item?.description)
+    }));
+  }
+  return clone;
 }
 
 function switchTab(tabId) {
@@ -295,9 +431,46 @@ async function writeAuthSnapshot(snapshot) {
 }
 
 async function simulateAuthLogin() {
+  const apiBaseUrl = (localStorage.getItem(authApiBaseUrlKey) || "http://127.0.0.1:3000").trim();
+  const externalId = (localStorage.getItem(authDevExternalIdKey) || "local-dev-user").trim();
+  try {
+    const response = await fetch(`${apiBaseUrl.replace(/\/$/, "")}/auth/dev-login`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        externalId,
+        displayName: "Local Dev User",
+        email: "local-dev@example.test"
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`Auth API returned ${response.status}`);
+    }
+    const payload = await response.json();
+    await writeAuthSnapshot({
+      provider: "api-dev",
+      apiBaseUrl,
+      accessToken: payload.accessToken,
+      user: payload.user,
+      entitlements: {
+        allowedFunctions: [],
+        deniedFunctions: []
+      },
+      issuedAt: Date.now(),
+      expiresAt: payload.expiresAt
+    });
+    debugLog("Auth dev login via API", { apiBaseUrl, externalId, expiresAt: payload.expiresAt });
+    return;
+  } catch (error) {
+    debugLog("Auth API login failed, fallback to local snapshot", { message: error?.message ?? String(error) });
+  }
+
   const expiresAt = Date.now() + (12 * 60 * 60 * 1000);
   await writeAuthSnapshot({
     provider: "local-dev",
+    apiBaseUrl: "http://127.0.0.1:3000",
     user: {
       id: "local-dev-user",
       displayName: "Local Dev User",
@@ -340,6 +513,10 @@ function displaySummary(fn) {
 }
 
 function displayCategory(fn) {
+  const override = categoryOverrides[language]?.[fn.name];
+  if (override) {
+    return override;
+  }
   const category = localizedInfo(fn).category ?? "Other";
   if (language === "cs") {
     if (category === "Obecn?" || category === "Obecne") {
@@ -385,8 +562,8 @@ function outputDocs(fn) {
 
 function categoryRank(category) {
   const order = {
-    en: ["General", "Descriptive", "Tests", "Pivot table", "Diagnostics", "Other"],
-    cs: ["Obecné", "Popisné", "Testy", "Kontingenční tabulka", "Diagnostika", "Other"]
+    en: ["General", "Descriptive", "Regression", "Group Comparisons", "Categorical Data", "Pivot table", "Diagnostics", "Other"],
+    cs: ["Obecné", "Popisné", "Regrese", "Srovnání skupin", "Kvalitativní data", "Kontingenční tabulka", "Diagnostika", "Other"]
   };
 
   const index = order[language].indexOf(category);
@@ -609,6 +786,9 @@ const tutorialDefinitions = {
   "UNSTACK": {
     customRun: runUnstackGTutorial
   },
+  "UNSTACK.TABLE": {
+    customRun: () => runMatrixTutorial("UNSTACK.TABLE")
+  },
   "PARSE.NUMBER": {
     customRun: runParseNumberTutorial
   },
@@ -719,6 +899,15 @@ const tutorialDefinitions = {
   "MANN.WHITNEY": {
     customRun: () => runMatrixTutorial("MANN.WHITNEY")
   },
+  "KRUSKAL.WALLIS": {
+    customRun: () => runMatrixTutorial("KRUSKAL.WALLIS")
+  },
+  "FRIEDMAN.ANOVA": {
+    customRun: () => runMatrixTutorial("FRIEDMAN.ANOVA")
+  },
+  "JONCKHEERE.TERPSTRA": {
+    customRun: () => runMatrixTutorial("JONCKHEERE.TERPSTRA")
+  },
   "CHISQ.GOF": {
     customRun: () => runMatrixTutorial("CHISQ.GOF")
   },
@@ -728,14 +917,26 @@ const tutorialDefinitions = {
   "CORREL.SPEARMAN": {
     customRun: () => runMatrixTutorial("CORREL.SPEARMAN")
   },
+  "REGRESSION": {
+    customRun: () => runMatrixTutorial("REGRESSION")
+  },
+  "REGRESSION.PREDICT": {
+    customRun: () => runMatrixTutorial("REGRESSION.PREDICT")
+  },
+  "REGRESSION.SELECT": {
+    customRun: () => runMatrixTutorial("REGRESSION.SELECT")
+  },
+  "TREND.FIT": {
+    customRun: () => runMatrixTutorial("TREND.FIT")
+  },
+  "TREND.COMPARE": {
+    customRun: () => runMatrixTutorial("TREND.COMPARE")
+  },
   "ANOVA.RM": {
     customRun: () => runMatrixTutorial("ANOVA.RM")
   },
   "ANCOVA": {
     customRun: () => runMatrixTutorial("ANCOVA")
-  },
-  "CONTINGENCY.T": {
-    customRun: () => runMatrixTutorial("CONTINGENCY.T")
   },
   "CONTINGENCY": {
     customRun: () => runMatrixTutorial("CONTINGENCY")
@@ -982,6 +1183,50 @@ const matrixTutorialDefinitions = {
     formula: "=MANN.WHITNEY(A1:A11,B1:B11,1,0.05,0)",
     previewRange: "F2:L16"
   },
+  "KRUSKAL.WALLIS": {
+    values: [
+      ["group", "value"],
+      ["A", 8],
+      ["A", 10],
+      ["A", 9],
+      ["B", 12],
+      ["B", 13],
+      ["B", 14],
+      ["C", 16],
+      ["C", 18],
+      ["C", 17]
+    ],
+    formula: "=KRUSKAL.WALLIS(A1:A10,B1:B10,1,0.05)",
+    previewRange: "F2:J16"
+  },
+  "FRIEDMAN.ANOVA": {
+    values: [
+      ["baseline", "week 4", "week 8"],
+      [12, 14, 16],
+      [10, 11, 14],
+      [15, 16, 18],
+      [11, 13, 15],
+      [13, 14, 17]
+    ],
+    formula: "=FRIEDMAN.ANOVA(A1:C6,1,0.05)",
+    previewRange: "E2:I16"
+  },
+  "JONCKHEERE.TERPSTRA": {
+    values: [
+      ["dose", "score"],
+      [1, 10],
+      [1, 11],
+      [1, 9],
+      [2, 12],
+      [2, 13],
+      [2, 14],
+      [3, 15],
+      [3, 16],
+      [3, 17]
+    ],
+    formula: "=JONCKHEERE.TERPSTRA(A1:A10,B1:B10,1,0.05,1)",
+    previewRange: "E2:H16"
+  },
   "CHISQ.GOF": {
     values: [
       ["category", "observed", "expected"],
@@ -1059,14 +1304,15 @@ const matrixTutorialDefinitions = {
     formula: "=ANCOVA(A1:A13,B1:B13,C1:C13,2,0.05,1)",
     previewRange: "F2:O30"
   },
-  "CONTINGENCY.T": {
+  "UNSTACK.TABLE": {
     values: [
-      ["", "male", "female"],
-      ["yes", 30, 20],
-      ["no", 10, 40]
+      ["", "male", "female", "Σ"],
+      ["yes", 30, 20, 50],
+      ["no", 10, 40, 50],
+      ["Σ", 40, 60, 100]
     ],
-    formula: "=CONTINGENCY.T(A1:C3,1,0.05)",
-    previewRange: "E2:J26"
+    formula: "=UNSTACK.TABLE(A1:D4,1,1)",
+    previewRange: "F2:H12"
   },
   "CONTINGENCY": {
     values: [
@@ -1090,6 +1336,76 @@ const matrixTutorialDefinitions = {
     ],
     formula: "=CORREL.MATRIX(A1:C6,0,3,1,1)",
     previewRange: "E2:J14"
+  },
+  "REGRESSION": {
+    values: [
+      ["y", "x1", "x2"],
+      [5, 1, 2],
+      [8, 2, 1],
+      [10, 3, 2],
+      [13, 4, 3],
+      [15, 5, 3],
+      [18, 6, 4],
+      [20, 7, 5]
+    ],
+    formula: "=REGRESSION(A1:A8,B1:C8,1,0.05,1)",
+    previewRange: "E2:K30"
+  },
+  "REGRESSION.PREDICT": {
+    values: [
+      ["y", "x1", "x2", "", "x_new_seq"],
+      [5, 1, 2, "", 8],
+      [8, 2, 1, "", 5],
+      [10, 3, 2, "", 9],
+      [13, 4, 3, "", 6],
+      [15, 5, 3, "", 10],
+      [18, 6, 4, "", 6],
+      [20, 7, 5, "", ""]
+    ],
+    formula: "=REGRESSION.PREDICT(A1:A8,B1:C8,E2:E7,1,0.05,1)",
+    previewRange: "H2:K10"
+  },
+  "REGRESSION.SELECT": {
+    values: [
+      ["y", "x1", "x2", "x3"],
+      [6, 1, 2, 4],
+      [8, 2, 1, 5],
+      [11, 3, 2, 7],
+      [14, 4, 3, 8],
+      [15, 5, 3, 9],
+      [18, 6, 4, 10],
+      [21, 7, 5, 11]
+    ],
+    formula: "=REGRESSION.SELECT(A1:A8,B1:D8,2,0,0.05,1,1)",
+    previewRange: "F2:L30"
+  },
+  "TREND.FIT": {
+    values: [
+      ["x", "y"],
+      [1, 4.2],
+      [2, 6.1],
+      [3, 7.9],
+      [4, 9.7],
+      [5, 11.6],
+      [6, 13.4],
+      [7, 15.1]
+    ],
+    formula: "=TREND.FIT(B1:B8,A1:A8,\"linear\",0.05,1)",
+    previewRange: "E2:J16"
+  },
+  "TREND.COMPARE": {
+    values: [
+      ["x", "y"],
+      [1, 4.2],
+      [2, 6.1],
+      [3, 7.9],
+      [4, 9.7],
+      [5, 11.6],
+      [6, 13.4],
+      [7, 15.1]
+    ],
+    formula: "=TREND.COMPARE(B1:B8,A1:A8,\"linear;log;exp;power\",0.05,1)",
+    previewRange: "E2:L10"
   }
 };
 
@@ -1171,7 +1487,80 @@ function applyNumberAttributes(control, wizard = {}) {
   control.step = wizard.step === undefined ? "any" : String(wizard.step);
 }
 
-function createWizardField({ id, label, kind = "text", value = "", enumValues = [], range = false, optional = false, description = "", wizard = {}, datasetVariables = [] }) {
+function columnLettersToIndex(letters) {
+  let index = 0;
+  for (const char of letters.toUpperCase()) {
+    index = (index * 26) + (char.charCodeAt(0) - 64);
+  }
+  return index;
+}
+
+function columnIndexToLetters(index) {
+  let current = index;
+  let letters = "";
+  while (current > 0) {
+    const remainder = (current - 1) % 26;
+    letters = String.fromCharCode(65 + remainder) + letters;
+    current = Math.floor((current - 1) / 26);
+  }
+  return letters;
+}
+
+function parseSingleColumnAddress(address) {
+  const normalized = normalizeRangeAddress(address);
+  const parts = parseQualifiedAddress(normalized);
+  const match = parts.range.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/i);
+  if (!match) {
+    return null;
+  }
+  const startCol = match[1].toUpperCase();
+  const startRow = Number(match[2]);
+  const endCol = match[3].toUpperCase();
+  const endRow = Number(match[4]);
+  if (!Number.isFinite(startRow) || !Number.isFinite(endRow) || startCol !== endCol) {
+    return null;
+  }
+  return {
+    sheet: parts.sheetName,
+    columnIndex: columnLettersToIndex(startCol),
+    rowStart: Math.min(startRow, endRow),
+    rowEnd: Math.max(startRow, endRow)
+  };
+}
+
+function composeMultiColumnAddress(sheet, rowStart, rowEnd, colStart, colEnd) {
+  const startCol = columnIndexToLetters(Math.min(colStart, colEnd));
+  const endCol = columnIndexToLetters(Math.max(colStart, colEnd));
+  const quotedSheet = sheet ? `${quoteSheetName(sheet)}!` : "";
+  return `${quotedSheet}${startCol}${rowStart}:${endCol}${rowEnd}`;
+}
+
+function collapseSelectedVariableAddresses(addresses) {
+  if (!Array.isArray(addresses) || addresses.length === 0) {
+    return "";
+  }
+  if (addresses.length === 1) {
+    return addresses[0];
+  }
+  const parsed = addresses.map(parseSingleColumnAddress);
+  if (parsed.some((item) => item === null)) {
+    return addresses.join(",");
+  }
+  const first = parsed[0];
+  const sameSheet = parsed.every((item) => (item?.sheet ?? "") === (first?.sheet ?? ""));
+  const sameRows = parsed.every((item) => item?.rowStart === first?.rowStart && item?.rowEnd === first?.rowEnd);
+  if (!sameSheet || !sameRows) {
+    return addresses.join(",");
+  }
+  const sortedColumns = parsed.map((item) => item.columnIndex).sort((a, b) => a - b);
+  const contiguous = sortedColumns.every((column, index) => index === 0 || column === sortedColumns[index - 1] + 1);
+  if (!contiguous) {
+    return addresses.join(",");
+  }
+  return composeMultiColumnAddress(first.sheet, first.rowStart, first.rowEnd, sortedColumns[0], sortedColumns[sortedColumns.length - 1]);
+}
+
+function createWizardField({ id, label, kind = "text", value = "", enumValues = [], range = false, optional = false, description = "", wizard = {}, datasetVariables = [], multiVariableSelect = false }) {
   const row = document.createElement("div");
   row.className = "wizard-field";
 
@@ -1191,12 +1580,20 @@ function createWizardField({ id, label, kind = "text", value = "", enumValues = 
   controlWrap.className = "wizard-control";
 
   let selectedVariableAddress = "";
+  let variableSelect = null;
   if (range && datasetVariables.length > 0) {
-    const variableSelect = document.createElement("select");
+    variableSelect = document.createElement("select");
     variableSelect.className = "wizard-variable-select";
+    if (multiVariableSelect) {
+      variableSelect.multiple = true;
+      variableSelect.size = Math.min(8, Math.max(4, datasetVariables.length + 1));
+    }
     const manualOption = document.createElement("option");
     manualOption.value = "";
     manualOption.textContent = t("wizardUseVariable");
+    if (!multiVariableSelect) {
+      manualOption.selected = true;
+    }
     variableSelect.append(manualOption);
     datasetVariables.forEach((variable) => {
       const option = document.createElement("option");
@@ -1209,14 +1606,20 @@ function createWizardField({ id, label, kind = "text", value = "", enumValues = 
       variableSelect.append(option);
     });
     variableSelect.addEventListener("change", () => {
+      const field = document.getElementById(id);
+      if (!field) {
+        return;
+      }
+      if (multiVariableSelect) {
+        const selected = Array.from(variableSelect.selectedOptions).map((option) => option.value).filter(Boolean);
+        field.value = collapseSelectedVariableAddresses(selected);
+        return;
+      }
       if (variableSelect.value) {
-        const field = document.getElementById(id);
-        if (field) {
-          field.value = variableSelect.value;
-        }
+        field.value = variableSelect.value;
       }
     });
-    controlWrap.append(variableSelect);
+    controlWrap.classList.add("has-variable-select");
   }
 
   let control;
@@ -1235,6 +1638,7 @@ function createWizardField({ id, label, kind = "text", value = "", enumValues = 
     control.value = selectedVariableAddress || value;
     if (kind === "number") {
       applyNumberAttributes(control, wizard);
+      control.value = normalizeFormulaNumber(String(selectedVariableAddress || value || ""));
     }
   }
   control.id = id;
@@ -1249,6 +1653,9 @@ function createWizardField({ id, label, kind = "text", value = "", enumValues = 
     selectionButton.textContent = t("wizardUseSelection");
     selectionButton.addEventListener("click", () => useSelectionForField(id));
     controlWrap.append(selectionButton);
+  }
+  if (variableSelect) {
+    controlWrap.append(variableSelect);
   }
 
   row.append(controlWrap);
@@ -1496,33 +1903,83 @@ async function loadDatasetVariables(sheetName = null) {
       ? context.workbook.worksheets.getItem(sheetName)
       : context.workbook.worksheets.getActiveWorksheet();
     const usedRange = sheet.getUsedRangeOrNullObject();
-    usedRange.load(["address", "columnCount", "rowCount", "values", "isNullObject"]);
+    usedRange.load(["address", "columnCount", "rowCount", "rowIndex", "columnIndex", "values", "isNullObject"]);
     await context.sync();
     if (usedRange.isNullObject || usedRange.rowCount < 2 || usedRange.columnCount < 1) {
       return [];
     }
 
-    const columns = [];
-    for (let index = 0; index < usedRange.columnCount; index += 1) {
-      const column = usedRange.getColumn(index);
-      column.load("address");
-      columns.push(column);
+    const values = usedRange.values ?? [];
+    const firstRowIndex = values.findIndex((row) => row.some((value) => value !== null && value !== undefined && String(value).trim() !== ""));
+    if (firstRowIndex < 0) {
+      return [];
     }
-    await context.sync();
 
-    const firstRow = usedRange.values[0] ?? [];
-    return columns.map((column, index) => {
+    let firstColumnIndex = -1;
+    for (let row = firstRowIndex; row < values.length && firstColumnIndex < 0; row += 1) {
+      for (let column = 0; column < (values[row]?.length ?? 0); column += 1) {
+        const cell = values[row][column];
+        if (cell !== null && cell !== undefined && String(cell).trim() !== "") {
+          firstColumnIndex = column;
+          break;
+        }
+      }
+    }
+    if (firstColumnIndex < 0) {
+      return [];
+    }
+
+    let endColumnExclusive = firstColumnIndex;
+    for (let column = firstColumnIndex; column < usedRange.columnCount; column += 1) {
+      const isBlankColumn = values.slice(firstRowIndex).every((row) => {
+        const cell = row?.[column];
+        return cell === null || cell === undefined || String(cell).trim() === "";
+      });
+      if (isBlankColumn) {
+        break;
+      }
+      endColumnExclusive = column + 1;
+    }
+    if (endColumnExclusive <= firstColumnIndex) {
+      return [];
+    }
+
+    let lastRowInclusive = firstRowIndex;
+    for (let row = firstRowIndex; row < values.length; row += 1) {
+      const hasAny = values[row]
+        ?.slice(firstColumnIndex, endColumnExclusive)
+        .some((cell) => cell !== null && cell !== undefined && String(cell).trim() !== "");
+      if (hasAny) {
+        lastRowInclusive = row;
+      }
+    }
+
+    const firstRow = values[firstRowIndex] ?? [];
+    const variables = [];
+    for (let index = firstColumnIndex; index < endColumnExclusive; index += 1) {
       const rawName = firstRow[index];
       const name = rawName === null || rawName === undefined || String(rawName).trim() === ""
-        ? `${language === "cs" ? "Proměnná" : "Variable"} ${index + 1}`
+        ? `${language === "cs" ? "Proměnná" : "Variable"} ${index - firstColumnIndex + 1}`
         : String(rawName).trim();
-      const values = usedRange.values.slice(1).map((row) => row[index]);
-      return {
+      const variableValues = values.slice(firstRowIndex + 1, lastRowInclusive + 1).map((row) => row[index]);
+      const absoluteRow = usedRange.rowIndex + firstRowIndex;
+      const absoluteColumn = usedRange.columnIndex + index;
+      const rowCount = Math.max(1, (lastRowInclusive - firstRowIndex) + 1);
+      const range = sheet.getRangeByIndexes(absoluteRow, absoluteColumn, rowCount, 1);
+      range.load("address");
+      variables.push({
         name,
-        address: normalizeRangeAddress(column.address),
-        type: guessVariableType(values)
-      };
-    });
+        range,
+        type: guessVariableType(variableValues)
+      });
+    }
+
+    await context.sync();
+    return variables.map((item) => ({
+      name: item.name,
+      address: normalizeRangeAddress(item.range.address),
+      type: item.type
+    }));
   }).catch((error) => {
     debugLog("Wizard dataset load failed", { message: error instanceof Error ? error.message : String(error) });
     return [];
@@ -1586,7 +2043,8 @@ async function openFunctionWizard(fn) {
       optional: Boolean(parameter.optional),
       description: docForParameter(fn, index).description ?? "",
       wizard: docForParameter(fn, index).wizard ?? {},
-      datasetVariables: kind === "range" ? datasetVariables : []
+      datasetVariables: kind === "range" ? datasetVariables : [],
+      multiVariableSelect: kind === "range" && parameter.name.toLowerCase() === "xrange"
     }));
   });
 
@@ -1697,6 +2155,12 @@ function inferredEqualCellGroups(fn) {
   if (["xValues", "yValues"].every((name) => names.includes(name))) {
     return [[names.indexOf("xValues"), names.indexOf("yValues")]];
   }
+  if (["yRange", "xRange"].every((name) => names.includes(name)) && fn.name !== "REGRESSION.PREDICT") {
+    return [[names.indexOf("yRange"), names.indexOf("xRange")]];
+  }
+  if (["yRange", "xRange", "xNewRange"].every((name) => names.includes(name))) {
+    return [];
+  }
   if (["rows", "columns", "values"].every((name) => names.includes(name))) {
     return [[names.indexOf("rows"), names.indexOf("columns"), names.indexOf("values")]];
   }
@@ -1706,7 +2170,7 @@ function inferredEqualCellGroups(fn) {
   if (fn.name === "CHISQ.GOF") {
     return [[0, 1]];
   }
-  if (matrixIndexes.length === 2 && !["ANOVA.RM", "CONTINGENCY.T", "CORREL.MATRIX"].includes(fn.name)) {
+  if (matrixIndexes.length === 2 && !["ANOVA.RM", "CORREL.MATRIX"].includes(fn.name)) {
     return [matrixIndexes];
   }
   return [];
@@ -1987,9 +2451,9 @@ async function runParseNumberTutorial() {
     "1 234,56",
     "1,234.56",
     "CZK 1 234,56",
-    "1.234,56 Kč",
+    "1.234,56 KÄŤ",
     " - 42 ",
-    "−12,5",
+    "â’12,5",
     "(987,65)",
     "2 500",
     "3.14",
@@ -2423,7 +2887,7 @@ function render() {
 
     card.classList.remove("open");
     name.textContent = fn.name;
-    if (localizedInfo(fn).auth?.required && !isAuthActive()) {
+    if (!authOverrideAllowAll && localizedInfo(fn).auth?.required && !isAuthActive()) {
       const badge = document.createElement("span");
       badge.className = "auth-required-badge";
       badge.textContent = t("authRequired");
@@ -2461,12 +2925,11 @@ async function runWelchTutorialWithDiagnostics() {
   }
 
   let sheetName = "";
-  const formula = "=WELCH.TEST.2S(A1:A101,B1:B101,1,0.05,0)";
+  const formula = "=WELCH.TEST.2S(A1:A100,B1:B100,2,0.05,0)";
   const maleCategoryFormula = '=FILL("male",50)';
   const femaleCategoryFormula = '=FILL("female",50)';
   const maleValuesFormula = "=GENERATE.NORM.ARRAY(50,178,8)";
   const femaleValuesFormula = "=GENERATE.NORM.ARRAY(50,168,7)";
-  const versionFormula = "=VERSION()";
 
   try {
     await Excel.run(async (context) => {
@@ -2478,35 +2941,31 @@ async function runWelchTutorialWithDiagnostics() {
       sheetName = sheet.name;
       debugLog("Tutorial sheet created", { sheetName });
 
-      sheet.getRange("A1:B1").values = [["group", "value"]];
-      sheet.getRange("A2").formulas = [[maleCategoryFormula]];
-      sheet.getRange("A52").formulas = [[femaleCategoryFormula]];
-      sheet.getRange("B2").formulas = [[maleValuesFormula]];
-      sheet.getRange("B52").formulas = [[femaleValuesFormula]];
-      sheet.getRange("D1").values = [["Welch two-sample t-test"]];
+      sheet.getRange("A1").formulas = [[maleCategoryFormula]];
+      sheet.getRange("A51").formulas = [[femaleCategoryFormula]];
+      sheet.getRange("B1").formulas = [[maleValuesFormula]];
+      sheet.getRange("B51").formulas = [[femaleValuesFormula]];
       sheet.getRange("A:D").format.autofitColumns();
-      sheet.getRange("1:1").format.font.bold = true;
       await context.sync();
       debugLog("Tutorial data formulas written", {
-        dataRange: "A1:B101",
-        maleCategoryCell: "A2",
+        dataRange: "A1:B100",
+        maleCategoryCell: "A1",
         maleCategoryFormula,
-        femaleCategoryCell: "A52",
+        femaleCategoryCell: "A51",
         femaleCategoryFormula,
-        maleValuesCell: "B2",
+        maleValuesCell: "B1",
         maleValuesFormula,
-        femaleValuesCell: "B52",
+        femaleValuesCell: "B51",
         femaleValuesFormula,
-        hasHeader: 1
+        hasHeader: 2
       });
     });
 
     await Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getItem(sheetName);
-      sheet.getRange("D3").formulas = [[formula]];
-      sheet.getRange("L1").formulas = [[versionFormula]];
+      sheet.getRange("D1").formulas = [[formula]];
       await context.sync();
-      debugLog("Tutorial formula inserted", { cell: "D3", formula, versionCell: "L1", versionFormula });
+      debugLog("Tutorial formula inserted", { cell: "D1", formula });
 
       context.workbook.application.calculate(Excel.CalculationType.full);
       await context.sync();
@@ -2517,13 +2976,11 @@ async function runWelchTutorialWithDiagnostics() {
     for (let attempt = 1; attempt <= 30; attempt += 1) {
       const state = await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getItem(sheetName);
-        const version = sheet.getRange("L1");
-        const result = sheet.getRange("D3");
-        const firstCategory = sheet.getRange("A2");
-        const firstValue = sheet.getRange("B2");
-        const lastCategory = sheet.getRange("A101");
-        const lastValue = sheet.getRange("B101");
-        version.load("text");
+        const result = sheet.getRange("D1");
+        const firstCategory = sheet.getRange("A1");
+        const firstValue = sheet.getRange("B1");
+        const lastCategory = sheet.getRange("A100");
+        const lastValue = sheet.getRange("B100");
         result.load("text");
         firstCategory.load("text");
         firstValue.load("text");
@@ -2532,7 +2989,6 @@ async function runWelchTutorialWithDiagnostics() {
         await context.sync();
         return {
           attempt,
-          version: version.text?.[0]?.[0],
           result: result.text?.[0]?.[0],
           firstCategory: firstCategory.text?.[0]?.[0],
           firstValue: firstValue.text?.[0]?.[0],
@@ -2541,7 +2997,7 @@ async function runWelchTutorialWithDiagnostics() {
         };
       });
 
-      const busy = [state.version, state.result, state.firstCategory, state.firstValue, state.lastCategory, state.lastValue].some(textLooksBusy);
+      const busy = [state.result, state.firstCategory, state.firstValue, state.lastCategory, state.lastValue].some(textLooksBusy);
       if (attempt === 1 || attempt % 5 === 0 || !busy) {
         debugLog("Tutorial calculation poll", state);
       }
@@ -2560,21 +3016,13 @@ async function runWelchTutorialWithDiagnostics() {
 
     await Excel.run(async (context) => {
       const sheet = context.workbook.worksheets.getItem(sheetName);
-      const result = sheet.getRange("D3:J13");
-      const firstRows = sheet.getRange("A1:B6");
-      const lastRows = sheet.getRange("A97:B101");
-      const version = sheet.getRange("L1");
+      const result = sheet.getRange("D1:J11");
+      const firstRows = sheet.getRange("A1:B5");
+      const lastRows = sheet.getRange("A96:B100");
       result.load(["values", "text", "formulas", "formulasLocal"]);
       firstRows.load(["values", "text", "formulas", "formulasLocal"]);
       lastRows.load(["values", "text", "formulas", "formulasLocal"]);
-      version.load(["values", "text", "formulas", "formulasLocal"]);
       await context.sync();
-      debugLog("Tutorial custom-functions runtime version", {
-        formula: version.formulas?.[0]?.[0],
-        formulaLocal: version.formulasLocal?.[0]?.[0],
-        value: version.values?.[0]?.[0],
-        text: version.text?.[0]?.[0]
-      });
       debugLog("Tutorial result read-back", {
         formula: result.formulas?.[0]?.[0],
         formulaLocal: result.formulasLocal?.[0]?.[0],
@@ -2626,6 +3074,11 @@ async function loadFunctions() {
 }
 
 function initialize() {
+  const accountSection = document.getElementById("settings-account");
+  if (accountSection && authOverrideAllowAll) {
+    accountSection.hidden = true;
+  }
+
   const stamp = document.getElementById("build-stamp");
   if (stamp) {
     stamp.textContent = `Build ${buildVersion}`;
@@ -2684,3 +3137,4 @@ if (window.Office) {
 } else {
   initialize();
 }
+

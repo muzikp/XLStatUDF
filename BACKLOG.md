@@ -1,16 +1,188 @@
 # Backlog - PRIORITNÍ
 
-## Nefunknční UDF
+## Obecné
+
+- Název pro celé řešení je Evalytics Statigo
+- až bude vhodný čas, přejmenuj vše, co bude potřeba
+
+## Web
+
+### Cile
+
+- Web bude mit dve role: verejny web (instalace, dokumentace, release notes) a admin UI pro spravu API dat.
+- Dokumentace nesmi byt editovana natvrdo v repozitari pro kazdou zmenu. Musi existovat riditelny publika?ni flow: navrh -> revize -> schvaleni -> publikace do konkretni verze/build.
+- Add-in musi umet nacitat dokumentaci podle verze buildu, aby uzivatel videl texty odpovidajici instalovanemu buildu.
+
+### Doporucena architektura
+
+- Frontend: `SvelteKit` (jeden projekt, route skupiny `public/*` a `admin/*`).
+- Hosting webu: `S3 + CloudFront` (staticky export nebo adapter podle zvoleneho deploymentu).
+- API: `API Gateway + AWS Lambda` (REST, oddelene endpointy pro public a admin).
+- Databaze: `MySQL RDS` (metadatovy model pro dokumentaci, verze, workflow, audit).
+- Storage dokumentacnich artefaktu: `S3` (versioned JSON snapshoty publikovanych docs).
+- Cache/latence: `CloudFront` pred public docs endpointem, plus `ETag/If-None-Match`.
+- Secrets: `AWS Secrets Manager` (DB credentials, signing keys, OAuth secrets).
+- Monitoring: `CloudWatch Logs + Alarms`, volitelne `X-Ray`.
+- v .env jsou základní přihlašovací údaje k AWS a lokální MySQL, schémata v DB jsou již bvytvořená (prázdná)
+
+### Datovy model (minimum)
+
+- `doc_sets`: logicky dokumentacni balik (napr. `function-docs`), jazyk, aktivni stav.
+- `doc_versions`: verze docs (semantic + build stamp), stav (`draft/review/approved/published/archived`), autor, reviewer, casy.
+- `doc_entries`: jednotlive funkce (`function_name`) + payload JSON pro detail.
+- `doc_change_requests`: navrhy od expertu (formularove zmeny) a jejich diff.
+- `doc_publications`: vazba docs verze -> publikovany artifact (`s3_key`, checksum, published_at).
+- `build_doc_map`: mapovani `addin_build` -> `doc_version_id`.
+- `audit_events`: kdo a kdy provedl navrh, schvaleni, publikaci, rollback.
+
+### API kontrakty
+
+- Public:
+  - `GET /public/docs/latest?lang=cs`
+  - `GET /public/docs/by-build/{build}?lang=cs`
+  - `GET /public/releases`
+- Admin (auth required):
+  - `GET /admin/docs/versions`
+  - `POST /admin/docs/versions` (create draft)
+  - `GET /admin/docs/versions/{id}`
+  - `POST /admin/docs/versions/{id}/changes`
+  - `POST /admin/docs/versions/{id}/submit-review`
+  - `POST /admin/docs/versions/{id}/approve`
+  - `POST /admin/docs/versions/{id}/publish`
+  - `POST /admin/docs/versions/{id}/rollback`
+  - `POST /admin/build-map` (bind build -> doc version)
+
+### Workflow pro dokumentaci
+
+1. Expert upravi navrh pres admin formular (`draft` verze).
+2. System ulozi granularni change-set (`doc_change_requests`) + audit event.
+3. Reviewer schvali nebo vrati pripominky.
+4. Po schvaleni se vygeneruje finalni JSON artifact (`function-docs.json` shape) a ulozi do S3.
+5. Publikace vytvori zaznam v `doc_publications` a aktualizuje `build_doc_map`.
+6. Add-in nacita docs podle buildu (`build_doc_map`), fallback na latest approved.
+7. Pri incidentu lze provest rollback premapovanim buildu na predchozi publikaci.
+
+### Integrace s Office add-inem
+
+- Add-in uz ma `buildStamp`; to pouzit jako klic pri fetch docs.
+- Fetch endpoint preferovat: `/public/docs/by-build/{build}?lang=...`.
+- Fallback poradi: by-build -> latest-approved -> lokalni bundled JSON.
+- Pri chybach neblokovat funkce; zobrazit degradovany docs stav a logovat diagnostiku.
+
+### Bezpecnost a role
+
+- Role minimalne: `viewer`, `editor`, `reviewer`, `publisher`, `admin`.
+- `publish` a `build-map` jen pro `publisher/admin`.
+- Vsechny admin akce auditovat (kdo, co, kdy, pred/po).
+- Validovat payload proti JSON schema (per function docs shape).
+
+### CI/CD a prostredi
+
+- Prostredi: `dev`, `staging`, `prod` oddelene (S3 bucket/API stage/RDS schema).
+- Pipeline kroky:
+  1. lint + typecheck
+  2. unit/integration testy API
+  3. schema migration (staging/prod guard)
+  4. deploy Lambd
+  5. deploy webu
+  6. smoke test public docs endpointu
+- Zakaz primeho publish do prod bez schvaleni (manual gate).
+
+### Implementacni plan po etapach
+
+1. Foundation
+- Zalozit databazovy model, migrace, skeleton Lambda API, health endpointy.
+- Pridat `/public/docs/latest` a nacitani statickeho JSON ze S3.
+
+2. Versioned docs
+- Implementovat `doc_versions` + `doc_entries` + generate/publish artifact do S3.
+- Pridat `/public/docs/by-build/{build}` + fallback logiku.
+
+3. Admin UI MVP
+- Formulare pro editaci funkci, seznam verzi, diff preview, submit-review.
+- Role-based access (zatim muze bez finalniho CVUT OAuth, ale pripraveno na napojeni).
+
+4. Review/publish governance
+- Approve/publish/rollback endpointy, audit eventy, build mapping.
+- Guardrails proti publish bez reviewer approve.
+
+5. Add-in integration
+- Upravit taskpane fetch docs na build-aware endpoint.
+- Pridat robustni fallback a telemetry pro docs load failures.
+
+6. Hardening
+- Caching policy, ETag, rate limiting, alarms, backup/restore runbook.
+
+### Rozhodnuti pred implementaci
+
+- Zdroj pravdy pro docs: DB-first + S3 artifact (doporuceno) nebo stale repo-first.
+- Granularita mapovani: build->exact docs verze (doporuceno) vs latest docs.
+- Schvalovaci model: one-step approve/publish nebo two-man rule pro produkci.
+- Kde bude auth provider pro admin web v prvni fazi (CVUT OAuth hned vs interim login).
+
+### Instrukce pro dalsi AI session
+
+- Pred praci nacist: `BACKLOG.md`, `AI_NOTES.md`, `website/`, `office-addin/src/public/taskpane.js`.
+- Nejdriv implementovat etapu 1 a 2; nepreskakovat rovnou na admin UI publish flow.
+- Pri kazde etape zapsat do backlogu: co je hotove, co chybi, jaka jsou rozhodnuti.
+- Nemodifikovat produkcni credentials v repu; pouzivat pouze env/secrets manager.
+
+### Stav implementace (2026-05-08)
+
+- Hotovo:
+  - `website/` bylo resetovano na novy foundation skeleton (public + admin shell).
+  - Pridana API kostra v `api/` s handlery pro `health`, `public/docs/latest`, `public/docs/by-build/{build}`, `admin/docs/versions`, `admin/build-map`.
+  - Pridan OpenAPI navrh v `api/openapi.yaml`.
+  - Pridana SQL baseline migrace v `migrations/001_web_docs_foundation.sql`.
+  - Pridany infra poznamky pro nasazeni na `statigo.evalytics.org` v `infra/README.md`.
+  - Etapa 2 backend wiring: public docs endpointy jsou napojene na `build_doc_map` / `doc_publications` lookup v MySQL a nacitani artifactu ze S3.
+  - `public/docs/by-build/{build}` implementuje fallback na latest published docs, pokud mapovani build->verze neexistuje.
+  - Admin endpoint `admin/docs/versions` ma zakladni bearer auth gate (`ADMIN_BEARER_TOKENS`) a read endpoint vraci latest publikace pro `cs/en`.
+  - Admin endpoint `POST /admin/docs/versions` je implementovan pro realne vytvoreni draft verze (`code`, `language`, `versionLabel`, volitelne `addinBuild`).
+  - Admin endpoint `POST /admin/build-map` je implementovan pro svazani `addinBuild -> docVersionId` s automatickym uzavrenim predchozi aktivni mapy.
+  - Pridany bootstrap podklady pro runtime:
+    - `api/.env.example`
+    - `scripts/bootstrap-api-env.ps1` (mapuje root `.env` -> `api/.env.local`, nove umi `-Environment dev|prod`)
+    - `migrations/002_web_docs_seed_minimal.sql` (minimalni seed)
+  - AWS runtime priprava:
+    - vytvoreny bucket `statigo-evalytics-org-docs-dev`
+    - vytvoreny bucket `statigo-evalytics-org-docs-prod`
+    - na obou bucketech zapnuto `Block Public Access`, `Versioning`, `SSE-S3 (AES256)`
+  - Auth MVP (tag-based):
+    - migrace `003_auth_tag_model.sql` (`auth_users`, `auth_tags`, `auth_user_tags`, `auth_function_policies`)
+    - endpointy `POST /auth/dev-login`, `GET /auth/me`, `POST /auth/check`
+    - admin endpointy `GET /admin/auth/users`, `POST /admin/auth/users/{userId}/tags`, `GET/POST /admin/auth/tags`
+    - web admin stranka `/admin` umi nacist users/tagy a prirazovat tagy uzivatelum
+    - custom functions runtime umi fallbacknout na vzdaleny `auth/check` (Bearer + API base URL v auth snapshotu)
+  - Infra IaC pro produkcni domenu:
+    - `infra/web-static.yaml` pro `statigo.evalytics.org` (S3 + CloudFront + Route53)
+    - `infra/sam-api.yaml` pro `api.statigo.evalytics.org` (HTTP API + Lambda + custom domain + Route53)
+    - `scripts/deploy-infra-prod.ps1` pro jednotny deploy flow
+  - Produkcni deploy (2026-05-09):
+    - ACM certifikaty vydany:
+      - `statigo.evalytics.org` (us-east-1)
+      - `api.statigo.evalytics.org` (eu-central-1)
+    - nasazen stack `statigo-web-prod` (CloudFront + S3 + Route53)
+    - nasazen stack `statigo-api-prod` (HTTP API + Lambda + custom domain + Route53)
+    - smoke check:
+      - `https://api.statigo.evalytics.org/health` vraci `status=ok`
+      - `https://statigo.evalytics.org` vraci HTML
+- Chybi:
+  - Endpoints pro changes/review/approve/publish/rollback.
+  - Jemnejsi RBAC (role model) misto jednoducheho shared bearer token seznamu pro admin endpointy.
+  - JSON schema validace docs payloadu a diff workflow.
+  - Seed publikovanych docs (`doc_publications` + validni S3 artifacty) pro plne funkcni public endpointy v dev/prod.
+  - CI/CD deploy pipeline a smoke testy.
+  - Napojeni realneho OAuth providera (CVUT) misto `auth/dev-login`.
+  - Doresit publish flow docs (`doc_publications` + artifact upload + endpoint smoke test pro latest/by-build).
+- Rozhodnuti:
+  - Pokracovat etapou 3: navazat endpointy changes/review/approve/publish + doplnit admin UI MVP.
+
+## Nefunkční UDF
 
 - aktuálně v pořádku
 
 ## UI
-
-### různé
-
-- NORM.DIST.RANGE dát do sekce "popisné" (již existuje)
-- UDF v dokumentaci seřadit (uvnitř sekcí) abecedne
-- u CONTINGENCY.G funkce renderovat ve výstupu phi jako řecké písmeno
 
 ### dokumentace
 
@@ -175,3 +347,34 @@
 - Nepridavej secrets do repozitare. OAuth client secret, JWT signing key a DB credentials patri do AWS Secrets Manageru nebo lokalniho .env, ktery neni commitovany.
 - Po kazde etape spust npm run build v office-addin/.
 - Jakmile bude auth zasahovat do custom-functions metadata nebo nazvu funkci, zkontroluj tutorialy, wizard, dokumentaci CS/EN a runtime asociace.
+
+## Regrese (implementace)
+
+- [x] Pridana nova UDF `REGRESSION` (linearni OLS report: model summary, ANOVA, koeficienty, diagnostika).
+- [x] Pridana nova UDF `REGRESSION.PREDICT` (bodova predikce + CI pro stredni hodnotu).
+- [x] Pridany wizardy pro obe funkce (argumenty jsou konfigurovatelne ve standardnim wizard panelu).
+- [x] Pridana demo data a demo formule pro obe funkce v sidepanelu.
+- [x] Korelacni metody `CORREL.SPEARMAN` a `CORREL.MATRIX` presunuty v UI katalogu do sekce `Regrese/Regression`.
+- [ ] Dodelat bohatsi lokalizovanou dokumentaci `function-docs.json` pro nove regresni funkce (CZ/EN popisy parametru a vystupu).
+- [ ] Rozsirit `REGRESSION.PREDICT` o predikcni interval (PI), nejen CI.
+
+## Regrese (2.1 + 2.2) - aktualizace
+
+- [x] Doplnena `REGRESSION.SELECT` (forward/backward/stepwise; kriterium adjR2/AIC/BIC; trace kroku).
+- [x] Doplnena `TREND.FIT` (linear/log/exp/power).
+- [x] Doplnena `TREND.COMPARE` (vice trend modelu v jednom vystupu).
+- [x] Doplnena demo data + demo formule pro `REGRESSION.SELECT`, `TREND.FIT`, `TREND.COMPARE`.
+- [x] Doplnen wizard setup pro vsechny nove metody v sidepanelu.
+- [x] Dokumentace sjednocena v jednom souboru `office-addin/src/public/function-docs.json` (CZ/EN) pro vsechny nove metody.
+
+## Reorganizace sekce Testy + nove neparametricke metody
+
+- [x] UI sekce `Testy/Tests` zrusena na urovni katalogu a nahrazena dvojici:
+  - `Srovnání skupin / Group Comparisons`
+  - `Kvalitativní data / Categorical Data`
+- [x] `CONTINGENCY.*` presunuto do `Kvalitativní data / Categorical Data`.
+- [x] Doplnena UDF `KRUSKAL.WALLIS` (Kruskal-Wallis ANOVA).
+- [x] Doplnena UDF `FRIEDMAN.ANOVA` (Friedmanova ANOVA).
+- [x] Doplnena UDF `JONCKHEERE.TERPSTRA` (Jonckheere-Terpstruv test trendu).
+- [x] Ke kazde nove metode dodelan wizard + demo v sidepanelu.
+- [x] Ke kazde nove metode dodelana CZ/EN dokumentace v `office-addin/src/public/function-docs.json`.
